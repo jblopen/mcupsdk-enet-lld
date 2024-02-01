@@ -448,6 +448,28 @@ typedef enum Icssg_Ioctl_e
     ICSSG_FDB_IOCTL_REMOVE_AGEABLE_ENTRIES = ICSSG_PUBLIC_IOCTL(9U),
 
     /*!
+     * \brief Read the four entries of one FDB slot.
+     *
+     * IOCTL params:
+     * -  inArgs: #Icssg_FdbEntry_ReadSlotInArgs
+     * - outArgs: None
+     *
+     * Type: Asynchronous.
+     */
+    ICSSG_FDB_IOCTL_READ_SLOT_ENTRIES = ICSSG_PUBLIC_IOCTL(10U),
+
+    /*!
+     * \brief Get the four entries of one FDB slot.
+     *
+     * IOCTL params:
+     * -  inArgs: None
+     * - outArgs: #Icssg_FdbEntry_GetSlotOutArgs
+     *
+     * Type: Asynchronous.
+     */
+    ICSSG_FDB_IOCTL_GET_SLOT_ENTRIES = ICSSG_PUBLIC_IOCTL(11U),
+
+    /*!
      * \brief Add MAC address of the interface.
      *
      * IOCTL params:
@@ -456,7 +478,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Synchronous.
      */
-    ICSSG_MACPORT_IOCTL_SET_MACADDR = ICSSG_PUBLIC_IOCTL(10U),
+    ICSSG_MACPORT_IOCTL_SET_MACADDR = ICSSG_PUBLIC_IOCTL(12U),
 
     /*!
      * \brief Add MAC address of the host port interface.
@@ -467,31 +489,31 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Synchronous.
      */
-    ICSSG_HOSTPORT_IOCTL_SET_MACADDR = ICSSG_PUBLIC_IOCTL(11U),
+    ICSSG_HOSTPORT_IOCTL_SET_MACADDR = ICSSG_PUBLIC_IOCTL(13U),
 
     /*!
      * \internal
      * \brief Execute TAS 'trigger' command. Legacy implementation.
      */
-    ICSSG_PER_IOCTL_TAS_TRIGGER = ICSSG_PUBLIC_IOCTL(12U),
+    ICSSG_PER_IOCTL_TAS_TRIGGER = ICSSG_PUBLIC_IOCTL(14U),
 
     /*!
      * \internal
      * \brief Execute TAS 'enable' command. Legacy implementation.
      */
-    ICSSG_PER_IOCTL_TAS_ENABLE = ICSSG_PUBLIC_IOCTL(13U),
+    ICSSG_PER_IOCTL_TAS_ENABLE = ICSSG_PUBLIC_IOCTL(15U),
 
     /*!
      * \internal
      * \brief Execute TAS 'disable' command. Legacy implementation.
      */
-    ICSSG_PER_IOCTL_TAS_DISABLE = ICSSG_PUBLIC_IOCTL(14U),
+    ICSSG_PER_IOCTL_TAS_DISABLE = ICSSG_PUBLIC_IOCTL(16U),
 
     /*!
      * \internal
      * \brief Execute TAS 'reset' command. Legacy implementation.
      */
-    ICSSG_PER_IOCTL_TAS_RESET = ICSSG_PUBLIC_IOCTL(15U),
+    ICSSG_PER_IOCTL_TAS_RESET = ICSSG_PUBLIC_IOCTL(17U),
 
     /*!
      * \brief Set the default VLAN ID and PCP bits for host port.
@@ -506,7 +528,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Synchronous.
      */
-    ICSSG_PER_IOCTL_VLAN_SET_HOSTPORT_DFLT_VID = ICSSG_PUBLIC_IOCTL(16U),
+    ICSSG_PER_IOCTL_VLAN_SET_HOSTPORT_DFLT_VID = ICSSG_PUBLIC_IOCTL(18U),
 
     /*!
      * \brief Set the default VLAN ID and PCP bits for specified MAC port.
@@ -517,7 +539,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Synchronous.
      */
-    ICSSG_PER_IOCTL_VLAN_SET_MACPORT_DFLT_VID = ICSSG_PUBLIC_IOCTL(17U),
+    ICSSG_PER_IOCTL_VLAN_SET_MACPORT_DFLT_VID = ICSSG_PUBLIC_IOCTL(19U),
 
     /*!
      * \brief Set the aging period of the FDB.
@@ -530,7 +552,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Synchronous.
      */
-    ICSSG_FDB_IOCTL_SET_AGING_PERIOD = ICSSG_PUBLIC_IOCTL(18U),
+    ICSSG_FDB_IOCTL_SET_AGING_PERIOD = ICSSG_PUBLIC_IOCTL(20U),
 
     /*!
      * \brief Enable flooding of unicast packets to host port.
@@ -541,7 +563,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Asynchronous.
      */
-    ICSSG_MACPORT_IOCTL_ENABLE_UCAST_FLOOD = ICSSG_PUBLIC_IOCTL(19U),
+    ICSSG_MACPORT_IOCTL_ENABLE_UCAST_FLOOD = ICSSG_PUBLIC_IOCTL(21U),
 
     /*!
      * \brief Disable flooding of unicast packets to host port.
@@ -552,7 +574,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Asynchronous.
      */
-    ICSSG_MACPORT_IOCTL_DISABLE_UCAST_FLOOD = ICSSG_PUBLIC_IOCTL(20U),
+    ICSSG_MACPORT_IOCTL_DISABLE_UCAST_FLOOD = ICSSG_PUBLIC_IOCTL(22U),
 
     /*!
      * \brief Enable flooding of multicast packets to host port.
@@ -563,7 +585,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Asynchronous.
      */
-    ICSSG_MACPORT_IOCTL_ENABLE_MCAST_FLOOD = ICSSG_PUBLIC_IOCTL(21U),
+    ICSSG_MACPORT_IOCTL_ENABLE_MCAST_FLOOD = ICSSG_PUBLIC_IOCTL(23U),
 
     /*!
      * \brief Disable flooding of multicast packets to host port.
@@ -574,7 +596,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Asynchronous.
      */
-    ICSSG_MACPORT_IOCTL_DISABLE_MCAST_FLOOD = ICSSG_PUBLIC_IOCTL(22U),
+    ICSSG_MACPORT_IOCTL_DISABLE_MCAST_FLOOD = ICSSG_PUBLIC_IOCTL(24U),
 
     /*!
      * \brief Set the criteria for accepting VLAN tagged/untagged packets.
@@ -590,7 +612,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Synchronous.
      */
-    ICSSG_MACPORT_IOCTL_SET_ACCEPT_FRAME_CHECK = ICSSG_PUBLIC_IOCTL(23U),
+    ICSSG_MACPORT_IOCTL_SET_ACCEPT_FRAME_CHECK = ICSSG_PUBLIC_IOCTL(25U),
 
     /*!
      * \brief Configure ingress rate limiting.
@@ -601,7 +623,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Synchronous.
      */
-    ICSSG_MACPORT_IOCTL_SET_INGRESS_RATE_LIM = ICSSG_PUBLIC_IOCTL(24U),
+    ICSSG_MACPORT_IOCTL_SET_INGRESS_RATE_LIM = ICSSG_PUBLIC_IOCTL(26U),
 
     /*!
      * \brief cut through or prempt select configuration.
@@ -612,7 +634,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Synchronous.
      */
-    ICSSG_MACPORT_IOCTL_SET_QUEUE_CUT_THROUGH_PREEMPT_SELECT = ICSSG_PUBLIC_IOCTL(25U),
+    ICSSG_MACPORT_IOCTL_SET_QUEUE_CUT_THROUGH_PREEMPT_SELECT = ICSSG_PUBLIC_IOCTL(27U),
 
     /*!
      * \brief special frame priority configuration.
@@ -623,7 +645,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Synchronous.
      */
-    ICSSG_MACPORT_IOCTL_CONFIG_SPL_FRAME_PRIO = ICSSG_PUBLIC_IOCTL(26U),
+    ICSSG_MACPORT_IOCTL_CONFIG_SPL_FRAME_PRIO = ICSSG_PUBLIC_IOCTL(28U),
 
     /*!
      * \brief Register Handler for the IOCTL CMD
@@ -634,8 +656,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Synchronous.
      */
-    ICSSG_INTERNAL_IOCTL_REGISTER_HANDLER = ICSSG_PUBLIC_IOCTL(27U),
-
+    ICSSG_INTERNAL_IOCTL_REGISTER_HANDLER = ICSSG_PUBLIC_IOCTL(29U),
 } Icssg_Ioctl;
 
 /*!
@@ -849,6 +870,39 @@ typedef struct Icssg_FdbEntry_s
      *  from \ref IccsgFdb_EntryFields. Two entries for two ports */
     uint8_t fdbEntry[2];
 } Icssg_FdbEntry;
+
+/*!
+ * \brief HW FDB table entry.
+ */
+typedef struct Icssg_HwFdbEntry_s
+{
+    /*! MAC address */
+    uint8_t macAddr[ENET_MAC_ADDR_LEN];
+
+    /*! FID_C1 */
+    uint8_t fid_c1;
+
+    /*! FID_C2 */
+    uint8_t fid_c2;
+} Icssg_HwFdbEntry;
+
+/*!
+ * \brief Input arguments for #ICSSG_FDB_IOCTL_READ_SLOT_ENTRIES command.
+ */
+typedef struct Icssg_FdbEntry_ReadSlotInArgs_s
+{
+    /*! Broadside Slot number, ranging from 0 to 511*/
+    uint16_t broadSideSlot;
+} Icssg_FdbEntry_ReadSlotInArgs;
+
+/*!
+ * \brief Output arguments for #ICSSG_FDB_IOCTL_GET_SLOT_ENTRIES command.
+ */
+typedef struct Icssg_FdbEntry_GetSlotOutArgs_s
+{
+    /*! Four FDB entries of given FDB slot*/
+    Icssg_HwFdbEntry fdbSlotEntries[4];
+} Icssg_FdbEntry_GetSlotOutArgs;
 
 /*!
  * \brief Default VLAN configuration.

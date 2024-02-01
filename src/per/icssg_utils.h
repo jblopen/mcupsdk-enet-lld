@@ -73,6 +73,7 @@ extern "C" {
 #define ICSSG_IOCTL_SUBCMD_FDB_ENTRY_REMOVE_ALL             (3U)
 #define ICSSG_IOCTL_SUBCMD_FDB_ENTRY_ADD_MULTIPLE           (4U)
 #define ICSSG_IOCTL_SUBCMD_FDB_ENTRY_REMOVE_ALL_AGEABLE     (5U)
+#define ICSSG_IOCTL_SUBCMD_FDB_ENTRY_READ_SLOT              (6U)
 #define EMAC_FW_MGMT_SPEED_DUPLEXITY_CMD_TYPE               (0x02U)
 
 #define ICSSG_UTILS_MGMT_FREE_HWQA_PORT0     ((int32_t)56)   /* mgmt free queue port 0*/

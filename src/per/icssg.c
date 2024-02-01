@@ -189,6 +189,14 @@ static int32_t Icssg_ioctlFdbRemoveAllEntries(Icssg_Handle hIcssg,
 static int32_t Icssg_ioctlFdbRemoveAllAgeableEntries(Icssg_Handle hIcssg,
                                                      Enet_MacPort macPort);
 
+static int32_t Icssg_ioctlFdbReadSlotEntries(Icssg_Handle hIcssg,
+                                      Enet_MacPort macPort,
+                                      Icssg_FdbEntry_ReadSlotInArgs *fdbSlotCfg);                                      
+
+static int32_t Icssg_ioctlFdbGetSlotEntries(Icssg_Handle hIcssg,
+                                      Enet_MacPort macPort,                                      
+                                      Icssg_FdbEntry_GetSlotOutArgs *fdbSlotResult);                                       
+
 static void Icssg_ioctlSetMacAddress(Icssg_Handle hIcssg,
                                      IcssgMacPort_SetMacAddressInArgs *macAddressCfg);
 
@@ -431,6 +439,14 @@ static Enet_IoctlValidate gIcssg_ioctlValidate[] =
     ENET_IOCTL_VALID_PRMS(ICSSG_FDB_IOCTL_REMOVE_AGEABLE_ENTRIES,
                           0U,
                           0U),
+    
+    ENET_IOCTL_VALID_PRMS(ICSSG_FDB_IOCTL_READ_SLOT_ENTRIES,
+                          sizeof(Icssg_FdbEntry_ReadSlotInArgs),
+                          0U),
+
+    ENET_IOCTL_VALID_PRMS(ICSSG_FDB_IOCTL_GET_SLOT_ENTRIES,
+                          0U,
+                          sizeof(Icssg_FdbEntry_GetSlotOutArgs)),  
 
     ENET_IOCTL_VALID_PRMS(ICSSG_MACPORT_IOCTL_SET_MACADDR,
                           sizeof(IcssgMacPort_SetMacAddressInArgs),
@@ -556,6 +572,8 @@ static IcssgInternalIoctlHandlerTableEntry_t IcssgInternalIoctlHandlerTable[] =
     ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_FDB_IOCTL_REMOVE_ENTRY),
     ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_FDB_IOCTL_REMOVE_ALL_ENTRIES),
     ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_FDB_IOCTL_REMOVE_AGEABLE_ENTRIES),
+    ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_FDB_IOCTL_READ_SLOT_ENTRIES),
+    ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_FDB_IOCTL_GET_SLOT_ENTRIES),
     ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_MACPORT_IOCTL_SET_MACADDR),
     ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_HOSTPORT_IOCTL_SET_MACADDR),
     ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ENET_IOCTL_REGISTER_RX_DEFAULT_FLOW),
@@ -2123,6 +2141,45 @@ static int32_t Icssg_ioctlFdbRemoveAllAgeableEntries(Icssg_Handle hIcssg,
                                    NULL,
                                    0,
                                    0);
+
+    return status;
+}
+
+static int32_t Icssg_ioctlFdbReadSlotEntries(Icssg_Handle hIcssg,
+                                      Enet_MacPort macPort,
+                                      Icssg_FdbEntry_ReadSlotInArgs *fdbSlotCfg)                                      
+{
+    int32_t status = ENET_EINVALIDPARAMS;
+       
+    status = IcssgUtils_sendFdbCmd(hIcssg,
+                                    macPort,
+                                    ICSSG_IOCTL_SUBCMD_FDB_ENTRY_READ_SLOT,
+                                    NULL,
+                                    fdbSlotCfg->broadSideSlot,
+                                    0);
+
+    return status;
+}
+
+static int32_t Icssg_ioctlFdbGetSlotEntries(Icssg_Handle hIcssg,
+                                      Enet_MacPort macPort,                                      
+                                      Icssg_FdbEntry_GetSlotOutArgs *fdbSlotResult)
+{
+    int32_t status = ENET_SOK;    
+    uintptr_t dram = Icssg_getDramAddr(hIcssg, macPort);
+    /*Packing the FDB result into the outArg*/
+    for(uint32_t entryNum = 0U; entryNum < ICSSG_NUM_FDB_BUCKET_ENTRIES; entryNum++)
+    {
+        for(uint32_t macIdx = 0U; macIdx < ENET_MAC_ADDR_LEN; macIdx++)
+        {
+            fdbSlotResult->fdbSlotEntries[entryNum].macAddr[macIdx] = Icssg_rd8(hIcssg, dram + FDB_CMD_BUFFER + (entryNum*8) + macIdx);
+        }
+
+        fdbSlotResult->fdbSlotEntries[entryNum].fid_c1 = Icssg_rd8(hIcssg, dram + FDB_CMD_BUFFER + (entryNum*8) + ENET_MAC_ADDR_LEN);
+
+        fdbSlotResult->fdbSlotEntries[entryNum].fid_c2 = Icssg_rd8(hIcssg, dram + FDB_CMD_BUFFER + (entryNum*8) + ENET_MAC_ADDR_LEN + 1);
+ 
+    }
 
     return status;
 }
@@ -4284,6 +4341,37 @@ int32_t Icssg_ioctl_handler_ICSSG_FDB_IOCTL_REMOVE_AGEABLE_ENTRIES(EnetPer_Handl
     return status;
 }
 
+int32_t Icssg_ioctl_handler_ICSSG_FDB_IOCTL_READ_SLOT_ENTRIES(EnetPer_Handle hPer,
+                                                        uint32_t cmd,
+                                                        Enet_IoctlPrms *prms)
+{
+    Icssg_Handle hIcssg = (Icssg_Handle)hPer;
+    int32_t status = ENET_SOK;
+    Icssg_FdbEntry_ReadSlotInArgs *inArgs = (Icssg_FdbEntry_ReadSlotInArgs *)prms->inArgs;
+    Enet_assert(cmd == ICSSG_FDB_IOCTL_READ_SLOT_ENTRIES);
+    /* It's a peripheral level IOCTL but command is issued as if it were for port 1 */
+    status = Icssg_ioctlFdbReadSlotEntries(hIcssg, ENET_MAC_PORT_1, inArgs);
+    ENETTRACE_ERR_IF((status != ENET_SINPROGRESS),
+                        "%s: failed to read slot entries: %d\r\n",
+                        ENET_PER_NAME(hIcssg), status);
+    return status;
+}
+
+int32_t Icssg_ioctl_handler_ICSSG_FDB_IOCTL_GET_SLOT_ENTRIES(EnetPer_Handle hPer,
+                                                        uint32_t cmd,
+                                                        Enet_IoctlPrms *prms)
+{
+    Icssg_Handle hIcssg = (Icssg_Handle)hPer;
+    int32_t status = ENET_SOK;    
+    Icssg_FdbEntry_GetSlotOutArgs *outArgs = (Icssg_FdbEntry_GetSlotOutArgs *)prms->outArgs;
+    Enet_assert(cmd == ICSSG_FDB_IOCTL_GET_SLOT_ENTRIES);
+    /* It's a peripheral level IOCTL but command is issued as if it were for port 1 */
+    status = Icssg_ioctlFdbGetSlotEntries(hIcssg, ENET_MAC_PORT_1, outArgs);
+    ENETTRACE_ERR_IF((status != ENET_SINPROGRESS),
+                        "%s: failed to get slot entries: %d\r\n",
+                        ENET_PER_NAME(hIcssg), status);
+    return status;
+}
 
 int32_t Icssg_ioctl_handler_ICSSG_MACPORT_IOCTL_SET_MACADDR(EnetPer_Handle hPer,
                                                             uint32_t cmd,

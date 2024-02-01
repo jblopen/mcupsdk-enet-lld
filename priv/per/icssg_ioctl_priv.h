@@ -167,6 +167,13 @@ int32_t Icssg_ioctl_handler_ICSSG_FDB_IOCTL_REMOVE_AGEABLE_ENTRIES(EnetPer_Handl
                                                             uint32_t cmd,
                                                             Enet_IoctlPrms *prms);
 
+int32_t Icssg_ioctl_handler_ICSSG_FDB_IOCTL_READ_SLOT_ENTRIES(EnetPer_Handle hPer,
+                                                            uint32_t cmd,
+                                                            Enet_IoctlPrms *prms);
+
+int32_t Icssg_ioctl_handler_ICSSG_FDB_IOCTL_GET_SLOT_ENTRIES(EnetPer_Handle hPer,
+                                                            uint32_t cmd,
+                                                            Enet_IoctlPrms *prms);
 
 int32_t Icssg_ioctl_handler_ICSSG_MACPORT_IOCTL_SET_MACADDR(EnetPer_Handle hPer,
                                                             uint32_t cmd,
