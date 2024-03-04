@@ -52,6 +52,10 @@
 #ifdef __ARM_ACLE
 #include <arm_acle.h>
 #define NOP5 do { __nop(); __nop(); __nop(); __nop(); __nop();} while (0);
+#elif (defined(SOC_AM62AX) && defined(__aarch64__))
+#include <kernel/freertos/portable/GCC/ARM_CA53/portmacro.h>
+#define __NOP portNOP()
+#define NOP5   do { __NOP; __NOP; __NOP; __NOP; __NOP; } while (0)
 #else
 #include <cmsis/Core/Include/cmsis_compiler.h>
 #define NOP5   do { __NOP(); __NOP(); __NOP(); __NOP(); __NOP(); } while (0)
