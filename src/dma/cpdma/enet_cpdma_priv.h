@@ -356,6 +356,8 @@ typedef struct EnetCpdma_DrvObj_s
     uint32_t        txInterruptPerMSec;
     /* Enable channel override flag */
     uint32_t        enChOverrideFlag;
+    /* Enable host receive encapsulation flag */
+    uint32_t        enHostRxTsFlag;
     /* Reset ongoing flag */
     uint32_t        isResetOngoing;
 } EnetCpdma_DrvObj;

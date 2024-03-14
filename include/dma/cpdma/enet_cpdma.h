@@ -432,6 +432,9 @@ typedef struct EnetCpdma_Cfg_s
      *  This feature is supported only on AM263x SOC and not AM273x/AWR294x	*/
     bool     enChOverrideFlag;
 
+    /*! Flag to enable timestamp encapsulated packet.*/
+    bool enHostRxTsFlag;
+
     /*! RX channel configuration parameters */
     EnetCpdma_RxChInitPrms rxChInitPrms;
 

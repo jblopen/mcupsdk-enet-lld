@@ -1954,6 +1954,7 @@ static int32_t EnetCpdma_checkTxChParams(EnetCpdma_OpenTxChPrms *pTxChPrms)
 void EnetCpdma_initParams(Enet_Type enetType, EnetDma_Cfg *pDmaConfig)
 {
     pDmaConfig->enChOverrideFlag            = false;
+    pDmaConfig->enHostRxTsFlag              = false;
     pDmaConfig->rxInterruptPerMSec          = 0U;
     pDmaConfig->txInterruptPerMSec          = 0U;
     pDmaConfig->rxChInitPrms.rxBufferOffset = 0U;
@@ -2021,6 +2022,7 @@ EnetDma_Handle EnetCpdma_open(Enet_Type enetType,
         pEnetDmaObj->rxInterruptPerMSec = pDmaCfg->rxInterruptPerMSec;
         pEnetDmaObj->txInterruptPerMSec = pDmaCfg->txInterruptPerMSec;
         pEnetDmaObj->enChOverrideFlag = pDmaCfg->enChOverrideFlag;
+        pEnetDmaObj->enHostRxTsFlag = pDmaCfg->enHostRxTsFlag;
         pEnetDmaObj->isResetOngoing = false;
 
         pEnetDmaObj->cpdmaCoreId = EnetCpdma_mapApp2CpdmaCoreId(appCoreId);
@@ -2084,13 +2086,16 @@ EnetDma_Handle EnetCpdma_open(Enet_Type enetType,
             /* int_prescale	Interrupt Counter Prescaler –  The number of  VBUSP_CLK periods in 4us. */
             CSL_CPSW_setWrIntPrescaler(pEnetDmaObj->cpswSsRegs, ENET_CPDMA_CONV_SEC2PRESCALER(EnetSoc_getClkFreq(enetType,0U /* instId */,CPSW_CPPI_CLK)));
         }
-
+        if (pDmaCfg->enHostRxTsFlag)
+        {
+            CSL_CPSW_enableCpdmaThostTsEncap(pEnetDmaObj->cpdmaRegs);
+        }
 #if ENET_CFG_IS_ON(CPDMA_CH_OVERRIDE)
-		/* Set the thost_ch_override bit if set by application and if soc supports override feature */
-		if((pDmaCfg->enChOverrideFlag == true) && (ENET_FEAT_IS_EN(pEnetDmaObj->features, ENET_CPDMA_CHANNEL_OVERRIDE)))
-		{
-			CSL_CPSW_enableCpdmaChOverride(pEnetDmaObj->cpdmaRegs);
-		}
+        /* Set the thost_ch_override bit if set by application and if soc supports override feature */
+        if((pDmaCfg->enChOverrideFlag == true) && (ENET_FEAT_IS_EN(pEnetDmaObj->features, ENET_CPDMA_CHANNEL_OVERRIDE)))
+        {
+            CSL_CPSW_enableCpdmaChOverride(pEnetDmaObj->cpdmaRegs);
+        }
 #endif
     }
     return pEnetDmaObj;
