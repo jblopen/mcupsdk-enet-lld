@@ -31,7 +31,7 @@
  */
 
 /**
- * Copyright (c) 2018 Texas Instruments Incorporated
+ * Copyright (c) 2024 Texas Instruments Incorporated
  *
  * This file is dervied from the ``ethernetif.c'' skeleton Ethernet network
  * interface driver for lwIP.

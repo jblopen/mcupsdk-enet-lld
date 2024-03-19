@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) Texas Instruments Incorporated 2021
+ *  Copyright (c) Texas Instruments Incorporated 2024
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -99,11 +99,22 @@ typedef struct Ic_Object_s
     /*! Our shared mem Tx-Q handle */
     ShdMemCircularBufferP_Handle shmTxQ;
 
+    /* Semaphore to be posted from TX callback when packets are sent */
+    SemaphoreP_Object txSemObj;
+
     /*! Our RX-Q ID (=peer core's TX-Q ID) */
     uint32_t rxQId;
 
     /*! Our shared mem Rx-Q handle */
     ShdMemCircularBufferP_Handle shmRxQ;
+
+    /* Semaphore posted from RX callback when packets have arrived */
+    SemaphoreP_Object rxSemObj;
+
+    /*
+     * Clock handle for triggering the packet Rx notify
+     */
+    ClockP_Object pacingClkObj;
 
     /*! Our IPC end point ID */
     uint32_t myReqEndPtId;

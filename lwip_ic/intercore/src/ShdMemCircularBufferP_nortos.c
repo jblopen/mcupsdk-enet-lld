@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2023 Texas Instruments Incorporated
+ *  Copyright (C) 2018-2024 Texas Instruments Incorporated
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -144,6 +144,12 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_initQ(ShdMemCircularBufferP_Han
 //        pElemAdd->magic = SHDMEM_CIRCULAR_BUFFER_MAGIC;
 //        pElemAdd += sizeof(ShdMemCircularBufferP_Elem);
 //    }
+#if (ENABLE_CACHE_OPS)
+    /* Cache_Inv head the latest to avoid race conditions */
+    CacheP_wbInv((void *)pObj->pTail, sizeof(ShdMemCircularBufferP_Tail), CacheP_TYPE_ALLD);
+    CacheP_wbInv((void *)pObj->pHead, sizeof(ShdMemCircularBufferP_Head), CacheP_TYPE_ALLD);
+    CacheP_wbInv((void *)pObj->pStartAddress, maxSize * sizeof(ShdMemCircularBufferP_Elem), CacheP_TYPE_ALLD);
+#endif /*! ENABLE_CACHE_OPS */
 
     return retVal;
 }
@@ -185,6 +191,11 @@ bool ShdMemCircularBufferP_isQValid(ShdMemCircularBufferP_Handle hBuff)
 
     ShmCirBuf_assert(hBuff != NULL);
 
+#if (ENABLE_CACHE_OPS)
+    /* Cache_Inv tail the latest to avoid race conditions */
+    CacheP_inv((void *)pObj->pHead, sizeof(ShdMemCircularBufferP_Head), CacheP_TYPE_ALLD);
+    CacheP_inv((void *)pObj->pTail, sizeof(ShdMemCircularBufferP_Tail), CacheP_TYPE_ALLD);
+#endif /*! ENABLE_CACHE_OPS */
     if (SHDMEM_CIRCULAR_BUFFER_MAGIC == pObj->pHead->magic)
     {
         headValid = true;
@@ -227,11 +238,15 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_readElem(ShdMemCircularBufferP_
         {
             readIdx = 0;
         }
+#if (ENABLE_CACHE_OPS)
+        CacheP_inv((void *)pElemAdd, sizeof(ShdMemCircularBufferP_Elem), CacheP_TYPE_ALLD);
+#endif /*! ENABLE_CACHE_OPS */
         *pDataLen = pElemAdd->elemLen;
         memcpy((void*)pData, (uint8_t*)&pElemAdd->elemData[0], *pDataLen);
         pObj->pTail->readIdx = readIdx;
 #if (ENABLE_CACHE_OPS)
-        CacheP_wb((void *)pElemAdd->elemData, sizeof(ShdMemCircularBufferP_Elem), CacheP_TYPE_ALLD);
+        /* Write back only after successful read. Else, sender might write into this buffer while we are still reading */
+        CacheP_wbInv((void *)pObj->pTail, sizeof(ShdMemCircularBufferP_Tail), CacheP_TYPE_ALLD);
 #endif /*! ENABLE_CACHE_OPS */
 #if (ENABLE_MUTEX_LOCKS)
         SemaphoreP_post(&pObj->sem);
@@ -245,12 +260,16 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_writeElem(ShdMemCircularBufferP
     ShdMemCircularBufferStatus status = SHDMEM_CIRCULAR_BUFFER_STATUS_OK;
     ShdMemCircularBufferP_Obj* pObj = (ShdMemCircularBufferP_Obj*)hBuff;
     uint32_t writeIdx = pObj->pHead->writeIdx;
-    uint32_t i,copyLen;
+    uint32_t i, copyLen;
 
     ShmCirBuf_assert(pObj != NULL);
     ShmCirBuf_assert(pObj->pStartAddress != NULL);
 
-    if (( (writeIdx + 1) % pObj->maxElements) == pObj->pTail->readIdx)
+#if (ENABLE_CACHE_OPS)
+    /* Cache_Inv tail the latest to avoid race conditions */
+    CacheP_inv((void *)pObj->pTail, sizeof(ShdMemCircularBufferP_Tail), CacheP_TYPE_ALLD);
+#endif /*! ENABLE_CACHE_OPS */
+    if (((writeIdx + 1) % pObj->maxElements) == pObj->pTail->readIdx)
     {
         status = SHDMEM_CIRCULAR_BUFFER_STATUS_ERR_FULL;
     }
@@ -266,6 +285,9 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_writeElem(ShdMemCircularBufferP
 //        }
         ShdMemCircularBufferP_Elem* pElemAdd = (ShdMemCircularBufferP_Elem*)(((uint8_t*) pObj->pStartAddress) +
                                                                              (sizeof(ShdMemCircularBufferP_Elem)*(writeIdx++)));
+#if (ENABLE_CACHE_OPS)
+        CacheP_inv((void *)pElemAdd, sizeof(ShdMemCircularBufferP_Elem), CacheP_TYPE_ALLD);
+#endif /*! ENABLE_CACHE_OPS */
         if (writeIdx == pObj->maxElements)
         {
             writeIdx = 0;
@@ -289,7 +311,11 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_writeElem(ShdMemCircularBufferP
             pElemAdd->elemLen = copyLen;
             pObj->pHead->writeIdx = writeIdx;
 #if (ENABLE_CACHE_OPS)
-            CacheP_wb((void *)pElemAdd->elemData, sizeof(ShdMemCircularBufferP_Elem), CacheP_TYPE_ALLD);
+            /* Write back head only after successful write, and its Wb.
+             * Else, receiver might read from this invalid buffer while we are still writing
+             */
+            CacheP_wbInv((void *)pElemAdd, sizeof(ShdMemCircularBufferP_Elem), CacheP_TYPE_ALLD);
+            CacheP_wbInv((void *)pObj->pHead, sizeof(ShdMemCircularBufferP_Head), CacheP_TYPE_ALLD);
 #endif /*! ENABLE_CACHE_OPS */
         }
 #if (ENABLE_MUTEX_LOCKS)
@@ -303,7 +329,11 @@ bool ShdMemCircularBufferP_isQEmpty(ShdMemCircularBufferP_Handle hBuff)
 {
     bool status = false;
     ShdMemCircularBufferP_Obj* pObj = (ShdMemCircularBufferP_Obj*)hBuff;
-
+#if (ENABLE_CACHE_OPS)
+    /* Cache_Inv head the latest to avoid race conditions */
+    CacheP_inv((void *)pObj->pTail, sizeof(ShdMemCircularBufferP_Tail), CacheP_TYPE_ALLD);
+    CacheP_inv((void *)pObj->pHead, sizeof(ShdMemCircularBufferP_Head), CacheP_TYPE_ALLD);
+#endif /*! ENABLE_CACHE_OPS */
     if (pObj->pHead->writeIdx == pObj->pTail->readIdx)
     {
         status = true;
@@ -315,8 +345,12 @@ bool ShdMemCircularBufferP_isQFull(ShdMemCircularBufferP_Handle hBuff)
 {
     bool status = false;
     ShdMemCircularBufferP_Obj* pObj = (ShdMemCircularBufferP_Obj*)hBuff;
-
-    if (( (pObj->pHead->writeIdx + 1) % pObj->maxElements) == pObj->pTail->readIdx)
+#if (ENABLE_CACHE_OPS)
+    /* Cache_Inv tail the latest to avoid race conditions */
+    CacheP_inv((void *)pObj->pHead, sizeof(ShdMemCircularBufferP_Head), CacheP_TYPE_ALLD);
+    CacheP_inv((void *)pObj->pTail, sizeof(ShdMemCircularBufferP_Tail), CacheP_TYPE_ALLD);
+#endif /*! ENABLE_CACHE_OPS */
+    if (((pObj->pHead->writeIdx + 1) % pObj->maxElements) == pObj->pTail->readIdx)
     {
         status = true;
     }
@@ -327,6 +361,7 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_peekReadElem(ShdMemCircularBuff
 {
     ShdMemCircularBufferStatus status = SHDMEM_CIRCULAR_BUFFER_STATUS_OK;
     ShdMemCircularBufferP_Obj* pObj = (ShdMemCircularBufferP_Obj*)hBuff;
+
     uint32_t readIdx = pObj->pTail->readIdx;
 
     if (pObj->pHead->writeIdx == readIdx)
@@ -339,6 +374,9 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_peekReadElem(ShdMemCircularBuff
         SemaphoreP_pend(&pObj->sem, SystemP_WAIT_FOREVER);
 #endif /*! ENABLE_MUTEX_LOCKS */
         ShdMemCircularBufferP_Elem* pElemAdd = (ShdMemCircularBufferP_Elem*)(((uint8_t*) pObj->pStartAddress) + (sizeof(ShdMemCircularBufferP_Elem)*readIdx++));
+#if (ENABLE_CACHE_OPS)
+        CacheP_inv((void *)pElemAdd, sizeof(ShdMemCircularBufferP_Elem), CacheP_TYPE_ALLD);
+#endif /*! ENABLE_CACHE_OPS */
         *pDataLen = pElemAdd->elemLen;
 #if (ENABLE_MUTEX_LOCKS)
         SemaphoreP_post(&pObj->sem);

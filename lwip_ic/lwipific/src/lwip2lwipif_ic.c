@@ -43,7 +43,7 @@
  */
 
 /**
- *  Copyright (c) Texas Instruments Incorporated 2021
+ *  Copyright (c) Texas Instruments Incorporated 2024
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -312,9 +312,10 @@ static void LWIPIF_LWIP_IC_recv(void *arg0)
     while(!hLwipIc->shutDownFlag)
     {
 #if !(IC_ETH_RX_POLLING_MODE)
-        SemaphoreP_pend(hLwipIc->hRxPacketSem, SemaphoreP_WAIT_FOREVER);
+        SemaphoreP_pend(hLwipIc->hRxPacketSem, SystemP_WAIT_FOREVER);
 #else
-        ClockP_usleep(IC_ETH_RX_POLLING_INTERVAL*1000);
+        SemaphoreP_pend(&hIcObj->rxSemObj, SystemP_WAIT_FOREVER);
+//        ClockP_usleep(IC_ETH_RX_POLLING_INTERVAL*1000);
 #endif
 
         // ToDo: replace with isQempty and get length
