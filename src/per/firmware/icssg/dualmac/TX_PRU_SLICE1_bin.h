@@ -1118,4 +1118,4 @@ const unsigned int TX_PRU_SLICE1_b00_DMac[]= {
 0x48435449,
 0x2e32305f,
 0x312e3230,
-0x38302e32 };
+0x31302e33 };

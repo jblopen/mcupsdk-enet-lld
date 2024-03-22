@@ -344,15 +344,15 @@
 /*Number of valid bytes sent by Rx PRU to Host on PSI. Currently disabled*/
 #define NRT_HOST_RX_BYTE_COUNT_PASTATID                    0x0000
 /*Number of valid bytes copied by RTU0 to Tx queues. Currently disabled*/
-#define NRT_HOST_TX_BYTE_COUNT_PASTATID                    0x0002
+#define NRT_HOST_TX_BYTE_COUNT_PASTATID                    0x0008
 /*Number of valid bytes sent by Rx PRU to Host on PSI. Currently disabled*/
-#define NRT_HOST_RX_BYTE_COUNT_MAC_SLICE0_PASTATID         0x0004
+#define NRT_HOST_RX_BYTE_COUNT_MAC_SLICE0_PASTATID         0x0010
 /*Number of valid bytes sent by Rx PRU to Host on PSI. Currently disabled*/
-#define NRT_HOST_RX_BYTE_COUNT_MAC_SLICE1_PASTATID         0x0006
+#define NRT_HOST_RX_BYTE_COUNT_MAC_SLICE1_PASTATID         0x0018
 /*Number of valid bytes sent by Rx PRU to Host on PSI. Currently disabled*/
-#define NRT_HOST_TX_BYTE_COUNT_MAC_SLICE0_PASTATID         0x0008
+#define NRT_HOST_TX_BYTE_COUNT_MAC_SLICE0_PASTATID         0x0020
 /*Number of valid bytes sent by Rx PRU to Host on PSI. Currently disabled*/
-#define NRT_HOST_TX_BYTE_COUNT_MAC_SLICE1_PASTATID         0x000A
+#define NRT_HOST_TX_BYTE_COUNT_MAC_SLICE1_PASTATID         0x0028
 /*Start of 32 bits PA_STAT counters*/
 #define PA_STAT_32b_START_OFFSET                           0x0080
 /*Number of valid packets sent by Rx PRU to Host on PSI*/
