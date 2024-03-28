@@ -299,10 +299,20 @@ EnetPhy_Handle EnetPhy_open(const EnetPhy_Cfg *phyCfg,
         if ((linkCfg->speed == ENETPHY_SPEED_AUTO) ||
             (linkCfg->duplexity == ENETPHY_DUPLEX_AUTO))
         {
-            hPhy->reqLinkCaps = phyCfg->nwayCaps;
-            if (hPhy->reqLinkCaps == 0U)
+            if(EnetPhy_isNwayCapable(hPhy) != 0U)
             {
-                hPhy->reqLinkCaps = ENETPHY_LINK_CAP_ALL;
+                hPhy->reqLinkCaps = phyCfg->nwayCaps;
+                if (hPhy->reqLinkCaps == 0U)
+                {
+                    hPhy->reqLinkCaps = ENETPHY_LINK_CAP_ALL;
+                }
+            }
+            else
+            {
+                /* If PHY is not capable of auto negotiation, fallback to manual mode
+                * with the highest refined capability */
+                hPhy->reqLinkCaps = EnetPhy_getManualCaps(ENETPHY_SPEED_1GBIT, ENETPHY_DUPLEX_FULL);
+                manualMode = true;
             }
         }
         else
@@ -1100,9 +1110,13 @@ static void EnetPhy_enableState(EnetPhy_Handle hPhy)
     ENETTRACE_DBG("PHY %u: req caps: %s\r\n",
                   hPhy->addr, EnetPhy_getCapsString(hPhy->reqLinkCaps));
 
-    state->phyLinkCaps = EnetPhy_getLocalCaps(hPhy);
-    ENETTRACE_DBG("PHY %u: PHY caps: %s\r\n",
-                  hPhy->addr, EnetPhy_getCapsString(state->phyLinkCaps));
+    /* Can set phy specific caps during config time for non-generic PHYs*/
+    if(state->phyLinkCaps == 0)
+    {
+        state->phyLinkCaps = EnetPhy_getLocalCaps(hPhy);
+        ENETTRACE_DBG("PHY %u: PHY caps: %s\r\n",
+                       hPhy->addr, EnetPhy_getCapsString(state->phyLinkCaps));
+    }
 
     socLinkCaps = hPhy->macCaps;
     ENETTRACE_DBG("PHY %u: MAC caps: %s\r\n",

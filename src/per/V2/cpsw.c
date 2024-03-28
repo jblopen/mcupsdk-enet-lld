@@ -691,6 +691,7 @@ void Cpsw_periodicTick(EnetPer_Handle hPer)
             {
                 /* Run PHY tick */
                 const EnetPhy_LinkStatus linkStatus = EnetPhy_tick(hPhy);
+                
 
                 /* Handle link up/down events */
                 if ((linkStatus == ENETPHY_GOT_LINK) ||
