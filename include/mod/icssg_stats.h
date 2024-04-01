@@ -274,17 +274,41 @@ typedef struct IcssgStats_MacPort_s
  */
 typedef struct IcssgStats_Pa_s
 {
-    /*! Number of valid bytes sent by RX PRU to Host on PSI. Currently disabled */
+    /*! Number of valid bytes sent by RX PRU to Host on PSI. Valid only for Switch mode */
     uint64_t hostRxByteCnt;
 
-    /*! Number of valid bytes copied by RTU0 to TX queues. Currently disabled */
+    /*! Number of valid bytes copied by RTU0 to TX queues. Valid only for Switch mode */
     uint64_t hostTxByteCnt;
 
-    /*! Number of valid packets sent by RX PRU to Host on PSI */
+    /*! Number of valid bytes sent by Rx PRU to Host on PSI. Valid only for Dualmac mode */
+    uint64_t hostRxByteCntMacSlice0;
+
+    /*! Number of valid bytes sent by Rx PRU to Host on PSI. Valid only for Dualmac mode */
+    uint64_t hostRxByteCntMacSlice1;
+
+    /*! Number of valid bytes sent by Tx PRU to Host on PSI. Valid only for Dualmac mode */
+    uint64_t hostTxByteCntMacSlice0;
+
+    /*! Number of valid bytes sent by Tx PRU to Host on PSI. Valid only for Dualmac mode */
+    uint64_t hostTxByteCntMacSlice1;
+
+    /*! Number of valid packets sent by RX PRU to Host on PSI. Valid only for Switch mode */
     uint32_t hostRxPktCnt;
 
-    /*! Number of valid packets copied by RTU0 to TX queues */
+    /*! Number of valid packets copied by RTU0 to TX queues. Valid only for Switch mode */
     uint32_t hostTxPktCnt;
+
+    /*! Number of valid packets sent by Rx PRU to Host on PSI. Valid only for Dualmac mode */
+    uint32_t hostRxPktCntMacSlice0;
+
+    /*! Number of valid packets sent by Rx PRU to Host on PSI. Valid only for Dualmac mode */
+    uint32_t hostRxPktCntMacSlice1;
+
+    /*! Number of valid packets copied by RTU0 to Tx queues. Valid only for Dualmac mode */
+    uint32_t hostTxPktCntMacSlice0;
+
+    /*! Number of valid packets copied by RTU1 to Tx queues. Valid only for Dualmac mode */
+    uint32_t hostTxPktCntMacSlice1;
 
     /*! PRU diagnostic error counter which increments when RTU0 drops a locally
      *  injected packet due to port disabled or rule violation */
@@ -503,6 +527,48 @@ typedef struct IcssgStats_Pa_s
     /*! PRU1 diagnostic error counter which increments if EOF task is scheduled
      *  without seeing RX_B1 */
     uint32_t rxEofShortFrameErrSlice1;
+
+    /*! PRU0 diagnostic counter which increments when frame if droped due to
+     *  Early EOF received in B0 */
+    uint32_t rxB0DropEarlyEoFSlice0;
+
+    /*! PRU1 diagnostic counter which increments when frame if droped due to
+     *  Early EOF received in B0 */
+    uint32_t rxB0DropEarlyEoFSlice1;
+
+    /*! Tx PRU0 diagnostic counter which increments when frame is cut off to
+     *  prevent packet size > 2000B */
+    uint32_t txJumboFrameCutoffSlice0;
+
+    /*! Tx PRU1 diagnostic counter which increments when frame is cut off to
+     *  prevent packet size > 2000B */
+    uint32_t txJumboFrameCutoffSlice1;
+
+    /*! Rx PRU0 diagnostic counter which increments when express frame is received
+     *  in same queue as previous fragment */
+    uint32_t rxExpFragQDropSlice0;
+
+    /*! Rx PRU1 diagnostic counter which increments when express frame is received
+     *  in same queue as previous fragment */
+    uint32_t rxExpFragQDropSlice1;
+
+    /*! RX fifo overrun for slice 0 */
+    uint32_t rxFifoOverRunSlice0;
+
+    /*! RX fifo overrun for slice 1 */
+    uint32_t rxFifoOverRunSlice1;
+
+    /*! Host Egress Q (Pre-emptible) Overflow Counter */
+    uint32_t hostEgrsQPreOvrFloMacSlice0;
+
+    /*! Host Egress Q (Pre-emptible) Overflow Counter */
+    uint32_t hostEgrsQPreOvrFloMacSlice1;
+
+    /*! Host Egress Q (Express) Overflow Counter */
+    uint32_t hostEgrsQExpOvrFloMacSlice0;
+
+    /*! Host Egress Q (Express) Overflow Counter */
+    uint32_t hostEgrsQExpOvrFloMacSlice1;
 } IcssgStats_Pa;
 
 /* ========================================================================== */

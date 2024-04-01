@@ -52,7 +52,8 @@
 /*                           Macros & Typedefs                                */
 /* ========================================================================== */
 
-/* None */
+/* This is used since address handling by firmware for 64bit REG is different */
+#define FW64ADDRCONV(x) (x<<2U)
 
 /* ========================================================================== */
 /*                         Structure Declarations                             */
@@ -110,11 +111,26 @@ int32_t IcssgStats_ioctl_handler_ICSSG_STATS_IOCTL_REGISTER_HANDLER(EnetMod_Hand
 /*                            Global Variables                                */
 /* ========================================================================== */
 
-/* Register offsets for all PA statistics */
+/* Register offsets for all 64-bit PA statistics */
+static uint32_t IcssgStats_64bitpaStatsOffset[] =
+{
+    NRT_HOST_RX_BYTE_COUNT_PASTATID,
+    NRT_HOST_TX_BYTE_COUNT_PASTATID,
+    NRT_HOST_RX_BYTE_COUNT_MAC_SLICE0_PASTATID,
+    NRT_HOST_RX_BYTE_COUNT_MAC_SLICE1_PASTATID,
+    NRT_HOST_TX_BYTE_COUNT_MAC_SLICE0_PASTATID,
+    NRT_HOST_TX_BYTE_COUNT_MAC_SLICE1_PASTATID,
+};
+
+/* Register offsets for all 32-bit PA statistics */
 static uint32_t IcssgStats_paStatsOffset[] =
 {
     NRT_HOST_RX_PKT_COUNT_PASTATID,
     NRT_HOST_TX_PKT_COUNT_PASTATID,
+    NRT_HOST_RX_PKT_COUNT_MAC_SLICE0_PASTATID,
+    NRT_HOST_RX_PKT_COUNT_MAC_SLICE1_PASTATID,
+    NRT_HOST_TX_PKT_COUNT_MAC_SLICE0_PASTATID,
+    NRT_HOST_TX_PKT_COUNT_MAC_SLICE1_PASTATID,
     NRT_RTU0_PACKET_DROPPED_SLICE0_PASTATID,
     NRT_RTU0_PACKET_DROPPED_SLICE1_PASTATID,
     NRT_PORT1_Q0_OVERFLOW_PASTATID,
@@ -181,6 +197,18 @@ static uint32_t IcssgStats_paStatsOffset[] =
     NRT_PREEMPT_FRAG_COUNT_RX_SLICE1_PASTATID,
     RX_EOF_SHORT_FRAMEERR_SLICE0_PASTATID,
     RX_EOF_SHORT_FRAMEERR_SLICE1_PASTATID,
+    RX_B0_DROP_EARLY_EOF_SLICE0_PASTATID,
+    RX_B0_DROP_EARLY_EOF_SLICE1_PASTATID,
+    TX_JUMBO_FRAME_CUTOFF_SLICE0_PASTATID,
+    TX_JUMBO_FRAME_CUTOFF_SLICE1_PASTATID,
+    RX_EXPRESS_FRAG_Q_DROP_SLICE0_PASTATID,
+    RX_EXPRESS_FRAG_Q_DROP_SLICE1_PASTATID,
+    RX_FIFO_OVERRUN_SLICE0_PASTATID,
+    RX_FIFO_OVERRUN_SLICE1_PASTATID,
+    NRT_HOST_EGRESS_Q_PRE_OVERFLOW_MAC_SLICE0_PASTATID,
+    NRT_HOST_EGRESS_Q_PRE_OVERFLOW_MAC_SLICE1_PASTATID,
+    NRT_HOST_EGRESS_Q_EXP_OVERFLOW_MAC_SLICE0_PASTATID,
+    NRT_HOST_EGRESS_Q_EXP_OVERFLOW_MAC_SLICE1_PASTATID,
 };
 
 #define ICSSG_STATS_IOCTL_HANDLER_ENTRY_INIT(x)    \
@@ -283,12 +311,16 @@ static void IcssgStats_getPaStats(IcssgStats_Handle hStats,
                                   IcssgStats_Pa *paStats)
 {
     uintptr_t baseAddr = (uintptr_t)hStats->paStatsAddr;
+    uint32_t *stats64 = (uint32_t *)&paStats->hostRxByteCnt;
     uint32_t *stats32 = (uint32_t *)&paStats->hostRxPktCnt;
     uint32_t i;
 
     /* First two PA statistics counters are 64-bit values */
-    paStats->hostRxByteCnt = CSL_REG64_RD(baseAddr);
-    paStats->hostTxByteCnt = CSL_REG64_RD(baseAddr + sizeof(uint64_t));
+    for(i = 0U; i < ENET_ARRAYSIZE(IcssgStats_64bitpaStatsOffset); i++)
+    {
+        *stats64 = CSL_REG64_RD(baseAddr + FW64ADDRCONV(IcssgStats_64bitpaStatsOffset[i]));
+        stats64 += 2U;
+    }
 
     /* Rest of PA statistics counters are 32-bit values */
     for (i = 0U; i < ENET_ARRAYSIZE(IcssgStats_paStatsOffset); i++)
