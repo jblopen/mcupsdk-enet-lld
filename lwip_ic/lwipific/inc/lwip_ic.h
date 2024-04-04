@@ -184,7 +184,7 @@ typedef struct LwipIc_Stats_s
 typedef struct LwipIc_OBJECT_
 {
     /* Intercore trasport global object */
-    Ic_Object icObj;
+    Ic_Object_Handle hIcObj;
 
     /*! Instance ID */
     uint32_t instId;
@@ -361,7 +361,9 @@ int32_t LwipIc_ipcInit(LwipIc_Handle hLwipIc);
 
 static inline void LwipIc_assert(bool cond)
 {
-    assert(cond);
+    while(!cond)
+        {}
+    ;
 }
 
 #ifdef __cplusplus

@@ -195,7 +195,7 @@ static err_t LWIPIF_LWIP_IC_send(struct netif *netif,
 
     /* Get the pointer to the private data */
     hLwipIc = (LwipIc_Handle)netif->state;
-    hIcObj       = &(hLwipIc->icObj);
+    hIcObj  = hLwipIc->hIcObj;
 
     /* Return if initialization if not complete */
     if(!hLwipIc->initDone)
@@ -217,7 +217,6 @@ static err_t LWIPIF_LWIP_IC_send(struct netif *netif,
     if((ShdMemCircularBufferP_isQFull(hIcObj->shmTxQ) == true))
     {
         LwipIcStats_addOne(&hLwipIc->stats.txStats.txQFullErr);
-        /*@TODO: Should we free the pbuf here ?*/
         status = ERR_BUF;
         goto error_handling;
     }
@@ -297,11 +296,11 @@ static void LWIPIF_LWIP_IC_recv(void *arg0)
     bool unusedPkt = false;
     bool isEmpty = true;
 
-    Ic_Object_Handle   hIcObj;
+    Ic_Object_Handle hIcObj;
 
     /* Get the pointer to the private data */
     hLwipIc = (LwipIc_Handle)netif->state;
-    hIcObj       = &(hLwipIc->icObj);
+    hIcObj  = hLwipIc->hIcObj;
 
     /* Wait for initialization to complete */
     while(!hLwipIc->initDone)
@@ -328,7 +327,6 @@ static void LWIPIF_LWIP_IC_recv(void *arg0)
             if (status != ERR_OK)
             {
                 /* Break from loop to let other tasks to free MEMP buffers */
-                /* ToDo: Add method to process unsent Tx packets taken out of IC queue*/
                 LwipIcStats_addOne(&hLwipIc->stats.rxStats.netifInputErr);
                 LwipIcStats_addOne(&hLwipIc->stats.driverBufFree);
                 continue;
@@ -339,22 +337,11 @@ static void LWIPIF_LWIP_IC_recv(void *arg0)
         {
             while(!isEmpty)
             {
-                uint16_t pktLen = 0;
                 hIcObj->numRxPktsPending--;
                 LwipIcStats_addOne(&hLwipIc->stats.rxStats.pktDeq);
 
-                status = ShdMemCircularBufferP_peekReadElem(hIcObj->shmRxQ, &pktLen);
-
-                /* Packet length check. */
-                if(pktLen > ETH_FRAME_SIZE)
-                {
-                    /* Don't allow larger packets. ToDo: How to skip this packet? */
-                    LwipIcStats_addOne(&hLwipIc->stats.rxStats.largePktErr);
-                    LwipIcStats_addOne(&hLwipIc->stats.driverBufFree); // new stat for dropped rx pkts?
-                    continue;
-                }
                 /* Allocate a pbuf chain from the pool. */
-                pStackBuf = pbuf_alloc(PBUF_RAW, pktLen, PBUF_POOL);
+                pStackBuf = pbufQ_ic_deQ(&hIcObj->freePbufQ);
                 if(pStackBuf == NULL)
                 {
                     /* Break from loop to let other tasks to free pBufs */
@@ -362,6 +349,7 @@ static void LWIPIF_LWIP_IC_recv(void *arg0)
                     LwipIcStats_addOne(&hLwipIc->stats.driverBufNullErr);
                     break;
                 }
+                pbuf_ref(pStackBuf);
 
                 /* Copy data into pbuf */
                 status = ShdMemCircularBufferP_readElem(hIcObj->shmRxQ, &pStackBuf->len, pStackBuf->payload);
@@ -376,6 +364,15 @@ static void LWIPIF_LWIP_IC_recv(void *arg0)
                 }
                 pStackBuf->tot_len = pStackBuf->len;
 
+                /* Packet length check. */
+                if(pStackBuf->len > ETH_FRAME_SIZE)
+                {
+                    /* Don't allow larger packets. Skip this packet */
+                    pbuf_free(pStackBuf);
+                    LwipIcStats_addOne(&hLwipIc->stats.rxStats.largePktErr);
+                    LwipIcStats_addOne(&hLwipIc->stats.driverBufFree);
+                    continue;
+                }
                 status = netif->input(pStackBuf, netif);
                 /* Pass pBuf to the stack for processing */
                 if (status != ERR_OK)

@@ -138,12 +138,7 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_initQ(ShdMemCircularBufferP_Han
 
     /* Clear all the nodes */
     memset(pObj->pStartAddress, 0x00, maxSize * sizeof(ShdMemCircularBufferP_Elem));
-//    ShdMemCircularBufferP_Elem* pElemAdd = (ShdMemCircularBufferP_Elem*) pObj->pStartAddress;
-//    for(int32_t i = 0; i < pObj->maxElements; i++)
-//    {
-//        pElemAdd->magic = SHDMEM_CIRCULAR_BUFFER_MAGIC;
-//        pElemAdd += sizeof(ShdMemCircularBufferP_Elem);
-//    }
+
 #if (ENABLE_CACHE_OPS)
     /* Cache_Inv head the latest to avoid race conditions */
     CacheP_wbInv((void *)pObj->pTail, sizeof(ShdMemCircularBufferP_Tail), CacheP_TYPE_ALLD);
@@ -227,11 +222,7 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_readElem(ShdMemCircularBufferP_
 #if (ENABLE_MUTEX_LOCKS)
         SemaphoreP_pend(&pObj->sem, SystemP_WAIT_FOREVER);
 #endif /*! ENABLE_MUTEX_LOCKS */
-//        if (pObj->pTail->magic != SHDMEM_CIRCULAR_BUFFER_MAGIC)
-//        {
-//            status = SHDMEM_CIRCULAR_BUFFER_STATUS_ERR_TAIL_CURRUPT;
-//            ShmCirBuf_assert(false);
-//        }
+
         ShdMemCircularBufferP_Elem* pElemAdd = (ShdMemCircularBufferP_Elem*)(((uint8_t*) pObj->pStartAddress) +
                                                                              (sizeof(ShdMemCircularBufferP_Elem)*readIdx++));
         if (readIdx == pObj->maxElements)
@@ -278,11 +269,7 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_writeElem(ShdMemCircularBufferP
 #if (ENABLE_MUTEX_LOCKS)
         SemaphoreP_pend(&pObj->sem, SystemP_WAIT_FOREVER);
 #endif /*! ENABLE_MUTEX_LOCKS */
-//        if (pObj->pHead->magic != SHDMEM_CIRCULAR_BUFFER_MAGIC)
-//        {
-//            status = SHDMEM_CIRCULAR_BUFFER_STATUS_ERR_HEAD_CURRUPT;
-//            ShmCirBuf_assert(false);
-//        }
+
         ShdMemCircularBufferP_Elem* pElemAdd = (ShdMemCircularBufferP_Elem*)(((uint8_t*) pObj->pStartAddress) +
                                                                              (sizeof(ShdMemCircularBufferP_Elem)*(writeIdx++)));
 #if (ENABLE_CACHE_OPS)
@@ -292,7 +279,6 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_writeElem(ShdMemCircularBufferP
         {
             writeIdx = 0;
         }
-//        pElemAdd->magic = SHDMEM_CIRCULAR_BUFFER_MAGIC;
         copyLen = 0U;
         for(i = 0; i < arrLen; i++)
         {
@@ -349,7 +335,7 @@ bool ShdMemCircularBufferP_isQFull(ShdMemCircularBufferP_Handle hBuff)
     /* Cache_Inv tail the latest to avoid race conditions */
     CacheP_inv((void *)pObj->pHead, sizeof(ShdMemCircularBufferP_Head), CacheP_TYPE_ALLD);
     CacheP_inv((void *)pObj->pTail, sizeof(ShdMemCircularBufferP_Tail), CacheP_TYPE_ALLD);
-#endif /*! ENABLE_CACHE_OPS */
+#endif /* ENABLE_CACHE_OPS */
     if (((pObj->pHead->writeIdx + 1) % pObj->maxElements) == pObj->pTail->readIdx)
     {
         status = true;
@@ -372,15 +358,15 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_peekReadElem(ShdMemCircularBuff
     {
 #if (ENABLE_MUTEX_LOCKS)
         SemaphoreP_pend(&pObj->sem, SystemP_WAIT_FOREVER);
-#endif /*! ENABLE_MUTEX_LOCKS */
+#endif /* ENABLE_MUTEX_LOCKS */
         ShdMemCircularBufferP_Elem* pElemAdd = (ShdMemCircularBufferP_Elem*)(((uint8_t*) pObj->pStartAddress) + (sizeof(ShdMemCircularBufferP_Elem)*readIdx++));
 #if (ENABLE_CACHE_OPS)
         CacheP_inv((void *)pElemAdd, sizeof(ShdMemCircularBufferP_Elem), CacheP_TYPE_ALLD);
-#endif /*! ENABLE_CACHE_OPS */
+#endif /* ENABLE_CACHE_OPS */
         *pDataLen = pElemAdd->elemLen;
 #if (ENABLE_MUTEX_LOCKS)
         SemaphoreP_post(&pObj->sem);
-#endif /*! ENABLE_MUTEX_LOCKS */
+#endif /* ENABLE_MUTEX_LOCKS */
     }
     return status;
 }
@@ -399,11 +385,11 @@ ShdMemCircularBufferStatus ShdMemCircularBufferP_moveReadIdx(ShdMemCircularBuffe
     {
 #if (ENABLE_MUTEX_LOCKS)
         SemaphoreP_pend(&pObj->sem, SystemP_WAIT_FOREVER);
-#endif /*! ENABLE_MUTEX_LOCKS */
+#endif /* ENABLE_MUTEX_LOCKS */
         pObj->pTail->readIdx++;
 #if (ENABLE_MUTEX_LOCKS)
         SemaphoreP_post(&pObj->sem);
-#endif /*! ENABLE_MUTEX_LOCKS */
+#endif /* ENABLE_MUTEX_LOCKS */
     }
     return status;
 }

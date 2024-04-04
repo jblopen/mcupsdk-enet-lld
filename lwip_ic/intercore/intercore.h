@@ -46,6 +46,7 @@
 #include <stdlib.h>
 #include <drivers/ipc_rpmsg/ipc_rpmsg_priv.h>
 #include "include/ShdMemCircularBufferP_nortos.h"
+#include "pbufQ_ic.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -110,6 +111,9 @@ typedef struct Ic_Object_s
 
     /* Semaphore posted from RX callback when packets have arrived */
     SemaphoreP_Object rxSemObj;
+
+    /*! Queue with empty pbufs, payload is not populated */
+    pbufIcQ freePbufQ;
 
     /*
      * Clock handle for triggering the packet Rx notify

@@ -143,7 +143,7 @@ LwipIc_Handle LwipIc_open(uint32_t instId, Ic_Object_Handle hIcObj)
 
     /* Initialize the allocated memory block. */
     memset(hLwipIc, 0, sizeof(LwipIc_Object));
-    hLwipIc->icObj  = *hIcObj;
+    hLwipIc->hIcObj  = hIcObj;
     LwipIc_assert(hIcObj->initComplete == TRUE);
 
     hLwipIc->instId = instId;

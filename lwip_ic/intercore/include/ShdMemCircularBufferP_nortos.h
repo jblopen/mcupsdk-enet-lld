@@ -30,8 +30,8 @@
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SHEMEM_CIRCULAR_BUFFERP_H
-#define SHEMEM_CIRCULAR_BUFFERP_H
+#ifndef SHM_CIRCULAR_BUFFERP_H
+#define SHM_CIRCULAR_BUFFERP_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,7 +71,7 @@ typedef enum ShdMemCircularBufferStatus_t
 
 typedef struct ShdMemCircularBufferP_Rsv_t
 {
-    uint8_t rsv[1000];
+    uint8_t rsv[1024U];
 } ShdMemCircularBufferP_Rsv;
 
 typedef void* ShdMemCircularBufferP_Handle;
@@ -100,4 +100,4 @@ bool ShdMemCircularBufferP_isQValid(ShdMemCircularBufferP_Handle hBuff);
 }
 #endif
 
-#endif // SHEMEM_CIRCULAR_BUFFERP_H
+#endif // SHM_CIRCULAR_BUFFERP_H

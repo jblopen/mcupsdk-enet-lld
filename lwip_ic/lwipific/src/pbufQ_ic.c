@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2018-2021 Texas Instruments Incorporated
+ *  Copyright (C) 2018-2024 Texas Instruments Incorporated
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -31,19 +31,21 @@
  */
 
 #include <assert.h>
+#include <stdbool.h>
 #include "lwip/pbuf.h"
-#include "pbufQ.h"
-#include <networking/enet/core/include/core/enet_utils.h>
+#include "pbufQ_ic.h"
 #include <kernel/dpl/HwiP.h>
 /*
  * Free queue from which buffer pointers are allocated
  */
-pbufQ pfreeQ;
+pbufIcQ pfreeQ_ic;
 static bool gPbufQ_initialized = false;
 
-static inline void pbufQ_assert(uint8_t cond)
+static inline void pbufQ_ic_assert(uint8_t cond)
 {
-    assert(cond);
+    while(!cond)
+        {}
+    ;
 }
 
 /*
@@ -52,10 +54,10 @@ static inline void pbufQ_assert(uint8_t cond)
  * Needs to be called only once as early in the program as possible
  */
 //TODO: Refractor using enQ/deQ
-void pbufQ_init_freeQ(pbufNode *pfree, uint32_t maxSize)
+void pbufQ_ic_init_freeQ(pbufIcNode *pfree, uint32_t maxSize)
 {
     int fQ_iter;
-    pbufQ_assert(NULL != pfree);
+    pbufQ_ic_assert(NULL != pfree);
 
 	if (!gPbufQ_initialized)
     {
@@ -68,9 +70,9 @@ void pbufQ_init_freeQ(pbufNode *pfree, uint32_t maxSize)
         pfree[fQ_iter].next = NULL;
         pfree[fQ_iter].hPbufPkt = NULL;
 
-        pfreeQ.head = &pfree[0];
-        pfreeQ.tail = &pfree[maxSize - 1];
-        pfreeQ.count = maxSize;
+        pfreeQ_ic.head = &pfree[0];
+        pfreeQ_ic.tail = &pfree[maxSize - 1];
+        pfreeQ_ic.count = maxSize;
 
         gPbufQ_initialized = true;
     }
@@ -79,30 +81,34 @@ void pbufQ_init_freeQ(pbufNode *pfree, uint32_t maxSize)
 /*
  * Allocates memory from the freeQ to be used by other queues
  */
-pbufNode* mempQ_malloc()
+pbufIcNode* mempQ_ic_malloc()
 {
-    pbufNode* p = pfreeQ.head;
-    pfreeQ.head = pfreeQ.head->next;
-    pfreeQ.count--;
+    pbufIcNode* p = pfreeQ_ic.head;
+    pfreeQ_ic.head = pfreeQ_ic.head->next;
+    pfreeQ_ic.count--;
     return p;
 }
 
 /*
  * Returns buffer pointers used by other queues back to freeQ
  */
-void mempQ_free(pbufNode* p)
+void mempQ_ic_free(pbufIcNode* p)
 {
     p->next = NULL;
     p->hPbufPkt = NULL;
-    pfreeQ.tail->next = p;
-    pfreeQ.tail = p;
-    pfreeQ.count++;
+    pfreeQ_ic.tail->next = p;
+    pfreeQ_ic.tail = p;
+    if(pfreeQ_ic.count ==0)
+    {
+        pfreeQ_ic.head = pfreeQ_ic.tail;
+    }
+    pfreeQ_ic.count++;
 }
 
 /*
  * Initializes a queue. Must be called after declaring a queue
  */
-void pbufQ_init(pbufQ *pQ)
+void pbufQ_ic_init(pbufIcQ *pQ)
 {
     uint32_t key = HwiP_disable();
     pQ->head = NULL;
@@ -114,14 +120,14 @@ void pbufQ_init(pbufQ *pQ)
 /*
  * Enqueues a buffer to the tail of the queue
  */
-void pbufQ_enQ(pbufQ *pQ, struct pbuf *p)
+void pbufQ_ic_enQ(pbufIcQ *pQ, struct pbuf *p)
 {
-    pbufNode* temp = NULL;
+    pbufIcNode* temp = NULL;
 
     uint32_t key = HwiP_disable();
 
-    temp = mempQ_malloc();
-    pbufQ_assert(NULL != temp);
+    temp = mempQ_ic_malloc();
+    pbufQ_ic_assert(NULL != temp);
 
     temp->hPbufPkt = p;
     temp->next = NULL;
@@ -151,14 +157,13 @@ void pbufQ_enQ(pbufQ *pQ, struct pbuf *p)
  * Enqueues a packet to the head of the queue.
  * NOT USED ANYWHERE. Can be removed
  */
-void pbufQ_enQHead(pbufQ *pQ, struct pbuf *p)
+void pbufQ_ic_enQHead(pbufIcQ *pQ, struct pbuf *p)
 {
-    pbufNode* temp = NULL;
+    pbufIcNode* temp = NULL;
+    pbufQ_ic_assert(p != NULL);
 
-    pbufQ_assert(p != NULL);
-
-    temp = mempQ_malloc();
-    pbufQ_assert(NULL != temp);
+    temp = mempQ_ic_malloc();
+    pbufQ_ic_assert(NULL != temp);
 
     uint32_t key = HwiP_disable();
     temp->hPbufPkt = p;
@@ -180,10 +185,10 @@ void pbufQ_enQHead(pbufQ *pQ, struct pbuf *p)
 /*
  * Dequeues from the queue
  */
-struct pbuf* pbufQ_deQ(pbufQ *pQ)
+struct pbuf* pbufQ_ic_deQ(pbufIcQ *pQ)
 {
     struct pbuf *rtnPbuf = NULL;
-    pbufNode *temp = NULL;
+    pbufIcNode *temp = NULL;
     uint32_t key = HwiP_disable();
 
     if(pQ->count != 0)
@@ -197,8 +202,8 @@ struct pbuf* pbufQ_deQ(pbufQ *pQ)
         }
         pQ->count--;
 
-        pbufQ_assert(rtnPbuf != NULL);
-        mempQ_free(temp);
+        pbufQ_ic_assert(rtnPbuf != NULL);
+        mempQ_ic_free(temp);
     }
 
     HwiP_restore(key);
