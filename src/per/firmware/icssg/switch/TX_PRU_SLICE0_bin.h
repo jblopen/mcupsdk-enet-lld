@@ -54,7 +54,7 @@
  *
  */
 
-const unsigned int TX_PRU_SLICE0_b00_Swt[]= {
+const uint32_t TX_PRU_SLICE0_b00_Swt[]= {
 0x2effbd80,
 0x2f140192,
 0x2eff0194,

@@ -54,7 +54,7 @@
  *
  */
 
-const unsigned int RTU0_SLICE1_b00_DMac[]= {
+const uint32_t RTU0_SLICE1_b00_DMac[]= {
 0x2effbd80,
 0x2f310094,
 0x240002d2,
