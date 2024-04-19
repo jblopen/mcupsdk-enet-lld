@@ -144,4 +144,4 @@ void Dp83tg720_initCfg(Dp83tg720_Cfg *cfg);
 
 #endif /* DP83TG720_H_ */
 
-/* @} */
+/*! @} */
