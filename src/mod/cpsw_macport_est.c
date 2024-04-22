@@ -251,7 +251,7 @@ int32_t CpswEst_setState(CpswMacPort_Handle hPort,
             /* Next admin bank is EST lower buffer */
             hPort->estBufUpper = false;
             CSL_CPSW_getPortEstConfig(regs, portNum, &estCfg);
-            estCfg.estBufSel = hPort->estBufUpper ? 1U : 0U;
+            estCfg.estBufSel = 0U;
             CSL_CPSW_setPortEstConfig(regs, portNum, &estCfg);
             break;
         }

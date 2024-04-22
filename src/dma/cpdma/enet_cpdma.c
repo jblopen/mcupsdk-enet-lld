@@ -425,37 +425,35 @@ static int32_t EnetCpdma_initRxChannel(EnetDma_Handle hEnetDma, EnetCpdma_ChInfo
      */
     /* Pointer to first descriptor to use on RX */
     pDesc = (EnetCpdma_cppiDesc *)hEnetDma->cppiRamBase;
-    if (retVal == ENET_SOK)
+
+    pDesc += hEnetDma->numBdsAllocated; /* advance to next free BD */
+
+    if ((hEnetDma->numBdsAllocated + chInfo->numBD) >  hEnetDma->maxBds)
     {
-        pDesc += hEnetDma->numBdsAllocated; /* advance to next free BD */
+        /* not enough room for the requested number of BDs, fail request */
+        ENETTRACE_ERR("InitRx Channel : Unable to allocate %d BDs for channel %d.%d BDs already in use\n",
+                      chInfo->numBD,chInfo->chNum,hEnetDma->numBdsAllocated);
+        retVal =  ENET_EBADARGS;
+    }
+    else
+    {
+        /* Init the Rx channel */
+        rxChan->hEnetDma   = hEnetDma;
+        rxChan->descMax    = chInfo->numBD;
+        rxChan->pDescFirst = pDesc;
+        rxChan->pDescLast  = pDesc + (chInfo->numBD - 1);
+        rxChan->pDescRead  = pDesc;
+        rxChan->pDescWrite = pDesc;
+        rxChan->pDescTail     = NULL;
+        rxChan->descHistory.descHistoryCount = 0U;
+        rxChan->unackedCpDescCount = 0U;
+        rxChan->descFreeCount = chInfo->numBD;
+        rxChan->descSubmittedCount = 0;
 
-        if ((hEnetDma->numBdsAllocated + chInfo->numBD) >  hEnetDma->maxBds)
-        {
-            /* not enough room for the requested number of BDs, fail request */
-            ENETTRACE_ERR("InitRx Channel : Unable to allocate %d BDs for channel %d.%d BDs already in use\n",
-                          chInfo->numBD,chInfo->chNum,hEnetDma->numBdsAllocated);
-            retVal =  ENET_EBADARGS;
-        }
-        else
-        {
-            /* Init the Rx channel */
-            rxChan->hEnetDma   = hEnetDma;
-            rxChan->descMax    = chInfo->numBD;
-            rxChan->pDescFirst = pDesc;
-            rxChan->pDescLast  = pDesc + (chInfo->numBD - 1);
-            rxChan->pDescRead  = pDesc;
-            rxChan->pDescWrite = pDesc;
-            rxChan->pDescTail     = NULL;
-            rxChan->descHistory.descHistoryCount = 0U;
-            rxChan->unackedCpDescCount = 0U;
-            rxChan->descFreeCount = chInfo->numBD;
-            rxChan->descSubmittedCount = 0;
-
-            /* clear the teardown pending flag */
-            hEnetDma->tdPending[ENET_CPDMA_DIR_RX][chInfo->chNum] = false;
-            hEnetDma->numBdsAllocated += chInfo->numBD;
-            hEnetDma->chIsInit[ENET_CPDMA_DIR_RX][chInfo->chNum] = true;
-        }
+        /* clear the teardown pending flag */
+        hEnetDma->tdPending[ENET_CPDMA_DIR_RX][chInfo->chNum] = false;
+        hEnetDma->numBdsAllocated += chInfo->numBD;
+        hEnetDma->chIsInit[ENET_CPDMA_DIR_RX][chInfo->chNum] = true;
     }
     return (retVal);
 }
@@ -477,37 +475,36 @@ static int32_t EnetCpdma_restoreRxChannel(EnetDma_Handle hEnetDma, EnetCpdma_ChI
      */
     /* Pointer to first descriptor to use on RX */
     pDesc = (EnetCpdma_cppiDesc *)hEnetDma->cppiRamBase;
-    if (retVal == ENET_SOK)
+
+    //pDesc += hEnetDma->numBdsAllocated; /* advance to next free BD */
+
+    if ((hEnetDma->numBdsAllocated + chInfo->numBD) >  hEnetDma->maxBds)
     {
-        //pDesc += hEnetDma->numBdsAllocated; /* advance to next free BD */
-
-        if ((hEnetDma->numBdsAllocated + chInfo->numBD) >  hEnetDma->maxBds)
-        {
-            /* not enough room for the requested number of BDs, fail request */
-            ENETTRACE_ERR("InitRx Channel : Unable to allocate %d BDs for channel %d.%d BDs already in use\n",
-                          chInfo->numBD,chInfo->chNum,hEnetDma->numBdsAllocated);
-            retVal =  ENET_EBADARGS;
-        }
-        else
-        {
-            /* Init the Rx channel */
-            rxChan->hEnetDma   = hEnetDma;
-            rxChan->descMax    = chInfo->numBD;
-            rxChan->pDescFirst = pDesc;
-            rxChan->pDescLast  = pDesc + (chInfo->numBD - 1);
-            rxChan->pDescRead  = pDesc;
-            rxChan->pDescWrite = pDesc;
-            rxChan->pDescTail     = NULL;
-            rxChan->descHistory.descHistoryCount = 0U;
-            rxChan->unackedCpDescCount = 0U;
-            rxChan->descFreeCount = chInfo->numBD;
-
-            /* clear the teardown pending flag */
-            hEnetDma->tdPending[ENET_CPDMA_DIR_RX][chInfo->chNum] = false;
-            hEnetDma->numBdsAllocated += chInfo->numBD;
-            hEnetDma->chIsInit[ENET_CPDMA_DIR_RX][chInfo->chNum] = true;
-        }
+        /* not enough room for the requested number of BDs, fail request */
+        ENETTRACE_ERR("InitRx Channel : Unable to allocate %d BDs for channel %d.%d BDs already in use\n",
+                      chInfo->numBD,chInfo->chNum,hEnetDma->numBdsAllocated);
+        retVal =  ENET_EBADARGS;
     }
+    else
+    {
+        /* Init the Rx channel */
+        rxChan->hEnetDma   = hEnetDma;
+        rxChan->descMax    = chInfo->numBD;
+        rxChan->pDescFirst = pDesc;
+        rxChan->pDescLast  = pDesc + (chInfo->numBD - 1);
+        rxChan->pDescRead  = pDesc;
+        rxChan->pDescWrite = pDesc;
+        rxChan->pDescTail     = NULL;
+        rxChan->descHistory.descHistoryCount = 0U;
+        rxChan->unackedCpDescCount = 0U;
+        rxChan->descFreeCount = chInfo->numBD;
+
+        /* clear the teardown pending flag */
+        hEnetDma->tdPending[ENET_CPDMA_DIR_RX][chInfo->chNum] = false;
+        hEnetDma->numBdsAllocated += chInfo->numBD;
+        hEnetDma->chIsInit[ENET_CPDMA_DIR_RX][chInfo->chNum] = true;
+    }
+
     return (retVal);
 }
 
@@ -2110,84 +2107,82 @@ EnetDma_Handle EnetCpdma_restoreCtxt(Enet_Type enetType,
     int32_t retVal = ENET_SOK;
     uint32_t pacingBitMask = 0;
 
-    if (ENET_SOK == retVal)
+    /* TODO: error check */
+    pEnetDmaObj = EnetSoc_getDmaHandle(enetType, instId);
+
+    Enet_assert(pEnetDmaObj != NULL);
+
+    CSL_CPSW_resetCpdma(pEnetDmaObj->cpdmaRegs);
+    status = CSL_CPSW_isCpdmaResetDone(pEnetDmaObj->cpdmaRegs);
+    while (status == ((uint32_t)false))
     {
-        /* TODO: error check */
-        pEnetDmaObj = EnetSoc_getDmaHandle(enetType, instId);
-
-        Enet_assert(pEnetDmaObj != NULL);
-
-        CSL_CPSW_resetCpdma(pEnetDmaObj->cpdmaRegs);
         status = CSL_CPSW_isCpdmaResetDone(pEnetDmaObj->cpdmaRegs);
-        while (status == ((uint32_t)false))
-        {
-            status = CSL_CPSW_isCpdmaResetDone(pEnetDmaObj->cpdmaRegs);
-        }
+    }
 
-        CSL_CPSW_setCpdmaRxBufOffset(pEnetDmaObj->cpdmaRegs,
-                pEnetDmaObj->rxBufOffset);
+    CSL_CPSW_setCpdmaRxBufOffset(pEnetDmaObj->cpdmaRegs,
+            pEnetDmaObj->rxBufOffset);
 
-        /* TODO: why channel 0 only? Assume one channel for now */
-        CSL_CPSW_disableCpdmaTxInt(pEnetDmaObj->cpdmaRegs, 0);
-        CSL_CPSW_disableCpdmaRxInt(pEnetDmaObj->cpdmaRegs, 0);
+    /* TODO: why channel 0 only? Assume one channel for now */
+    CSL_CPSW_disableCpdmaTxInt(pEnetDmaObj->cpdmaRegs, 0);
+    CSL_CPSW_disableCpdmaRxInt(pEnetDmaObj->cpdmaRegs, 0);
 
-        /* Acknowledge receive and transmit interrupts for proper interrupt pulsing */
-        CSL_CPSW_setCpdmaTxEndOfIntVector(pEnetDmaObj->cpdmaRegs, pEnetDmaObj->cpdmaCoreId);
-        CSL_CPSW_setCpdmaRxEndOfIntVector(pEnetDmaObj->cpdmaRegs, pEnetDmaObj->cpdmaCoreId);
+    /* Acknowledge receive and transmit interrupts for proper interrupt pulsing */
+    CSL_CPSW_setCpdmaTxEndOfIntVector(pEnetDmaObj->cpdmaRegs, pEnetDmaObj->cpdmaCoreId);
+    CSL_CPSW_setCpdmaRxEndOfIntVector(pEnetDmaObj->cpdmaRegs, pEnetDmaObj->cpdmaCoreId);
 
-        CSL_CPSW_enableCpdmaTx(pEnetDmaObj->cpdmaRegs);
-        CSL_CPSW_enableCpdmaRx(pEnetDmaObj->cpdmaRegs);
+    CSL_CPSW_enableCpdmaTx(pEnetDmaObj->cpdmaRegs);
+    CSL_CPSW_enableCpdmaRx(pEnetDmaObj->cpdmaRegs);
 
-        /* Enable Miscellaneous interrupts - stats and host error interupt */
-        CSL_CPSW_enableCpdmaDmaInt(pEnetDmaObj->cpdmaRegs, CSL_CPDMA_DMA_INTMASK_SET_STAT_INT_MASK_MASK |
-                                                           CSL_CPDMA_DMA_INTMASK_SET_HOST_ERR_INT_MASK_MASK);
-        /* enable host,stats interrupt in cpsw_ss_s wrapper */
-        /* TODO: should we enable CPTS/MDIO interrupt here */
-        CSL_CPSW_enableWrMiscInt(pEnetDmaObj->cpswSsRegs, pEnetDmaObj->cpdmaCoreId,
-                                 CPSW_MISC_INT_MDIO_USERINT_MASK |
-                                 CPSW_MISC_INT_MDIO_LINKINT_MASK |
-                                 CPSW_MISC_INT_HOSTERR_MASK |
-                                 CPSW_MISC_INT_STAT_OVERFLOW_MASK |
-                                 CPSW_MISC_INT_CPTS_EVENT_MASK);
+    /* Enable Miscellaneous interrupts - stats and host error interupt */
+    CSL_CPSW_enableCpdmaDmaInt(pEnetDmaObj->cpdmaRegs, CSL_CPDMA_DMA_INTMASK_SET_STAT_INT_MASK_MASK |
+                                                       CSL_CPDMA_DMA_INTMASK_SET_HOST_ERR_INT_MASK_MASK);
+    /* enable host,stats interrupt in cpsw_ss_s wrapper */
+    /* TODO: should we enable CPTS/MDIO interrupt here */
+    CSL_CPSW_enableWrMiscInt(pEnetDmaObj->cpswSsRegs, pEnetDmaObj->cpdmaCoreId,
+                             CPSW_MISC_INT_MDIO_USERINT_MASK |
+                             CPSW_MISC_INT_MDIO_LINKINT_MASK |
+                             CPSW_MISC_INT_HOSTERR_MASK |
+                             CPSW_MISC_INT_STAT_OVERFLOW_MASK |
+                             CPSW_MISC_INT_CPTS_EVENT_MASK);
 
-        if (pEnetDmaObj->rxInterruptPerMSec != 0U)
-        {
-            /* enable Interrupt Pacing Logic in the Wrapper */
-            CSL_CPSW_setWrRxIntPerMSec(pEnetDmaObj->cpswSsRegs, pEnetDmaObj->cpdmaCoreId, pEnetDmaObj->rxInterruptPerMSec);
-            pacingBitMask |= CPSW_INT_CONTROL_INT_PACE_EN_C0_RX;
-        }
-        if (pEnetDmaObj->txInterruptPerMSec != 0U)
-        {
-            /* enable Interrupt Pacing Logic in the Wrapper */
-            CSL_CPSW_setWrTxIntPerMSec(pEnetDmaObj->cpswSsRegs, pEnetDmaObj->cpdmaCoreId, pEnetDmaObj->txInterruptPerMSec);
-            pacingBitMask |= CPSW_INT_CONTROL_INT_PACE_EN_C0_TX;
-        }
-        if ((pEnetDmaObj->rxInterruptPerMSec != 0U) || (pEnetDmaObj->txInterruptPerMSec != 0U))
-        {
-            CSL_CPSW_setWrIntPacingControl(pEnetDmaObj->cpswSsRegs,  pacingBitMask);
-            /* int_prescale Interrupt Counter Prescaler –  The number of  VBUSP_CLK periods in 4us. */
-            CSL_CPSW_setWrIntPrescaler(pEnetDmaObj->cpswSsRegs, ENET_CPDMA_CONV_SEC2PRESCALER(EnetSoc_getClkFreq(enetType,0U /* instId */,CPSW_CPPI_CLK)));
-        }
+    if (pEnetDmaObj->rxInterruptPerMSec != 0U)
+    {
+        /* enable Interrupt Pacing Logic in the Wrapper */
+        CSL_CPSW_setWrRxIntPerMSec(pEnetDmaObj->cpswSsRegs, pEnetDmaObj->cpdmaCoreId, pEnetDmaObj->rxInterruptPerMSec);
+        pacingBitMask |= CPSW_INT_CONTROL_INT_PACE_EN_C0_RX;
+    }
+    if (pEnetDmaObj->txInterruptPerMSec != 0U)
+    {
+        /* enable Interrupt Pacing Logic in the Wrapper */
+        CSL_CPSW_setWrTxIntPerMSec(pEnetDmaObj->cpswSsRegs, pEnetDmaObj->cpdmaCoreId, pEnetDmaObj->txInterruptPerMSec);
+        pacingBitMask |= CPSW_INT_CONTROL_INT_PACE_EN_C0_TX;
+    }
+    if ((pEnetDmaObj->rxInterruptPerMSec != 0U) || (pEnetDmaObj->txInterruptPerMSec != 0U))
+    {
+        CSL_CPSW_setWrIntPacingControl(pEnetDmaObj->cpswSsRegs,  pacingBitMask);
+        /* int_prescale Interrupt Counter Prescaler –  The number of  VBUSP_CLK periods in 4us. */
+        CSL_CPSW_setWrIntPrescaler(pEnetDmaObj->cpswSsRegs, ENET_CPDMA_CONV_SEC2PRESCALER(EnetSoc_getClkFreq(enetType,0U /* instId */,CPSW_CPPI_CLK)));
+    }
 
 #if ENET_CFG_IS_ON(CPDMA_CH_OVERRIDE)
-        /* Set the thost_ch_override bit if set by application and if soc supports override feature */
-        if((pEnetDmaObj->enChOverrideFlag == true) && (ENET_FEAT_IS_EN(pEnetDmaObj->features, ENET_CPDMA_CHANNEL_OVERRIDE)))
-        {
-            CSL_CPSW_enableCpdmaChOverride(pEnetDmaObj->cpdmaRegs);
-        }
+    /* Set the thost_ch_override bit if set by application and if soc supports override feature */
+    if((pEnetDmaObj->enChOverrideFlag == true) && (ENET_FEAT_IS_EN(pEnetDmaObj->features, ENET_CPDMA_CHANNEL_OVERRIDE)))
+    {
+        CSL_CPSW_enableCpdmaChOverride(pEnetDmaObj->cpdmaRegs);
+    }
 #endif
 
-        EnetCpdma_restoreRxChannel(pEnetDmaObj, pEnetDmaObj->rxCppi[0].chInfo);
-        EnetCpdma_enableChannel(pEnetDmaObj, pEnetDmaObj->rxCppi[0].chInfo->chNum, pEnetDmaObj->rxCppi[0].chInfo->chDir, pEnetDmaObj->cpdmaCoreId);
-        EnetCpdma_enqueueRx(&pEnetDmaObj->rxCppi[0]);
+    EnetCpdma_restoreRxChannel(pEnetDmaObj, pEnetDmaObj->rxCppi[0].chInfo);
+    EnetCpdma_enableChannel(pEnetDmaObj, pEnetDmaObj->rxCppi[0].chInfo->chNum, pEnetDmaObj->rxCppi[0].chInfo->chDir, pEnetDmaObj->cpdmaCoreId);
+    EnetCpdma_enqueueRx(&pEnetDmaObj->rxCppi[0]);
 
-        EnetCpdma_restoreTxChannel(pEnetDmaObj, pEnetDmaObj->txCppi[0].chInfo);
-        EnetCpdma_enableChannel(pEnetDmaObj, pEnetDmaObj->txCppi[0].chInfo->chNum, pEnetDmaObj->txCppi[0].chInfo->chDir, pEnetDmaObj->cpdmaCoreId);
-        EnetCpdma_enqueueTx(&pEnetDmaObj->txCppi[0]);
+    EnetCpdma_restoreTxChannel(pEnetDmaObj, pEnetDmaObj->txCppi[0].chInfo);
+    EnetCpdma_enableChannel(pEnetDmaObj, pEnetDmaObj->txCppi[0].chInfo->chNum, pEnetDmaObj->txCppi[0].chInfo->chDir, pEnetDmaObj->cpdmaCoreId);
+    EnetCpdma_enqueueTx(&pEnetDmaObj->txCppi[0]);
 
-        pEnetDmaObj->initFlag = true;
-        pEnetDmaObj->isResetOngoing = false;
-    }
+    pEnetDmaObj->initFlag = true;
+    pEnetDmaObj->isResetOngoing = false;
+
     return pEnetDmaObj;
 }
 

@@ -1144,11 +1144,8 @@ static int32_t Cpsw_restoreInternalCtxt(Cpsw_Handle hCpsw,
     int32_t status = ENET_SOK;
 
     /* Restore hostport DMA */
-	if (status == ENET_SOK)
-	{
-		status = EnetMod_restoreCtxt(hCpsw->hHostPort, enetType, instId, &cfg->hostPortCfg, sizeof(cfg->hostPortCfg));
-		ENETTRACE_ERR_IF(status != ENET_SOK, "Failed to open host port: %d\r\n", status);
-	}
+	status = EnetMod_restoreCtxt(hCpsw->hHostPort, enetType, instId, &cfg->hostPortCfg, sizeof(cfg->hostPortCfg));
+	ENETTRACE_ERR_IF(status != ENET_SOK, "Failed to open host port: %d\r\n", status);
 
     /* Open ALE */
     if (status == ENET_SOK)
@@ -1228,20 +1225,18 @@ static int32_t Cpsw_registerIntrs(Cpsw_Handle hCpsw,
     uint32_t statusMask;
 
     /* Register Rx Threshold interrupt */
-    if (status == ENET_SOK)
+
+    intrNum = EnetSoc_getIntrNum(enetType, instId, CPSW_INTR_RX_THRESH);
+    trigType = EnetSoc_getIntrTriggerType(enetType, instId, CPSW_INTR_RX_THRESH);
+    hCpsw->hDmaRxThreshIntr = EnetOsal_registerIntr(Cpsw_dmaRxThreshIsr,
+                                                    intrNum,
+                                                    cfg->intrPriority,
+                                                    trigType,
+                                                    hCpsw);
+    if (hCpsw->hDmaRxThreshIntr == NULL)
     {
-        intrNum = EnetSoc_getIntrNum(enetType, instId, CPSW_INTR_RX_THRESH);
-        trigType = EnetSoc_getIntrTriggerType(enetType, instId, CPSW_INTR_RX_THRESH);
-        hCpsw->hDmaRxThreshIntr = EnetOsal_registerIntr(Cpsw_dmaRxThreshIsr,
-                                                        intrNum,
-                                                        cfg->intrPriority,
-                                                        trigType,
-                                                        hCpsw);
-        if (hCpsw->hDmaRxThreshIntr == NULL)
-        {
-            ENETTRACE_ERR("Failed to register rx thresh intr\r\n");
-            status = ENET_EFAIL;
-        }
+        ENETTRACE_ERR("Failed to register rx thresh intr\r\n");
+        status = ENET_EFAIL;
     }
 
     /* Register Rx interrupt */

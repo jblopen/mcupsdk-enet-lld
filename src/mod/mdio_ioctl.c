@@ -482,18 +482,15 @@ int32_t Mdio_normal_ioctl_handler_ENET_MDIO_IOCTL_C45_ASYNC_READ_TRIGGER(EnetMod
 
     if (ENET_FEAT_IS_EN(hMod->features, MDIO_FEATURE_CLAUSE45))
     {
-        if (status == ENET_SOK)
-        {
-            ack = Mdio_readRegTriggerC45(mdioRegs,
-                                    (uint32_t)inArgs->group,
-                                    (uint32_t)inArgs->mmd,
-                                    inArgs->phyAddr,
-                                    inArgs->reg);
-            status = (ack == CSL_PASS) ? ENET_SOK : ENET_EFAIL;
-            ENETTRACE_ERR_IF(status != ENET_SOK,
-                            "failed to read PHY %u C45 MMD %u reg %u: %d\n",
-                            inArgs->phyAddr, inArgs->mmd, inArgs->reg, status);
-        }
+        ack = Mdio_readRegTriggerC45(mdioRegs,
+                                (uint32_t)inArgs->group,
+                                (uint32_t)inArgs->mmd,
+                                inArgs->phyAddr,
+                                inArgs->reg);
+        status = (ack == CSL_PASS) ? ENET_SOK : ENET_EFAIL;
+        ENETTRACE_ERR_IF(status != ENET_SOK,
+                        "failed to read PHY %u C45 MMD %u reg %u: %d\n",
+                        inArgs->phyAddr, inArgs->mmd, inArgs->reg, status);
     }
     else
     {

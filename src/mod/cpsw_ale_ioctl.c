@@ -1769,15 +1769,13 @@ static int32_t CpswAle_setIPv4PolicerEntry(CpswAle_Handle hAle,
 {
     int32_t status = ENET_SOK;
 
-    if (status == ENET_SOK)
-    {
-        status = CpswAle_addIPv4Addr(hAle,
-                                     regs,
-                                     ipv4Addr,
-                                     numLSBIgnore,
-                                     entryIdx,
-                                     pEntryAlloced);
-    }
+
+    status = CpswAle_addIPv4Addr(hAle,
+                                 regs,
+                                 ipv4Addr,
+                                 numLSBIgnore,
+                                 entryIdx,
+                                 pEntryAlloced);
 
     if (status == ENET_SOK)
     {
@@ -1935,15 +1933,12 @@ static int32_t CpswAle_setIPv6PolicerEntry(CpswAle_Handle hAle,
 {
     int32_t status = ENET_SOK;
 
-    if (status == ENET_SOK)
-    {
-        status = CpswAle_addIPv6Addr(hAle,
-                                     regs,
-                                     ipv6Addr,
-                                     numLSBIgnore,
-                                     entryIdx,
-                                     pEntryAlloced);
-    }
+    status = CpswAle_addIPv6Addr(hAle,
+                                 regs,
+                                 ipv6Addr,
+                                 numLSBIgnore,
+                                 entryIdx,
+                                 pEntryAlloced);
 
     if (status == ENET_SOK)
     {
@@ -2104,10 +2099,7 @@ static int32_t CpswAle_setEtherTypePolicerEntry(CpswAle_Handle hAle,
 {
     int32_t status = ENET_SOK;
 
-    if (status == ENET_SOK)
-    {
-        status = CpswAle_addEtherType(hAle, regs, etherType, entryIdx, alloced);
-    }
+    status = CpswAle_addEtherType(hAle, regs, etherType, entryIdx, alloced);
 
     if (status == ENET_SOK)
     {
@@ -2277,10 +2269,7 @@ static int32_t CpswAle_setThreadPolicerConfig(CSL_AleRegs *regs,
 {
     int32_t status = ENET_SOK;
 
-    if (status == ENET_SOK)
-    {
-        status = CpswAle_validateThreadPolicer(regs, policerEntryIdx, threadId);
-    }
+    status = CpswAle_validateThreadPolicer(regs, policerEntryIdx, threadId);
 
     if (status == ENET_SOK)
     {
@@ -2326,24 +2315,21 @@ static int32_t CpswAle_setVlanPolicerEntry(CpswAle_Handle hAle,
 {
     int32_t status = ENET_SOK;
 
-    if (status == ENET_SOK)
+    status = CpswAle_findVlan(hAle, regs, vlanId, outVlanFlag,
+                              NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                              entryIdx);
+    if (status == ENET_ENOTFOUND)
     {
-        status = CpswAle_findVlan(hAle, regs, vlanId, outVlanFlag,
-                                  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                                  entryIdx);
-        if (status == ENET_ENOTFOUND)
+        /* If entry is not found add the entry with default settings */
+        status = CpswAle_addVlanEntry(hAle, regs, vlanId, outVlanFlag, entryIdx);
+        if (status == ENET_SOK)
         {
-            /* If entry is not found add the entry with default settings */
-            status = CpswAle_addVlanEntry(hAle, regs, vlanId, outVlanFlag, entryIdx);
-            if (status == ENET_SOK)
-            {
-                CPSW_ALE_SAFE_ASSIGN(alloced, TRUE);
-            }
+            CPSW_ALE_SAFE_ASSIGN(alloced, TRUE);
         }
-        else
-        {
-            CPSW_ALE_SAFE_ASSIGN(alloced, FALSE);
-        }
+    }
+    else
+    {
+        CPSW_ALE_SAFE_ASSIGN(alloced, FALSE);
     }
 
     if (status == ENET_SOK)
