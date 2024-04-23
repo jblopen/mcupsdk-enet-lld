@@ -2104,7 +2104,6 @@ EnetDma_Handle EnetCpdma_restoreCtxt(Enet_Type enetType,
 {
     EnetCpdma_DrvObj *pEnetDmaObj = NULL;
     uint32_t status;
-    int32_t retVal = ENET_SOK;
     uint32_t pacingBitMask = 0;
 
     /* TODO: error check */
