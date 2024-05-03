@@ -291,8 +291,8 @@ static Enet_IoctlValidate gEnetHostPort_ioctlValidate[] =
                           0U),
 
     ENET_IOCTL_VALID_PRMS(ENET_HOSTPORT_IOCTL_GET_CREDIT_BASED_SHAPING,
-                          0U,
-                          sizeof(EnetPort_CreditBasedShapingCfg)),
+                          sizeof(uint32_t),
+                          sizeof(uint64_t)),
 };
 
 /* Public MAC port IOCTL validation data. */
@@ -351,12 +351,12 @@ static Enet_IoctlValidate gEnetMacPort_ioctlValidate[] =
                           sizeof(EnetMacPort_LinkCfg)),
 
     ENET_IOCTL_VALID_PRMS(ENET_MACPORT_IOCTL_SET_CREDIT_BASED_SHAPING,
-                          sizeof(EnetMacPort_CreditBasedShaperInArgs),
+                          sizeof(EnetMacPort_SetCreditBasedShaperInArgs),
                           0U),
 
     ENET_IOCTL_VALID_PRMS(ENET_MACPORT_IOCTL_GET_CREDIT_BASED_SHAPING,
-                          sizeof(EnetMacPort_GenericInArgs),
-                          sizeof(EnetPort_CreditBasedShapingCfg)),
+                          sizeof(EnetMacPort_GetCreditBasedShaperInArgs),
+                          sizeof(uint64_t)),
 
     ENET_IOCTL_VALID_PRMS(ENET_MACPORT_IOCTL_IET_RELEASE_PREEMPT_TRAFFIC,
                           sizeof(EnetMacPort_GenericInArgs),

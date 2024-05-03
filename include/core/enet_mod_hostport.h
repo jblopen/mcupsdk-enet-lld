@@ -222,11 +222,11 @@ typedef enum EnetHostPort_Ioctl_e
     ENET_HOSTPORT_IOCTL_SET_CREDIT_BASED_SHAPING = ENET_HOSTPORT_PUBLIC_IOCTL(15U),
 
     /*!
-     * \brief Get Idleslope of Credit Based Shaper on Host Port.
+     * \brief Get Idleslope of Credit Based Shaper on Host Port queue.
      *
      * IOCTL parameters:
-     * -  inArgs: None
-     * - outArgs: #EnetPort_CreditBasedShapingCfg
+     * -  inArgs: uint32_t
+     * - outArgs: uint64_t
      */
     ENET_HOSTPORT_IOCTL_GET_CREDIT_BASED_SHAPING = ENET_HOSTPORT_PUBLIC_IOCTL(16U),
 } EnetHostPort_Ioctl;

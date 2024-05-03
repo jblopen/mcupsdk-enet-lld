@@ -83,6 +83,12 @@
 /*! \brief Port Speed Auto Enable Mask*/
 #define CPSW_MACPORT_SPEED_AUTO_ENABLE_MASK (0x00000001)
 
+/*! \brief Port Speed 1Gbps */
+#define CPSW_MACPORT_SPEED_1G               (1000000000U)
+
+/*! \brief Port Speed 100Mbps */
+#define CPSW_MACPORT_SPEED_100M             (100000000U)
+
 #if ENET_CFG_IS_ON(CPSW_MACPORT_TRAFFIC_SHAPING)
 static uint64_t CpswMacPort_mapBwToCnt(uint64_t rateInBps,
                                        uint32_t cppiClkFreqHz);
@@ -102,6 +108,12 @@ static int32_t CpswMacPort_getTrafficShaping(CSL_Xge_cpswRegs *regs,
                                              Enet_MacPort macPort,
                                              EnetPort_TrafficShapingCfg *cfg,
                                              uint32_t cppiClkFreqHz);
+
+static int32_t CpswMacPort_setPriorityTrafficShaping(CSL_Xge_cpswRegs *regs,
+                                                     Enet_MacPort macPort,
+                                                     uint32_t priority,
+                                                     uint64_t cirBps,
+                                                     uint32_t cppiClkFreqHz);
 #endif
 
 #if ENET_CFG_IS_ON(CPSW_IET_INCL)
@@ -1025,26 +1037,20 @@ int32_t CpswMacPort_ioctl_handler_ENET_MACPORT_IOCTL_SET_CREDIT_BASED_SHAPING(Cp
 {
     int32_t status = ENET_SOK;
 #if ENET_CFG_IS_ON(CPSW_MACPORT_TRAFFIC_SHAPING)
-    const EnetMacPort_CreditBasedShaperInArgs *inArgs =
-        (const EnetMacPort_CreditBasedShaperInArgs *)prms->inArgs;
+    const EnetMacPort_SetCreditBasedShaperInArgs *inArgs =
+        (const EnetMacPort_SetCreditBasedShaperInArgs *)prms->inArgs;
     Enet_MacPort macPort = hPort->macPort;
-    uint32_t cppiClkFreqHz,i;
-    EnetPort_TrafficShapingCfg trafficShapingCfg;
+    uint32_t cppiClkFreqHz;
 
     Enet_devAssert(macPort == inArgs->macPort,
                    "MAC %u: Port mismatch %u\n", ENET_MACPORT_ID(macPort), inArgs->macPort);
 
+    status = (inArgs->cbsCfg.queueNum < ENET_PRI_NUM) ? ENET_SOK : ENET_EINVALIDPARAMS;
     cppiClkFreqHz = EnetSoc_getClkFreq(hPort->enetType, hPort->instId, CPSW_CPPI_CLK);
     status = (cppiClkFreqHz != 0) ? ENET_SOK : ENET_EINVALIDPARAMS;
     if (status == ENET_SOK)
     {
-        for (i = 0U; i < ENET_PRI_NUM; i++)
-        {
-            trafficShapingCfg.rates[i].committedRateBitsPerSec = inArgs->cbsCfg.idleSlope[i];
-            trafficShapingCfg.rates[i].excessRateBitsPerSec = 0U;
-        }
-
-        status = CpswMacPort_setTrafficShaping(regs, macPort, &trafficShapingCfg, cppiClkFreqHz);
+        status = CpswMacPort_setPriorityTrafficShaping(regs, macPort, inArgs->cbsCfg.queueNum, inArgs->cbsCfg.idleSlope, cppiClkFreqHz);
         ENETTRACE_ERR_IF(status != ENET_SOK, "Failed to set Credit based shaping: %d\n", status);
     }
 
@@ -1058,24 +1064,41 @@ int32_t CpswMacPort_ioctl_handler_ENET_MACPORT_IOCTL_GET_CREDIT_BASED_SHAPING(Cp
 {
     int32_t status = ENET_SOK;
 #if ENET_CFG_IS_ON(CPSW_MACPORT_TRAFFIC_SHAPING)
-    EnetMacPort_GenericInArgs *inArgs = (EnetMacPort_GenericInArgs *)prms->inArgs;
-    EnetPort_CreditBasedShapingCfg *cbsCfg = (EnetPort_CreditBasedShapingCfg *)prms->outArgs;
+    EnetMacPort_GetCreditBasedShaperInArgs *inArgs = (EnetMacPort_GetCreditBasedShaperInArgs *)prms->inArgs;
+    uint64_t *idleSlope = (uint64_t *)prms->outArgs;
     Enet_MacPort macPort = hPort->macPort;
-    uint32_t cppiClkFreqHz,i;
-    EnetPort_TrafficShapingCfg trafficShapingCfg;
+    uint32_t portNum = ENET_MACPORT_NORM(macPort);
+    uint32_t portId = ENET_MACPORT_ID(macPort);
+    uint32_t cir, eir, cppiClkFreqHz;
+    uint64_t cirBps, eirBps;
 
+    ENETTRACE_VAR(portId);
     Enet_devAssert(macPort == inArgs->macPort,
                    "MAC %u: Port mismatch %u\n", ENET_MACPORT_ID(macPort), inArgs->macPort);
 
     cppiClkFreqHz = EnetSoc_getClkFreq(hPort->enetType, hPort->instId, CPSW_CPPI_CLK);
+    CSL_CPSW_getPriCirEir(regs, portNum, inArgs->trafficClass, &cir, &eir);
 
-    status = CpswMacPort_getTrafficShaping(regs, macPort, &trafficShapingCfg, cppiClkFreqHz);
+    cirBps = CpswMacPort_mapCntToBw(cir, cppiClkFreqHz);
+    eirBps = CpswMacPort_mapCntToBw(eir, cppiClkFreqHz);
+
+    /* CIR must be non-zero if EIR is non-zero */
+    if ((cirBps == 0ULL) && (eirBps != 0ULL))
+    {
+        ENETTRACE_ERR("MAC %u: EIR is enabled (%llubps = %u) but CIR is not (%llubps = %u) "
+                      "for priority %u\n",
+                      portId, eirBps, eir, cirBps, cir, inArgs->trafficClass);
+        status = ENET_EUNEXPECTED;
+    }
+
+    ENETTRACE_DBG("MAC %u: rate limiting %s for priority %u, CIR=%llubps (%u) EIR=%llubps (%u)\n",
+                  portId, (cir != 0U) ? "enabled" : "disabled",
+                  inArgs->trafficClass, cirBps, cir, eirBps, eir);
+
     ENETTRACE_ERR_IF(status != ENET_SOK, "Failed to get traffic shaping: %d\n", status);
 
-    for (i = 0U; i < ENET_PRI_NUM; i++)
-    {
-        cbsCfg->idleSlope[i] = trafficShapingCfg.rates[i].committedRateBitsPerSec;
-    }
+    *idleSlope = cirBps;
+
 #else
      status = ENET_ENOTSUPPORTED;
 #endif
@@ -1110,6 +1133,72 @@ static uint64_t CpswMacPort_mapCntToBw(uint32_t cntVal,
      *                                      32768
      */
     return ((uint64_t)cntVal * cppiClkFreqHz) / CPSW_MACPORT_RATELIM_DIV;
+}
+
+static int32_t CpswMacPort_setPriorityTrafficShaping(CSL_Xge_cpswRegs *regs,
+                                                     Enet_MacPort macPort,
+                                                     uint32_t priority,
+                                                     uint64_t cirBps,
+                                                     uint32_t cppiClkFreqHz)
+{
+    uint64_t cir, eir;
+    int32_t status = ENET_SOK;
+    EnetPort_TrafficShapingCfg shapingCfg;
+    uint64_t totalCirBps = 0U;
+    uint64_t linkSpeedBps = 0U;
+    EnetMacPort_LinkCfg linkCfg;
+    uint32_t portId = ENET_MACPORT_ID(macPort);
+    uint32_t i;
+
+    cir = CpswMacPort_mapBwToCnt(cirBps, cppiClkFreqHz);
+    eir = 0U;
+
+    ENETTRACE_VAR(portId);
+    CpswMacPort_getLinkCfg(regs, macPort, &linkCfg);
+    if(linkCfg.speed == ENET_SPEED_1GBIT)
+    {
+        linkSpeedBps = CPSW_MACPORT_SPEED_1G;
+    }
+    else if(linkCfg.speed == ENET_SPEED_100MBIT)
+    {
+        linkSpeedBps = CPSW_MACPORT_SPEED_100M;
+    }
+    if (cir > 0x0FFFFFFFULL)
+    {
+        ENETTRACE_ERR("MAC %u: invalid CIR=%llu (%llubps) for priority %u\n",
+                      portId, cir, cirBps, priority);
+        status = ENET_EINVALIDPARAMS;
+    }
+    if(status == ENET_SOK)
+    {
+        status = CpswMacPort_getTrafficShaping(regs, macPort, &shapingCfg, cppiClkFreqHz);
+        ENETTRACE_ERR_IF(status != ENET_SOK, "Failed to get traffic shaping: %d\n", status);
+        if(status == ENET_SOK)
+        {
+            if(cirBps > shapingCfg.rates[priority].committedRateBitsPerSec)
+            {
+                for (i = 0U; i < ENET_PRI_NUM; i++)
+                {
+                    if(i == priority) continue;
+                    totalCirBps += shapingCfg.rates[i].committedRateBitsPerSec;
+                }
+                if (totalCirBps + cirBps >= linkSpeedBps)
+                {
+                    ENETTRACE_ERR("MAC %u: The sum of CBS bandwidths can't exceed link speed \n", portId);
+                    status = ENET_EINVALIDPARAMS;
+                }
+            }
+        }
+    }
+    if(status == ENET_SOK)
+    {
+        shapingCfg.rates[priority].committedRateBitsPerSec = cirBps;
+        shapingCfg.rates[priority].excessRateBitsPerSec = 0U;
+        /* Verify whether the higher priorities have CBS enabled */
+        status = CpswMacPort_setTrafficShaping(regs, macPort, &shapingCfg, cppiClkFreqHz);
+    }
+
+    return status;
 }
 
 static int32_t CpswMacPort_setTrafficShaping(CSL_Xge_cpswRegs *regs,
