@@ -91,6 +91,12 @@
 #define CPSW_STATS_VER_REVRTL_AM62AX           (0x00000002U)
 #define CPSW_STATS_VER_ID_AM62AX               (0x00006BA8U)
 
+/* Supported AM62PX version */
+#define CPSW_STATS_VER_REVMAJ_AM62PX        (0x00000001U)
+#define CPSW_STATS_VER_REVMIN_AM62PX        (0x00000003U)
+#define CPSW_STATS_VER_REVRTL_AM62PX        (0x00000003U)
+#define CPSW_STATS_VER_ID_AM62PX            (0x00006BA8U)
+
 #define CPSW_STATS_IOCTL_HANDLER_ENTRY_INIT(x)    \
           {.cmd = x,                            \
            .fxn = &CpswStats_ioctl_handler_##x}
@@ -172,6 +178,12 @@ static CSL_CPSW_VERSION CpswStats_gSupportedVer[] =
         .minorVer = CPSW_STATS_VER_REVMIN_AM62AX,
         .rtlVer   = CPSW_STATS_VER_REVRTL_AM62AX,
         .id       = CPSW_STATS_VER_ID_AM62AX,
+    },
+    {   /* AM62PX */
+        .majorVer = CPSW_STATS_VER_REVMAJ_AM62PX,
+        .minorVer = CPSW_STATS_VER_REVMIN_AM62PX,
+        .rtlVer   = CPSW_STATS_VER_REVRTL_AM62PX,
+        .id       = CPSW_STATS_VER_ID_AM62PX,
     },
 };
 

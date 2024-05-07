@@ -74,6 +74,12 @@
 #define CPSW_ALE_VER_RTL_AM263X                 (0x00000000U)
 #define CPSW_ALE_VER_ID_AM263X                  (0x00000029U)
 
+/* Supported AM62PX version */
+#define CPSW_ALE_VER_REVMAJ_AM62PX              (0x00000001U)
+#define CPSW_ALE_VER_REVMIN_AM62PX              (0x00000005U)
+#define CPSW_ALE_VER_RTL_AM62PX                 (0x00000000U)
+#define CPSW_ALE_VER_ID_AM62PX                  (0x00000029U)
+
 /* Number of ALE table entries and policers per CPSW variant */
 #if defined(SOC_AM273X) || defined(SOC_AWR294X) || defined(SOC_AWR2544)
 #define CPSW_ALE_2G_ALE_ENTRIES_MAX             (32U)
@@ -301,11 +307,17 @@ static CSL_CPSW_VERSION CpswAle_gSupportedVer[] =
         .rtlVer   = CPSW_ALE_VER_RTL_AM273X,
         .id       = CPSW_ALE_VER_ID_AM273X,
     },
-	{   /* AM263x */
+    {   /* AM263x */
         .majorVer = CPSW_ALE_VER_REVMAJ_AM263X,
         .minorVer = CPSW_ALE_VER_REVMIN_AM263X,
         .rtlVer   = CPSW_ALE_VER_RTL_AM263X,
         .id       = CPSW_ALE_VER_ID_AM263X,
+    },
+    {   /* AM62Px */
+        .majorVer = CPSW_ALE_VER_REVMAJ_AM62PX,
+        .minorVer = CPSW_ALE_VER_REVMIN_AM62PX,
+        .rtlVer   = CPSW_ALE_VER_RTL_AM62PX,
+        .id       = CPSW_ALE_VER_ID_AM62PX,
     },
 };
 

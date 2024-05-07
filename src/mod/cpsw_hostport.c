@@ -92,6 +92,12 @@
 #define CPSW_HOSTPORT_VER_REVRTL_AM62AX        (0x00000002U)
 #define CPSW_HOSTPORT_VER_ID_AM62AX            (0x00006BA8U)
 
+/* Supported AM62PX version */
+#define CPSW_HOSTPORT_VER_REVMAJ_AM62PX        (0x00000001U)
+#define CPSW_HOSTPORT_VER_REVMIN_AM62PX        (0x00000003U)
+#define CPSW_HOSTPORT_VER_REVRTL_AM62PX        (0x00000003U)
+#define CPSW_HOSTPORT_VER_ID_AM62PX            (0x00006BA8U)
+
 /*! \brief Default value used for host port RX MTU. */
 #define CPSW_HOSTPORT_RX_MTU_DEFAULT          (1518U)
 
@@ -176,6 +182,12 @@ static CSL_CPSW_VERSION CpswHostPort_gSupportedVer[] =
         .minorVer = CPSW_HOSTPORT_VER_REVMIN_AM62AX,
         .rtlVer   = CPSW_HOSTPORT_VER_REVRTL_AM62AX,
         .id       = CPSW_HOSTPORT_VER_ID_AM62AX,
+    },
+    {   /* AM62PX */
+        .majorVer = CPSW_HOSTPORT_VER_REVMAJ_AM62PX,
+        .minorVer = CPSW_HOSTPORT_VER_REVMIN_AM62PX,
+        .rtlVer   = CPSW_HOSTPORT_VER_REVRTL_AM62PX,
+        .id       = CPSW_HOSTPORT_VER_ID_AM62PX,
     },
 };
 

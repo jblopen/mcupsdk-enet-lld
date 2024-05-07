@@ -74,6 +74,12 @@
 #define MDIO_VER_REVMIN_AWR2544               (0x00000007U)
 #define MDIO_VER_REVRTL_AWR2544               (0x00000002U)
 
+/*! \brief AWR2544 MDIO versions. */
+#define MDIO_VER_MODID_AM62PX                (0x00000007U)
+#define MDIO_VER_REVMAJ_AM62PX               (0x00000001U)
+#define MDIO_VER_REVMIN_AM62PX               (0x00000007U)
+#define MDIO_VER_REVRTL_AM62PX               (0x00000002U)
+
 /*! \brief Default MDIO bus frequency. */
 #define MDIO_MDIOBUS_DFLT_FREQ_HZ             (2200000U)
 
@@ -145,6 +151,12 @@ static CSL_MDIO_VERSION gMdio_supportedVer[] =
         .revMaj = MDIO_VER_REVMAJ_AWR2544,
         .revMin = MDIO_VER_REVMIN_AWR2544,
         .revRtl = MDIO_VER_REVRTL_AWR2544,
+    },
+    {   /* MDIO on AM62PX devices */
+        .modId  = MDIO_VER_MODID_AM62PX,
+        .revMaj = MDIO_VER_REVMAJ_AM62PX,
+        .revMin = MDIO_VER_REVMIN_AM62PX,
+        .revRtl = MDIO_VER_REVRTL_AM62PX,
     },
 };
 

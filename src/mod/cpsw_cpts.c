@@ -81,6 +81,12 @@
 #define CPSW_CPTS_VER_REVRTL_AWR2544          (0x00000000U)
 #define CPSW_HOSTPORT_VER_ID_AWR2544          (0x00004E8AU)
 
+/* Supported AM62PX versions */
+#define CPSW_CPTS_VER_REVMAJ_AM62PX          (0x00000001U)
+#define CPSW_CPTS_VER_REVMIN_AM62PX          (0x0000000DU)
+#define CPSW_CPTS_VER_REVRTL_AM62PX          (0x00000000U)
+#define CPSW_HOSTPORT_VER_ID_AM62PX          (0x00004E8AU)
+
 
 #define CPSW_CPTS_IOCTL_HANDLER_ENTRY_INIT(x)    \
           {.cmd = x,                            \
@@ -152,6 +158,12 @@ static CSL_CPSW_VERSION CpswCpts_gSupportedVer[] =
         .minorVer = CPSW_CPTS_VER_REVMIN_AWR2544,
         .rtlVer   = CPSW_CPTS_VER_REVRTL_AWR2544,
         .id       = CPSW_HOSTPORT_VER_ID_AWR2544,
+    },
+    {   /* AWR2544 CPSW_2G */
+        .majorVer = CPSW_CPTS_VER_REVMAJ_AM62PX,
+        .minorVer = CPSW_CPTS_VER_REVMIN_AM62PX,
+        .rtlVer   = CPSW_CPTS_VER_REVRTL_AM62PX,
+        .id       = CPSW_HOSTPORT_VER_ID_AM62PX,
     },
 };
 
