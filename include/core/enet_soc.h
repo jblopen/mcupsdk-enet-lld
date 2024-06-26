@@ -65,6 +65,8 @@
 #include <soc/am263x/enet_soc.h>
 #elif defined(SOC_AM263PX)
 #include <soc/am263px/enet_soc.h>
+#elif defined(SOC_AM261X)
+#include <soc/am261x/enet_soc.h>
 #elif defined(SOC_AWR2544)
 #include <soc/awr2544/enet_soc.h>
 #endif

@@ -102,7 +102,7 @@ extern "C" {
 #endif
 
 /*! \brief Enabling Optimized IRQ for critical section. */
-#if defined(SOC_AM273X) || defined(SOC_AWR294X) || defined(SOC_AWR2544) || defined(SOC_AM263X) || defined(SOC_AM263PX)
+#if defined(SOC_AM273X) || defined(SOC_AWR294X) || defined(SOC_AWR2544) || defined(SOC_AM263X) || defined(SOC_AM263PX) || defined(SOC_AM261X)
 #define ENET_CFG_USE_OPTIMIZED_IRQ_CRITICAL_SECTION  (1U)
 #else
 #define ENET_CFG_USE_OPTIMIZED_IRQ_CRITICAL_SECTION  (0U)
