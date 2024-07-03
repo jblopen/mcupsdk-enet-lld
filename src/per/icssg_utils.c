@@ -1038,18 +1038,18 @@ void IcssgUtils_fwConfig(Icssg_Handle hIcssg,
     ClockP_usleep(100 * 1000);
 
     // Core sync will make ICSSG access to MSMC optimal
-    Icssg_wr32(hIcssg, baseAddr + CSL_ICSSCFG_REGS_BASE + CSL_ICSSCFG_CORE_SYNC_REG, 1U); /* Enable coresync */
+    Icssg_wr32(hIcssg, baseAddr + CSL_ICSSCFG_REGS_BASE + CSL_ICSSCFG_CORE_SYNC_REG, 0U); /* Disable coresync */
 
     /* Enable IEP0 counter and set default increment as 4 */
     regVal = (0x1U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_CNT_ENABLE_SHIFT)  |
-             (0x4U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_DEFAULT_INC_SHIFT) |
-             (0x4U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_CMP_INC_SHIFT);
+             (0x3U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_DEFAULT_INC_SHIFT) |
+             (0x3U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_CMP_INC_SHIFT);
     Icssg_wr32(hIcssg, baseAddr + CSL_ICSS_G_PR1_IEP0_SLV_REGS_BASE + CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG, regVal);
 
     /*Enable IEP1 counter and set default increment as 4 - Required for RX and TX time stamping*/
     regVal = (0x1U << CSL_ICSS_G_PR1_IEP1_SLV_GLOBAL_CFG_REG_CNT_ENABLE_SHIFT)  |
-             (0x4U << CSL_ICSS_G_PR1_IEP1_SLV_GLOBAL_CFG_REG_DEFAULT_INC_SHIFT) |
-             (0x4U << CSL_ICSS_G_PR1_IEP1_SLV_GLOBAL_CFG_REG_CMP_INC_SHIFT);
+             (0x3U << CSL_ICSS_G_PR1_IEP1_SLV_GLOBAL_CFG_REG_DEFAULT_INC_SHIFT) |
+             (0x3U << CSL_ICSS_G_PR1_IEP1_SLV_GLOBAL_CFG_REG_CMP_INC_SHIFT);
     Icssg_wr32(hIcssg, baseAddr + CSL_ICSS_G_PR1_IEP1_SLV_REGS_BASE + CSL_ICSS_G_PR1_IEP1_SLV_GLOBAL_CFG_REG, regVal);
 
     /* Set IEP0 CMP regiser to cfg->cycleTimeNs - 4 */
@@ -1342,12 +1342,12 @@ void IcssgUtils_configSwtFw(Icssg_Handle hIcssg,
     ClockP_usleep(100 * 1000);
 
     /* Core sync will make ICSSG access to MSMC optimal */
-    Icssg_wr32(hIcssg, baseAddr + CSL_ICSSCFG_REGS_BASE + CSL_ICSSCFG_CORE_SYNC_REG, 1U);
+    Icssg_wr32(hIcssg, baseAddr + CSL_ICSSCFG_REGS_BASE + CSL_ICSSCFG_CORE_SYNC_REG, 0U);
 
     /* Enable IEP0 counter and set default increment as 4 */
     regVal = ((0x1U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_CNT_ENABLE_SHIFT) |
-              (0x4U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_DEFAULT_INC_SHIFT) |
-              (0x4U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_CMP_INC_SHIFT));
+              (0x3U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_DEFAULT_INC_SHIFT) |
+              (0x3U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_CMP_INC_SHIFT));
 
     Icssg_wr32(hIcssg,
                baseAddr +
@@ -1356,8 +1356,8 @@ void IcssgUtils_configSwtFw(Icssg_Handle hIcssg,
 
     /* Enable IEP1 counter and set default increment as 4 - Required for RX and TX time stamping */
     regVal = (0x1U << CSL_ICSS_G_PR1_IEP1_SLV_GLOBAL_CFG_REG_CNT_ENABLE_SHIFT)  |
-             (0x4U << CSL_ICSS_G_PR1_IEP1_SLV_GLOBAL_CFG_REG_DEFAULT_INC_SHIFT) |
-             (0x4U << CSL_ICSS_G_PR1_IEP1_SLV_GLOBAL_CFG_REG_CMP_INC_SHIFT);
+             (0x3U << CSL_ICSS_G_PR1_IEP1_SLV_GLOBAL_CFG_REG_DEFAULT_INC_SHIFT) |
+             (0x3U << CSL_ICSS_G_PR1_IEP1_SLV_GLOBAL_CFG_REG_CMP_INC_SHIFT);
 
     Icssg_wr32(hIcssg,
                baseAddr +

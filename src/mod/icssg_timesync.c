@@ -289,7 +289,9 @@ int32_t IcssgTimeSync_open(EnetMod_Handle hMod,
     {
         // TODO - Is this also true for LLD? */
         /* Cycle time (CMP0) already initialized by PN_initDrv */
-        HWREG(iep0Regs + CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG) = 0x441U;
+        HWREG(iep0Regs + CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG) = ((0x1U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_CNT_ENABLE_SHIFT)  |
+																	(0x3U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_DEFAULT_INC_SHIFT) |
+																	(0x3U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_CMP_INC_SHIFT));
 
         /* Init WorkingClock signals */
 
@@ -444,6 +446,7 @@ int32_t IcssgTimeSync_adjustClock(IcssgTimeSync_Handle hTimeSync,
     uintptr_t iep0Regs = (uintptr_t)hMod->virtAddr;
     uint32_t globalCfg = 0U;
     uint32_t compensationPeriod = 0U;
+    uint32_t driftCompensationTime = 0U;
     uint32_t driftAbs = (uint32_t)((drift > 0) ?  drift : -drift);
     int32_t status = ENET_SOK;
 
@@ -457,30 +460,32 @@ int32_t IcssgTimeSync_adjustClock(IcssgTimeSync_Handle hTimeSync,
         }
 
         /*
-         * Set compensation interval = 4 * sync interval/drift.
-         * '4' for compensation increment 0ns (default increment - 4).
+         * Compensate 1ns every compensationPeriod
          * Example:
          *   Sync interval = 30ms
          *   Drift = -300ns
-         *   Compensation interval = 4 * 30ms / 300ns = 4 * 30000000 / 300 = 4 * 100000ns*/
+         *   Compensation interval (in ns) = 30ms / 300ns = 30000000 / 300 = 100000ns
+         *   Compensation period (in IEP cycles) = 30ms / 300ns = 30000000 / 300 = 100000ns */
         if (status == ENET_SOK)
         {
-            compensationPeriod = 4U * (syncInterval / abs(drift));
-
-            /* Compensation increment = 8ns for positive drift, 0ns for negative drift */
-            globalCfg = (drift > 0) ? 0x00000841U : 0x00000041U;
+            driftCompensationTime = ((0x1U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_CNT_ENABLE_SHIFT)  |
+                                     (0x3U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_DEFAULT_INC_SHIFT) |
+                                     (0x6U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_CMP_INC_SHIFT));
 
             /* Set compensation interval in IEP cycles */
-            compensationPeriod = compensationPeriod / 4U;
-        }
+            compensationPeriod = (syncInterval / abs(drift));
 
+            /* Compensation increment by 2 * IEP cycles = 6ns CMP_INC for positive drift, 0ns CMP_INC for negative drift */
+            globalCfg = (drift > 0) ? driftCompensationTime : (driftCompensationTime & 0x000000FF);
+
+        }
     }
     else
     {
-        /* If drift is 0, set compensation increment to 4ns and disable slow compensation */
-
-        /* Compensation increment = 4ns */
-        globalCfg = 0x00000441U;
+        /* If drift is 0, set compensation increment to 3ns and disable slow compensation */
+        globalCfg = ((0x1U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_CNT_ENABLE_SHIFT)  |
+					 (0x3U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_DEFAULT_INC_SHIFT) |
+					 (0x3U << CSL_ICSS_G_PR1_IEP0_SLV_GLOBAL_CFG_REG_CMP_INC_SHIFT));
 
         /* Set compensation interval in IEP cycles */
         compensationPeriod = 0U;
