@@ -73,6 +73,7 @@
 /* if bucket size is changed in firmware then this too should be changed */
 /* because it directly impacts FDB ageing calculation */
 #define NUMBER_OF_FDB_BUCKET_ENTRIES            (4)
+#define NUMBER_OF_FDB_SLOTS                     (512)
 #define SIZE_OF_FDB                             (2048)  /* This is fixed in ICSSG */
 /* ageing interval in nanoseconds. 30s */
 #define DEFAULT_FDB_AGEING_INTERVAL             (0x6FC23AC00)
@@ -159,10 +160,11 @@
 
 #define FW_LINK_SPEED_1G                           (0x00)
 #define FW_LINK_SPEED_100M                         (0x01)
-#define FW_LINK_SPEED_100M_BIT_MASK                (0x00)
 #define FW_LINK_SPEED_10M                          (0x02)
 #define FW_LINK_SPEED_100M_HD                      (0x81)
 #define FW_LINK_SPEED_10M_HD                       (0x82)
+#define FW_LINK_HD_BIT_OFFFSET                     (0x07)
+#define FW_LINK_SPEED_100M_BIT_MASK                (0x00)
 #define FW_LINK_SPEED_BIT_CLR_MASK                 (0xF9)
 
 /* RTU PRU SYNC constants */
@@ -287,6 +289,8 @@
 #define PORT_LINK_SPEED_OFFSET                             0x00A8
 /*2k memory pointer reserved for default writes by PRU0*/
 #define DEFAULT_MSMC_Q_OFFSET                              0x00AC
+/*Bit to enable(1)/disable(0) the workaround for AM65x to detect COL/CRS. This flag is applicable only for AM65x IDK. AM65x custom hardware does not need this flag/bit to be enabled.*/
+#define COL_CRS_SWAP_WA                                    0x00B4
 /*TAS gate mask for windows list0*/
 #define TAS_GATE_MASK_LIST0                                0x0100
 /*TAS gate mask for windows list1*/
@@ -329,6 +333,8 @@
  */
 /*2k memory pointer reserved for default writes by PRU0*/
 #define DEFAULT_MSMC_Q_OFFSET                              0x00AC
+/*Bit to enable(1)/disable(0) the workaround for AM65x to detect COL/CRS. This flag is applicable only for AM65x IDK. AM65x custom hardware does not need this flag/bit to be enabled.*/
+#define COL_CRS_SWAP_WA                                    0x00B4
 /*Used by FW to generate random number with the SEED value*/
 #define HD_RAND_SEED_OFFSET                                0x0934
 /*DSCP enable/disable status written here*/
