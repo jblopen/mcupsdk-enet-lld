@@ -1386,4 +1386,4 @@ const unsigned int RX_PRU_SLICE1_b00_DMac[]= {
 0x48435449,
 0x2e32305f,
 0x312e3230,
-0x32302e34 };
+0x33302e34 };

@@ -135,7 +135,7 @@ const unsigned int RTU0_SLICE1_b00_DMac[]= {
 0x240000c0,
 0x24040880,
 0x248302c1,
-0x24004c81,
+0x24004e81,
 0x240019c2,
 0x24830682,
 0x8100b880,
@@ -766,4 +766,4 @@ const unsigned int RTU0_SLICE1_b00_DMac[]= {
 0x48435449,
 0x2e32305f,
 0x312e3230,
-0x32302e34 };
+0x33302e34 };
