@@ -1858,6 +1858,15 @@ static int32_t CpswMacPort_enablePort(CSL_Xge_cpswRegs *regs,
     else if (EnetMacPort_isRgmii(mii))
     {
         /* RGMII */
+
+        /* In RGMII, 10mbps is supported only by inband signaling from PHY.
+         * It means, PHY has to support inband signaling also for RGMII*/
+        if (linkCfg->speed == ENET_SPEED_10MBIT)
+        {
+            CSL_FINS(macControl, XGE_CPSW_PN_MAC_CONTROL_REG_EXT_EN, 1U);
+        }
+
+        /* Do not set the GIG mode if inband singaling is enabled */
         extCtrl = CSL_FEXT(macControl, XGE_CPSW_PN_MAC_CONTROL_REG_EXT_EN);
         forced = (extCtrl == TRUE) ? false : true;
 
