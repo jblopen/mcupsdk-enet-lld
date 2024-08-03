@@ -54,7 +54,7 @@
  *
  */
 
-const unsigned int RX_PRU_SLICE1_b00_Swt[]= {
+const uint32_t RX_PRU_SLICE1_b00_Swt[]= {
 0x2effbd80,
 0x240002d2,
 0x24a20092,
