@@ -98,6 +98,12 @@
 #define CPSW_HOSTPORT_VER_REVRTL_AM62PX        (0x00000003U)
 #define CPSW_HOSTPORT_VER_ID_AM62PX            (0x00006BA8U)
 
+/* Supported AM62X version */
+#define CPSW_HOSTPORT_VER_REVMAJ_AM62X        (0x00000001U)
+#define CPSW_HOSTPORT_VER_REVMIN_AM62X        (0x00000003U)
+#define CPSW_HOSTPORT_VER_REVRTL_AM62X        (0x00000003U)
+#define CPSW_HOSTPORT_VER_ID_AM62X            (0x00006BA8U)
+
 /*! \brief Default value used for host port RX MTU. */
 #define CPSW_HOSTPORT_RX_MTU_DEFAULT          (1518U)
 

@@ -61,6 +61,13 @@
 #include <soc/k3/am62px/enet_soc.h>
 #include <soc/k3/k3_soc.h>
 #include <drivers/udma/soc/am62px/udma_soc.h>
+
+
+#elif defined(SOC_AM62X)
+#include <soc/k3/am62x/enet_soc.h>
+#include <soc/k3/k3_soc.h>
+#include <drivers/udma/soc/am62x/udma_soc.h>
+
 #elif defined(SOC_AM62DX)
 #include <soc/k3/am62dx/enet_soc.h>
 #include <soc/k3/k3_soc.h>

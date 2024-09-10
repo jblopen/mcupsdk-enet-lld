@@ -80,6 +80,13 @@
 #define CPSW_ALE_VER_RTL_AM62PX                 (0x00000000U)
 #define CPSW_ALE_VER_ID_AM62PX                  (0x00000029U)
 
+/* Supported AM62X version */
+#define CPSW_ALE_VER_REVMAJ_AM62X              (0x00000001U)
+#define CPSW_ALE_VER_REVMIN_AM62X              (0x00000005U)
+#define CPSW_ALE_VER_RTL_AM62X                 (0x00000000U)
+#define CPSW_ALE_VER_ID_AM62X                  (0x00000029U)
+
+
 /* Number of ALE table entries and policers per CPSW variant */
 #if defined(SOC_AM273X) || defined(SOC_AWR294X) || defined(SOC_AWR2544)
 #define CPSW_ALE_2G_ALE_ENTRIES_MAX             (32U)
@@ -319,6 +326,13 @@ static CSL_CPSW_VERSION CpswAle_gSupportedVer[] =
         .rtlVer   = CPSW_ALE_VER_RTL_AM62PX,
         .id       = CPSW_ALE_VER_ID_AM62PX,
     },
+    {   /* AM62x */
+        .majorVer = CPSW_ALE_VER_REVMAJ_AM62X,
+        .minorVer = CPSW_ALE_VER_REVMIN_AM62X,
+        .rtlVer   = CPSW_ALE_VER_RTL_AM62X,
+        .id       = CPSW_ALE_VER_ID_AM62X,
+    },
+
 };
 
 /*! \brief CPSW ALE IOCTL validation data. */

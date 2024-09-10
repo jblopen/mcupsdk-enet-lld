@@ -103,6 +103,12 @@
 #define CPSW_MACPORT_VER_REVRTL_AM62PX         (0x00000003U)
 #define CPSW_MACPORT_VER_ID_AM62PX             (0x00006BA8U)
 
+/* Supported AM62X version */
+#define CPSW_MACPORT_VER_REVMAJ_AM62X         (0x00000001U)
+#define CPSW_MACPORT_VER_REVMIN_AM62X         (0x00000003U)
+#define CPSW_MACPORT_VER_REVRTL_AM62X         (0x00000003U)
+#define CPSW_MACPORT_VER_ID_AM62X             (0x00006BA8U)
+
 /*! \brief Default value used for MAC port RX MTU (MRU). */
 #define CPSW_MACPORT_RX_MTU_DEFAULT           (1518U)
 
@@ -268,6 +274,12 @@ static CSL_CPSW_VERSION CpswMacPort_gSupportedVer[] =
         .minorVer = CPSW_MACPORT_VER_REVMIN_AM62PX,
         .rtlVer   = CPSW_MACPORT_VER_REVRTL_AM62PX,
         .id       = CPSW_MACPORT_VER_ID_AM62PX,
+    },
+    {   /* AM62X */
+        .majorVer = CPSW_MACPORT_VER_REVMAJ_AM62X,
+        .minorVer = CPSW_MACPORT_VER_REVMIN_AM62X,
+        .rtlVer   = CPSW_MACPORT_VER_REVRTL_AM62X,
+        .id       = CPSW_MACPORT_VER_ID_AM62X,
     },
 };
 
