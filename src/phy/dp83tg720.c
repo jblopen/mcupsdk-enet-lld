@@ -207,7 +207,7 @@ static bool Dp83tg720_isPhyDevSupported(EnetPhy_Handle hPhy,
 static bool Dp83tg720_isMacModeSupported(EnetPhy_Handle hPhy,
                                        EnetPhy_Mii mii);
 
-static int32_t Dp83tg720_config(EnetPhy_Handle hPhy,
+int32_t Dp83tg720_config(EnetPhy_Handle hPhy,
                               const EnetPhy_Cfg *cfg,
                               EnetPhy_Mii mii);
 
@@ -305,7 +305,7 @@ static bool Dp83tg720_isMacModeSupported(EnetPhy_Handle hPhy,
     return supported;
 }
 
-static int32_t Dp83tg720_config(EnetPhy_Handle hPhy,
+int32_t Dp83tg720_config(EnetPhy_Handle hPhy,
 								const EnetPhy_Cfg *cfg,
 								EnetPhy_Mii mii)
 {

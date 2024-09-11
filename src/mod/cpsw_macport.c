@@ -109,6 +109,12 @@
 #define CPSW_MACPORT_VER_REVRTL_AM62X         (0x00000003U)
 #define CPSW_MACPORT_VER_ID_AM62X             (0x00006BA8U)
 
+/* Supported AM261X version */
+#define CPSW_MACPORT_VER_REVMAJ_AM261X         (0x00000001U)
+#define CPSW_MACPORT_VER_REVMIN_AM261X         (0x00000003U)
+#define CPSW_MACPORT_VER_REVRTL_AM261X         (0x00000000U)
+#define CPSW_MACPORT_VER_ID_AM261X             (0x00006BA8U)
+
 /*! \brief Default value used for MAC port RX MTU (MRU). */
 #define CPSW_MACPORT_RX_MTU_DEFAULT           (1518U)
 
@@ -280,6 +286,12 @@ static CSL_CPSW_VERSION CpswMacPort_gSupportedVer[] =
         .minorVer = CPSW_MACPORT_VER_REVMIN_AM62X,
         .rtlVer   = CPSW_MACPORT_VER_REVRTL_AM62X,
         .id       = CPSW_MACPORT_VER_ID_AM62X,
+    },
+    {   /* AM261X */
+        .majorVer = CPSW_MACPORT_VER_REVMAJ_AM261X,
+        .minorVer = CPSW_MACPORT_VER_REVMIN_AM261X,
+        .rtlVer   = CPSW_MACPORT_VER_REVRTL_AM261X,
+        .id       = CPSW_MACPORT_VER_ID_AM261X,
     },
 };
 

@@ -93,6 +93,11 @@
 #define CPSW_CPTS_VER_REVRTL_AM62X          (0x00000000U)
 #define CPSW_HOSTPORT_VER_ID_AM62X          (0x00004E8AU)
 
+/* Supported AM261X versions */
+#define CPSW_CPTS_VER_REVMAJ_AM261X          (0x00000001U)
+#define CPSW_CPTS_VER_REVMIN_AM261X          (0x0000000CU)
+#define CPSW_CPTS_VER_REVRTL_AM261X          (0x00000001U)
+#define CPSW_HOSTPORT_VER_ID_AM261X          (0x00004E8AU)
 
 #define CPSW_CPTS_IOCTL_HANDLER_ENTRY_INIT(x)    \
           {.cmd = x,                            \
@@ -165,7 +170,7 @@ static CSL_CPSW_VERSION CpswCpts_gSupportedVer[] =
         .rtlVer   = CPSW_CPTS_VER_REVRTL_AWR2544,
         .id       = CPSW_HOSTPORT_VER_ID_AWR2544,
     },
-    {   /* AWR2544 CPSW_2G */
+    {   /* AM62PX CPSW_2G */
         .majorVer = CPSW_CPTS_VER_REVMAJ_AM62PX,
         .minorVer = CPSW_CPTS_VER_REVMIN_AM62PX,
         .rtlVer   = CPSW_CPTS_VER_REVRTL_AM62PX,
@@ -176,6 +181,12 @@ static CSL_CPSW_VERSION CpswCpts_gSupportedVer[] =
         .minorVer = CPSW_CPTS_VER_REVMIN_AM62X,
         .rtlVer   = CPSW_CPTS_VER_REVRTL_AM62X,
         .id       = CPSW_HOSTPORT_VER_ID_AM62X,
+    },
+    {   /* AM261X CPSW_3G */
+        .majorVer = CPSW_CPTS_VER_REVMAJ_AM261X,
+        .minorVer = CPSW_CPTS_VER_REVMIN_AM261X,
+        .rtlVer   = CPSW_CPTS_VER_REVRTL_AM261X,
+        .id       = CPSW_HOSTPORT_VER_ID_AM261X,
     },
 };
 
@@ -302,7 +313,7 @@ void CpswCpts_initCfg(CpswCpts_Cfg *cptsCfg)
     cptsCfg->tsCompPolarity = true;
     cptsCfg->tsRxEventsDis  = false;
     cptsCfg->tsGenfClrEn    = true;
-    cptsCfg->cptsRftClkFreq = CPSW_CPTS_RFTCLK_FREQ_200MHZ;
+    cptsCfg->cptsRftClkFreq = CPSW_CPTS_RFTCLK_FREQ_250MHZ;
 }
 
 int32_t CpswCpts_open(EnetMod_Handle hMod,
