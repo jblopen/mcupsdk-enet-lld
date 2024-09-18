@@ -658,6 +658,9 @@ typedef struct EnetPhy_Obj_s
 
     /*! Caller-provided arguments to be used in MDIO driver calls */
     void *mdioArgs;
+
+    /*! Private data that is used by the driver */
+    void *private;
 } EnetPhy_Obj;
 
 /*!
