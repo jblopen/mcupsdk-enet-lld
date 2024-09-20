@@ -61,6 +61,12 @@ extern "C" {
 /*! \brief PHY Control Register (PHYCR) */
 #define dp83826_PHYCR                         (0x19U)
 
+/*! \brief RMII and Status Register (RCSW) */
+#define dp83826_RCSR                         (0x17U)
+
+/*! \brief MII/RMII bit set */
+#define dp83826_RMII_BIT                     (0x05U)
+
 /* CR1 register definitions */
 #define CR1_ROBUSTAUTOMDIX                    (0x0020U)
 

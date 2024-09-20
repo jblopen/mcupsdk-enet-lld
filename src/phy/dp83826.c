@@ -54,7 +54,8 @@
 /* ========================================================================== */
 
 #define dp83826_OUI                           (0x080028U)
-#define dp83826_MODEL                         (0x11U)
+#define dp83826_MODEL_V1                      (0x11U)
+#define dp83826_MODEL_V2                      (0x13U)
 #define dp83826_REV                           (0x01U)
 
 /* ========================================================================== */
@@ -75,6 +76,11 @@ static void dp83826_enableAutoMdix(EnetPhy_Handle hPhy,
                                    bool enable);
 
 static void dp83826_printRegs(EnetPhy_Handle hPhy);
+
+static void dp83826_rmwExtReg(EnetPhy_Handle hPhy,
+                              uint32_t reg,
+                              uint16_t mask,
+                              uint16_t val);
 
 /* ========================================================================== */
 /*                          Function Declarations                             */
@@ -114,7 +120,7 @@ static bool dp83826_isPhyDevSupported(EnetPhy_Handle hPhy,
     bool supported = false;
 
     if ((version->oui == dp83826_OUI) &&
-        (version->model == dp83826_MODEL) &&
+        ((version->model == dp83826_MODEL_V1) || (version->model == dp83826_MODEL_V2)) &&
         (version->revision == dp83826_REV))
     {
         supported = true;
@@ -171,6 +177,9 @@ static int32_t dp83826_config(EnetPhy_Handle hPhy,
     {
         dp83826_enableAutoMdix(hPhy, enableAutoMdix);
     }
+
+    /*Enabled RMII mode*/
+    dp83826_rmwExtReg(hPhy, dp83826_RCSR, ENETPHY_BIT(dp83826_RMII_BIT), ENETPHY_BIT(dp83826_RMII_BIT));
 
     return status;
 }
@@ -230,4 +239,32 @@ static void dp83826_printRegs(EnetPhy_Handle hPhy)
     EnetUtils_printf("PHY %u: 1KSCR   = 0x%04x\n", phyAddr, val);
     EnetPhy_readReg(hPhy, dp83826_PHYCR, &val);
     EnetUtils_printf("PHY %u: PHYCR   = 0x%04x\n", phyAddr, val);
+}
+
+static void dp83826_rmwExtReg(EnetPhy_Handle hPhy,
+                              uint32_t reg,
+                              uint16_t mask,
+                              uint16_t val)
+{
+    uint16_t devad = MMD_CR_DEVADDR;
+    uint16_t data;
+    int32_t status;
+
+
+    ENETTRACE_VERBOSE("PHY %u: write reg %u mask 0x%04x val 0x%04x\r\n",
+                      hPhy->addr, reg, mask, val);
+
+
+    EnetPhy_writeReg(hPhy, PHY_MMD_CR, devad | MMD_CR_ADDR);
+    EnetPhy_writeReg(hPhy, PHY_MMD_DR, reg);
+    EnetPhy_writeReg(hPhy, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
+    status = EnetPhy_readReg(hPhy, PHY_MMD_DR, &data);
+
+
+    if (status == ENETPHY_SOK)
+    {
+        data = (data & ~mask) | (val & mask);
+        EnetPhy_writeReg(hPhy, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
+        EnetPhy_writeReg(hPhy, PHY_MMD_DR, data);
+    }
 }

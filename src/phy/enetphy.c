@@ -93,10 +93,6 @@
 /*                          Function Declarations                             */
 /* ========================================================================== */
 
- extern int32_t Dp83tg720_config(EnetPhy_Handle hPhy,
-                              const EnetPhy_Cfg *cfg,
-                              EnetPhy_Mii mii);
-
 #if ((ENET_CFG_TRACE_LEVEL >= ENET_CFG_TRACE_LEVEL_WARN) && ENET_CFG_IS_OFF(TRACE_DISABLE_INFOSTRING))
 static const char *EnetPhy_getCapsString(uint32_t linkCaps);
 #endif
@@ -338,18 +334,6 @@ EnetPhy_Handle EnetPhy_open(const EnetPhy_Cfg *phyCfg,
 
             if (hPhy->phyCfg.isStrapped)
             {
-                /* PHY-specific 'extended' configuration */
-                if (hPhy->hDrv->config != NULL)
-                {
-                	if(!hPhy->phyCfg.skipExtendedCfg)
-                	{
-
-						Dp83tg720_config(hPhy, &hPhy->phyCfg, hPhy->mii);
-						ENETTRACE_INFO_IF(hPhy->hDrv != NULL, "ENETPHY DEBUG\r\n");
-
-                	}
-                }
-
                 EnetPhy_setNextState(hPhy, ENETPHY_FSM_STATE_LINK_WAIT);
             }
             else
