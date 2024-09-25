@@ -1471,10 +1471,10 @@ static void EnetPhy_linkWaitState(EnetPhy_Handle hPhy)
     {
         /* Populate FSM state now as most FSM states are bypassed for strapped PHYs */
         if (hPhy->phyCfg.isStrapped)
-        {          
+        {
             /*Check link capabilities only for auto -negotiation mode*/
             EnetPhy_readReg(hPhy, PHY_BMCR, &control);
-            
+
             if ((control & BMCR_ANEN) != 0U)
             {
                 state->phyLinkCaps = EnetPhy_getLocalCaps(hPhy);
@@ -2014,4 +2014,183 @@ static void EnetPhy_showLinkPartnerCompat(EnetPhy_Handle hPhy,
         default:
             break;
     }
+}
+
+
+int32_t EnetPhy_adjPtpFreq(EnetPhy_Handle hPhy, int64_t ppb)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->adjPtpFreq != NULL))
+    {
+        status = hPhy->hDrv->adjPtpFreq(hPhy, ppb);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_adjPtpPhase(EnetPhy_Handle hPhy, int64_t offset)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->adjPtpPhase != NULL))
+    {
+        status = hPhy->hDrv->adjPtpPhase(hPhy, offset);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_getPtpTime(EnetPhy_Handle hPhy, uint64_t *ts64)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->getPtpTime != NULL))
+    {
+        status = hPhy->hDrv->getPtpTime(hPhy, ts64);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_setPtpTime(EnetPhy_Handle hPhy, uint64_t ts64)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->setPtpTime != NULL))
+    {
+        status = hPhy->hDrv->setPtpTime(hPhy, ts64);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_getPtpTxTime(EnetPhy_Handle hPhy, uint32_t domain,
+            uint32_t msgType, uint32_t seqId, uint64_t *ts64)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->getPtpTxTime != NULL))
+    {
+        status = hPhy->hDrv->getPtpTxTime(hPhy, domain, msgType, seqId, ts64);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_getPtpRxTime(EnetPhy_Handle hPhy, uint32_t domain,
+            uint32_t msgType, uint32_t seqId, uint64_t *ts64)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->getPtpRxTime != NULL))
+    {
+        status = hPhy->hDrv->getPtpRxTime(hPhy, domain, msgType, seqId, ts64);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_waitPtpTxTime(EnetPhy_Handle hPhy, uint32_t domain,
+            uint32_t msgType, uint32_t seqId)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->waitPtpTxTime != NULL))
+    {
+        status = hPhy->hDrv->waitPtpTxTime(hPhy, domain, msgType, seqId);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_procStatusFrame(EnetPhy_Handle hPhy, uint8_t *frame,
+                uint32_t size, uint32_t *types)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->procStatusFrame != NULL))
+    {
+        status = hPhy->hDrv->procStatusFrame(hPhy, frame, size, types);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_getStatusFrameEthHeader(EnetPhy_Handle hPhy,
+            uint8_t *ethhdr, uint32_t size)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->getStatusFrameEthHeader != NULL))
+    {
+        status = hPhy->hDrv->getStatusFrameEthHeader(hPhy, ethhdr, size);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_enablePtp(EnetPhy_Handle hPhy, bool on,
+                uint32_t srcMacStatusFrameType)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->enablePtp != NULL))
+    {
+        status = hPhy->hDrv->enablePtp(hPhy, on, srcMacStatusFrameType);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_tickDriver(EnetPhy_Handle hPhy)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->tickDriver != NULL))
+    {
+        status = hPhy->hDrv->tickDriver(hPhy);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_enableEventCapture(EnetPhy_Handle hPhy, uint32_t eventIdx,
+                bool falling, bool on)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->enableEventCapture != NULL))
+    {
+        status = hPhy->hDrv->enableEventCapture(hPhy, eventIdx, falling, on);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_enableTriggerOutput(EnetPhy_Handle hPhy, uint32_t triggerIdx,
+                uint64_t start, uint64_t period, bool repeat)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->enableTriggerOutput != NULL))
+    {
+        status = hPhy->hDrv->enableTriggerOutput(hPhy, triggerIdx,
+                                start, period, repeat);
+    }
+
+    return status;
+}
+
+int32_t EnetPhy_getEventTs(EnetPhy_Handle hPhy, uint32_t *eventIdx,
+                uint32_t *seqId, uint64_t *ts64)
+{
+    int32_t status = ENETPHY_ENOTSUPPORTED;
+
+    if ((hPhy->hDrv != NULL) && (hPhy->hDrv->getEventTs != NULL))
+    {
+        status = hPhy->hDrv->getEventTs(hPhy, eventIdx, seqId, ts64);
+    }
+
+    return status;
 }

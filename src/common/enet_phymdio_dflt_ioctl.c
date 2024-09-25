@@ -243,3 +243,182 @@ int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_PRINT_REGS(EnetPhy_Handle 
     return status;
 }
 
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_ADJ_PTP_FREQ(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_AdjPtpFreqInArgs *inArgs =
+        (const EnetPhy_AdjPtpFreqInArgs *)prms->inArgs;
+    int32_t status = EnetPhy_adjPtpFreq(hPhy, inArgs->ppb);
+    ENETTRACE_ERR_IF(status != ENETPHY_SOK,
+                        "Port %u: Failed to adj PTP freq: %d\n",
+                        ENET_MACPORT_ID(inArgs->macPort), status);
+    return status;
+}
+
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_ADJ_PTP_PHASE(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_AdjPtpPhaseInArgs *inArgs =
+        (const EnetPhy_AdjPtpPhaseInArgs *)prms->inArgs;
+    int32_t status = EnetPhy_adjPtpPhase(hPhy, inArgs->offset);
+    ENETTRACE_ERR_IF(status != ENETPHY_SOK,
+                        "Port %u: Failed to adj PTP phase: %d\n",
+                        ENET_MACPORT_ID(inArgs->macPort), status);
+    return status;
+}
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_GET_PTP_TIME(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_GenericInArgs *inArgs =
+        (const EnetPhy_GenericInArgs *)prms->inArgs;
+    (void)inArgs;
+    uint64_t *val = (uint64_t *)prms->outArgs;
+    int32_t status = EnetPhy_getPtpTime(hPhy, val);
+    ENETTRACE_ERR_IF(status != ENETPHY_SOK,
+                        "Port %u: Failed to get PTP time: %d\n",
+                        ENET_MACPORT_ID(inArgs->macPort), status);
+    return status;
+}
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_SET_PTP_TIME(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_SetPtpTimeInArgs *inArgs =
+        (const EnetPhy_SetPtpTimeInArgs *)prms->inArgs;
+    int32_t status = EnetPhy_setPtpTime(hPhy, inArgs->ts64);
+    ENETTRACE_ERR_IF(status != ENETPHY_SOK,
+                        "Port %u: Failed to set PTP time: %d\n",
+                        ENET_MACPORT_ID(inArgs->macPort), status);
+    return status;
+}
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_GET_PTP_TXTS(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_PtpPktTimestampInArgs *inArgs =
+        (const EnetPhy_PtpPktTimestampInArgs *)prms->inArgs;
+    uint64_t *ts64 = (uint64_t *)prms->outArgs;
+    int32_t status = EnetPhy_getPtpTxTime(hPhy, inArgs->domain, inArgs->msgType,
+                                    inArgs->seqId, ts64);
+    ENETTRACE_ERR_IF((status != ENETPHY_SOK) && (status != ENETPHY_EUNAVAILABLE),
+                        "Port %u: Failed to get PTP txTime: %d\n",
+                        ENET_MACPORT_ID(inArgs->macPort), status);
+    return status;
+}
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_GET_PTP_RXTS(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_PtpPktTimestampInArgs *inArgs =
+        (const EnetPhy_PtpPktTimestampInArgs *)prms->inArgs;
+    uint64_t *ts64 = (uint64_t *)prms->outArgs;
+    int32_t status = EnetPhy_getPtpRxTime(hPhy, inArgs->domain, inArgs->msgType,
+                                    inArgs->seqId, ts64);
+    ENETTRACE_ERR_IF((status != ENETPHY_SOK) && (status != ENETPHY_EUNAVAILABLE),
+                        "Port %u: Failed to get PTP RxTime: %d\n",
+                        ENET_MACPORT_ID(inArgs->macPort), status);
+    return status;
+}
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_WAIT_PTP_TXTS(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_PtpPktTimestampInArgs *inArgs =
+        (const EnetPhy_PtpPktTimestampInArgs *)prms->inArgs;
+    int32_t status = EnetPhy_waitPtpTxTime(hPhy, inArgs->domain, inArgs->msgType,
+                                    inArgs->seqId);
+    ENETTRACE_ERR_IF(status != ENETPHY_SOK,
+                        "Port %u: Failed to wait PTP TxTime: %d\n",
+                        ENET_MACPORT_ID(inArgs->macPort), status);
+    return status;
+}
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_PROC_STATUS_FRAME(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_ProcStatusFrameInArgs *inArgs =
+        (const EnetPhy_ProcStatusFrameInArgs *)prms->inArgs;
+    EnetPhy_ProcStatusFrameOutArgs *outArgs =
+        (EnetPhy_ProcStatusFrameOutArgs *)prms->outArgs;
+
+    int32_t status = EnetPhy_procStatusFrame(hPhy, inArgs->frame, inArgs->size,
+                                        &outArgs->types);
+
+    ENETTRACE_ERR_IF(status != ENETPHY_SOK,
+                        "Port %u: Failed to process PTP status frame: %d\n",
+                        ENET_MACPORT_ID(inArgs->macPort), status);
+    return status;
+}
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_GET_STATUS_FRAME_ETHDR(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_GenericInArgs *inArgs =
+        (const EnetPhy_GenericInArgs *)prms->inArgs;
+    (void)inArgs;
+    EnetPhy_GetStatusFrameEthdrOutArgs *outArgs =
+        (EnetPhy_GetStatusFrameEthdrOutArgs *)prms->outArgs;
+
+    int32_t status = EnetPhy_getStatusFrameEthHeader(hPhy, outArgs->ethhdr,
+                            outArgs->size);
+
+    ENETTRACE_ERR_IF(status != ENETPHY_SOK,
+                        "Port %u: Failed to get PTP status frame ehthdr: %d\n",
+                        ENET_MACPORT_ID(inArgs->macPort), status);
+    return status;
+}
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_ENABLE_PTP(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_EnablePtpInArgs *inArgs =
+        (const EnetPhy_EnablePtpInArgs *)prms->inArgs;
+
+    int32_t status = EnetPhy_enablePtp(hPhy, inArgs->on, inArgs->srcMacStatusFrameType);
+
+    ENETTRACE_ERR_IF(status != ENETPHY_SOK,
+                        "Port %u: Failed to %s PTP: %d\n",
+                        ENET_MACPORT_ID(inArgs->macPort),
+                        inArgs->on ? "enable" : "disable", status);
+    return status;
+}
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_ENABLE_EVENT_CAPTURE(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_EnableEventCaptureInArgs *inArgs =
+        (const EnetPhy_EnableEventCaptureInArgs *)prms->inArgs;
+
+    int32_t status = EnetPhy_enableEventCapture(hPhy, inArgs->eventIdx,
+                        inArgs->falling, inArgs->on);
+
+    ENETTRACE_ERR_IF(status != ENETPHY_SOK,
+                        "Port %u: Failed to %s event capture: %d\n",
+                        ENET_MACPORT_ID(inArgs->macPort),
+                        inArgs->on ? "enable" : "disable", status);
+    return status;
+}
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_ENABLE_TRIGGER_OUTPUT(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_EnableTriggerOutputInArgs *inArgs =
+        (const EnetPhy_EnableTriggerOutputInArgs *)prms->inArgs;
+
+    int32_t status = EnetPhy_enableTriggerOutput(hPhy, inArgs->triggerIdx,
+                        inArgs->startNsec, inArgs->periodNsec, inArgs->repeat);
+
+    ENETTRACE_ERR_IF(status != ENETPHY_SOK,
+                        "Port %u: Failed to %s event capture: %d\n",
+                        ENET_MACPORT_ID(inArgs->macPort),
+                        inArgs->periodNsec ? "enable" : "disable", status);
+    return status;
+}
+
+int32_t EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_GET_EVENT_TIMESTAMP(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms)
+{
+    const EnetPhy_GenericInArgs *inArgs =
+        (const EnetPhy_GenericInArgs *)prms->inArgs;
+    (void)inArgs;
+    EnetPhy_GetEventTimestampOutArgs *outArgs =
+        (EnetPhy_GetEventTimestampOutArgs *)prms->outArgs;
+
+    int32_t status = EnetPhy_getEventTs(hPhy, &outArgs->eventIdx,
+                                &outArgs->seqId, &outArgs->ts64);
+
+    ENETTRACE_ERR_IF((status != ENETPHY_SOK) && (status != ENETPHY_EUNAVAILABLE),
+                    "Port %u: Failed to get event TS: %d\n",
+                    ENET_MACPORT_ID(inArgs->macPort), status);
+    return status;
+}

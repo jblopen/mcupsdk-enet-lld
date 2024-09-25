@@ -87,6 +87,19 @@ int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_WRITE_EXT_REG(EnetPhy_Hand
 int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_C45_READ_REG(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
 int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_C45_WRITE_REG(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
 int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_PRINT_REGS(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_ADJ_PTP_FREQ(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_ADJ_PTP_PHASE(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_GET_PTP_TIME(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_SET_PTP_TIME(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_GET_PTP_TXTS(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_GET_PTP_RXTS(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_WAIT_PTP_TXTS(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_PROC_STATUS_FRAME(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_GET_STATUS_FRAME_ETHDR(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_ENABLE_PTP(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_ENABLE_EVENT_CAPTURE(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_ENABLE_TRIGGER_OUTPUT(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
+int32_t  EnetPhyMdioDflt_ioctl_handler_ENET_PHY_IOCTL_GET_EVENT_TIMESTAMP(EnetPhy_Handle hPhy, Enet_IoctlPrms *prms);
 
 /* ========================================================================== */
 /*                        Deprecated Function Declarations                    */

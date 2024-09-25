@@ -646,6 +646,58 @@ static Enet_IoctlValidate gEnetPhy_ioctlValidate[] =
     ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_PRINT_REGS,
                           sizeof(EnetPhy_GenericInArgs),
                           0U),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_ADJ_PTP_FREQ,
+                          sizeof(EnetPhy_AdjPtpFreqInArgs),
+                          0U),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_ADJ_PTP_PHASE,
+                          sizeof(EnetPhy_AdjPtpPhaseInArgs),
+                          0U),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_GET_PTP_TIME,
+                          sizeof(EnetPhy_GenericInArgs),
+                          sizeof(uint64_t)),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_SET_PTP_TIME,
+                          sizeof(EnetPhy_SetPtpTimeInArgs),
+                          0U),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_GET_PTP_TXTS,
+                          sizeof(EnetPhy_PtpPktTimestampInArgs),
+                          sizeof(uint64_t)),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_GET_PTP_RXTS,
+                          sizeof(EnetPhy_PtpPktTimestampInArgs),
+                          sizeof(uint64_t)),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_WAIT_PTP_TXTS,
+                          sizeof(EnetPhy_PtpPktTimestampInArgs),
+                          0U),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_PROC_STATUS_FRAME,
+                          sizeof(EnetPhy_ProcStatusFrameInArgs),
+                          sizeof(EnetPhy_ProcStatusFrameOutArgs)),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_GET_STATUS_FRAME_ETHDR,
+                          sizeof(EnetPhy_GenericInArgs),
+                          sizeof(EnetPhy_GetStatusFrameEthdrOutArgs)),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_ENABLE_PTP,
+                          sizeof(EnetPhy_EnablePtpInArgs),
+                          0U),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_ENABLE_EVENT_CAPTURE,
+                          sizeof(EnetPhy_EnableEventCaptureInArgs),
+                          0U),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_ENABLE_TRIGGER_OUTPUT,
+                          sizeof(EnetPhy_EnableTriggerOutputInArgs),
+                          0U),
+
+    ENET_IOCTL_VALID_PRMS(ENET_PHY_IOCTL_GET_EVENT_TIMESTAMP,
+                          sizeof(EnetPhy_GenericInArgs),
+                          sizeof(EnetPhy_GetEventTimestampOutArgs)),
 };
 #endif
 

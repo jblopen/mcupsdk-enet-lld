@@ -201,6 +201,232 @@ typedef struct EnetPhy_Drv_s
 
     /*! Print PHY registers */
     void (*printRegs)(EnetPhy_Handle hPhy);
+
+    /*!
+     * \brief Adjust PHY PTP clock frequency.
+     *
+     * Optional PHY function to adjust PTP clock frequency.
+     * This function can only be supported when the PHY has a built-in PTP clock.
+     *
+     * \param hPhy     PHY device handle
+     * \param ppb      Part per billion
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*adjPtpFreq)(EnetPhy_Handle hPhy,
+                          int64_t ppb);
+
+    /*!
+     * \brief Adjust PHY PTP clock phase.
+     *
+     * Optional PHY function to adjust PTP clock phase.
+     * This function can only be supported when the PHY has a built-in PTP clock.
+     *
+     * \param hPhy     PHY device handle
+     * \param offset   Offset to current clock time in nanosec unit.
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*adjPtpPhase)(EnetPhy_Handle hPhy,
+                          int64_t offset);
+
+    /*!
+     * \brief Get current PHY PTP clock time.
+     *
+     * Optional PHY function to get current PHY PTP clock time.
+     * This function can only be supported when the PHY has a built-in PTP clock.
+     *
+     * \param hPhy     PHY device handle
+     * \param ts64     Output current PTP clock time in nanosec unit.
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*getPtpTime)(EnetPhy_Handle hPhy,
+                          uint64_t *ts64);
+
+    /*!
+     * \brief Set PHY PTP clock time.
+     *
+     * Optional PHY function to set PHY PTP clock time.
+     * This function can only be supported when the PHY has a built-in PTP clock.
+     *
+     * \param hPhy     PHY device handle
+     * \param ts64     PTP time in nanosec unit will be set.
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*setPtpTime)(EnetPhy_Handle hPhy,
+                          uint64_t ts64);
+
+    /*!
+     * \brief Get PHY PTP TX packet timestamp.
+     *
+     * Optional PHY function to get PHY PTP TX packet timestamp.
+     * This function can only be supported when the PHY has a built-in PTP clock.
+     *
+     * \param hPhy     PHY device handle
+     * \param domain   PTP domain (in the packet header)
+     * \param msgType  PTP message type (in the packet header)
+     * \param seqId    PTP packet sequence ID (in the packet header)
+     * \param ts64     Output PTP TX packet timestamp in nanosec unit.
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*getPtpTxTime)(EnetPhy_Handle hPhy,
+                            uint32_t domain,
+                            uint32_t msgType,
+                            uint32_t seqId,
+                            uint64_t *ts64);
+
+    /*!
+     * \brief Get PHY PTP RX packet timestamp.
+     *
+     * Optional PHY function to get PHY PTP RX packet timestamp.
+     * This function can only be supported when the PHY has a built-in PTP clock.
+     *
+     * \param hPhy     PHY device handle
+     * \param domain   PTP domain (in the packet header)
+     * \param msgType  PTP message type (in the packet header)
+     * \param seqId    PTP packet sequence ID (in the packet header)
+     * \param ts64     Output PTP RX packet timestamp in nanosec unit.
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*getPtpRxTime)(EnetPhy_Handle hPhy,
+                            uint32_t domain,
+                            uint32_t msgType,
+                            uint32_t seqId,
+                            uint64_t *ts64);
+
+    /*!
+     * \brief Add PHY PTP TX packet info to a waiting TX timestamp list.
+     *
+     * Optional PHY function to get PHY PTP TX packet timestamp.
+     * This function can only be supported when the PHY has a built-in PTP clock.
+     *
+     * \param hPhy     PHY device handle
+     * \param domain   PTP domain (in the packet header)
+     * \param msgType  PTP message type (in the packet header)
+     * \param seqId    PTP packet sequence ID (in the packet header)
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*waitPtpTxTime)(EnetPhy_Handle hPhy,
+                             uint32_t domain,
+                             uint32_t msgType,
+                             uint32_t seqId);
+
+    /*!
+     * \brief Process PHY status frame.
+     *
+     * Optional PHY function to process PHY status frame.
+     * This function can only be supported when the PHY has a built-in PTP clock.
+     *
+     * \param hPhy     PHY device handle
+     * \param frame    Ethernet PHY status frame
+     * \param size     Frame size
+     * \param types    Types of processed frame
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*procStatusFrame)(EnetPhy_Handle hPhy,
+                               uint8_t *frame,
+                               uint32_t size,
+                               uint32_t *types);
+
+    /*!
+     * \brief Get PHY status frame header.
+     *
+     * Optional PHY function to process PHY status frame.
+     * This function can only be supported when the PHY has a built-in PTP clock.
+     *
+     * \param hPhy     PHY device handle
+     * \param ethhdr   Buffer to get the ethernet header of the PHY status frame.
+     * \param size     Buffer size (at least 14 bytes)
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*getStatusFrameEthHeader)(EnetPhy_Handle hPhy,
+                                       uint8_t *ethhdr,
+                                       uint32_t size);
+
+    /*!
+     * \brief Enable or disable the PHY PTP module
+     *
+     * Optional PHY function to enable or disable the PHY PTP module.
+     * This function can only be supported when the PHY has a built-in PTP clock.
+     *
+     * \param hPhy     PHY device handle
+     * \param on       Flag indicate enable (on=true) or disable(on=false) PTP module
+     * \param srcMacStatusFrameType      The PHY-specific src MAC of the status frame.
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*enablePtp)(EnetPhy_Handle hPhy,
+                         bool on,
+                         uint32_t srcMacStatusFrameType);
+
+    /*!
+     * \brief Provide timer tick to the driver.
+     *
+     * Provide timer tick to the driver.
+     *
+     * \param hPhy     PHY device handle
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*tickDriver)(EnetPhy_Handle hPhy);
+
+    /*!
+     * \brief Enable/Disable an event capture on a PHY GPIO pin.
+     *
+     * Optional PHY function to enable/disable an event capture on a PHY GPIO pin.
+     * This function can only be supported when the PHY has a built-in PTP clock
+     * that support event capture.
+     *
+     * \param hPhy     PHY device handle
+     * \param eventIdx Event index
+     * \param falling  Capture event on falling edge or rising edge if falling is false.
+     * \param on       Enable when on is true, otherwise disable the event.
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*enableEventCapture)(EnetPhy_Handle hPhy, uint32_t eventIdx,
+                bool falling, bool on);
+
+    /*!
+     * \brief Enable/Disable trigger output on a GPIO pin.
+     *
+     * Optional PHY function to enable/disable trigger output on a GPIO pin.
+     * This function can only be supported when the PHY has a built-in PTP clock
+     * that support trigger output.
+     *
+     * \param hPhy       PHY device handle
+     * \param triggerIdx Trigger index
+     * \param start      Start trigger time in nanosec unit.
+     * \param period     Period of the pulse in nanosec unit.
+     *                   Disable the trigger if the period is equal to 0.
+     * \param repeat     Repeated pulse or one shot pulse if repeat is false.
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*enableTriggerOutput)(EnetPhy_Handle hPhy, uint32_t triggerIdx,
+                uint64_t start, uint64_t period, bool repeat);
+
+    /*!
+     * \brief Get event timestamp
+     *
+     * Get event timestamp
+     *
+     * \param hPhy       PHY device handle
+     * \param eventIdx   Output event index
+     * \param seqId      Output event sequence identifier
+     * \param ts64       Output event timestamp
+     *
+     * \return \ref EnetPhy_ErrorCodes
+     */
+    int32_t (*getEventTs)(EnetPhy_Handle hPhy, uint32_t *eventIdx,
+                uint32_t *seqId, uint64_t *ts64);
 } EnetPhy_Drv;
 
 

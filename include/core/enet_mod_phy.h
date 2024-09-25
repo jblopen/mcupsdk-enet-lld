@@ -197,6 +197,123 @@ enum EnetPhy_Ioctl_e
      * - outArgs: None
      */
     ENET_PHY_IOCTL_PRINT_REGS = ENET_PHY_PUBLIC_IOCTL(13U),
+
+    /*!
+     * \brief Adjust PHY PTP clock Frequency.
+     *
+     * IOCTL parameters:
+     * -  inArgs: #EnetPhy_AdjPtpFreqInArgs
+     * - outArgs: None
+     */
+    ENET_PHY_IOCTL_ADJ_PTP_FREQ = ENET_PHY_PUBLIC_IOCTL(14U),
+
+    /*!
+     * \brief Adjust PHY PTP clock Phase.
+     *
+     * IOCTL parameters:
+     * -  inArgs: #EnetPhy_AdjPtpPhaseInArgs
+     * - outArgs: None
+     */
+    ENET_PHY_IOCTL_ADJ_PTP_PHASE = ENET_PHY_PUBLIC_IOCTL(15U),
+
+    /*!
+     * \brief Get current PHY PTP clock time.
+     *
+     * IOCTL parameters:
+     * -  inArgs: EnetPhy_GenericInArgs
+     * - outArgs: uint64_t
+     */
+    ENET_PHY_IOCTL_GET_PTP_TIME = ENET_PHY_PUBLIC_IOCTL(16U),
+
+    /*!
+     * \brief Set PHY PTP clock time.
+     *
+     * IOCTL parameters:
+     * -  inArgs: #EnetPhy_SetPtpTimeInArgs
+     * - outArgs: None
+     */
+    ENET_PHY_IOCTL_SET_PTP_TIME = ENET_PHY_PUBLIC_IOCTL(17U),
+
+    /*!
+     * \brief Get PHY PTP TX packet timestamp.
+     *
+     * IOCTL parameters:
+     * -  inArgs: #EnetPhy_PtpPktTimestampInArgs
+     * - outArgs: uint64_t
+     */
+    ENET_PHY_IOCTL_GET_PTP_TXTS = ENET_PHY_PUBLIC_IOCTL(18U),
+
+    /*!
+     * \brief Get PHY PTP RX packet timestamp.
+     *
+     * IOCTL parameters:
+     * -  inArgs: #EnetPhy_PtpPktTimestampInArgs
+     * - outArgs: uint64_t
+     */
+    ENET_PHY_IOCTL_GET_PTP_RXTS = ENET_PHY_PUBLIC_IOCTL(19U),
+
+    /*!
+     * \brief Add PHY PTP TX packet info to a waiting TX timestamp list.
+     *
+     * IOCTL parameters:
+     * -  inArgs: #EnetPhy_PtpPktTimestampInArgs
+     * - outArgs: None
+     */
+    ENET_PHY_IOCTL_WAIT_PTP_TXTS = ENET_PHY_PUBLIC_IOCTL(20U),
+
+    /*!
+     * \brief Process PHY status frame.
+     *
+     * IOCTL parameters:
+     * -  inArgs: #EnetPhy_ProcStatusFrameInArgs
+     * - outArgs: #EnetPhy_ProcStatusFrameOutArgs
+     */
+    ENET_PHY_IOCTL_PROC_STATUS_FRAME = ENET_PHY_PUBLIC_IOCTL(21U),
+
+    /*!
+     * \brief Get PHY status frame header.
+     *
+     * IOCTL parameters:
+     * -  inArgs: #EnetPhy_GenericInArgs
+     * - outArgs: #EnetPhy_GetStatusFrameEthdrOutArgs
+     */
+    ENET_PHY_IOCTL_GET_STATUS_FRAME_ETHDR = ENET_PHY_PUBLIC_IOCTL(22U),
+
+    /*!
+     * \brief Enable/Disable PHY PTP module.
+     *
+     * IOCTL parameters:
+     * -  inArgs: #EnetPhy_EnablePtpInArgs
+     * - outArgs: None
+     */
+    ENET_PHY_IOCTL_ENABLE_PTP = ENET_PHY_PUBLIC_IOCTL(23U),
+
+    /*!
+     * \brief Enable/Disable an event capture on a PHY GPIO pin.
+     *
+     * IOCTL parameters:
+     * -  inArgs: EnetPhy_EnableEventCaptureInArgs
+     * - outArgs: None
+     */
+    ENET_PHY_IOCTL_ENABLE_EVENT_CAPTURE = ENET_PHY_PUBLIC_IOCTL(24U),
+
+    /*!
+     * \brief Enable/Disable clock trigger on a GPIO pin.
+     *
+     * IOCTL parameters:
+     * -  inArgs: #EnetPhy_EnableTriggerOutputInArgs
+     * - outArgs: None
+     */
+    ENET_PHY_IOCTL_ENABLE_TRIGGER_OUTPUT = ENET_PHY_PUBLIC_IOCTL(25U),
+
+    /*!
+     * \brief Get event timestamp.
+     *
+     * IOCTL parameters:
+     * -  inArgs: #EnetPhy_GenericInArgs
+     * - outArgs: #EnetPhy_GetEventTimestampOutArgs
+     */
+    ENET_PHY_IOCTL_GET_EVENT_TIMESTAMP = ENET_PHY_PUBLIC_IOCTL(26U),
 };
 
 /*!
@@ -267,6 +384,118 @@ typedef struct EnetPhy_C45WriteRegInArgs_s
     /*! Value to be written */
     uint16_t val;
 } EnetPhy_C45WriteRegInArgs;
+
+/*!
+ * \brief Input args for #ENET_PHY_IOCTL_GET_PTP_TXTS command.
+ */
+typedef struct EnetPhy_PtpPktTimestampInArgs_s
+{
+    Enet_MacPort macPort;
+    uint32_t domain;
+    uint32_t msgType;
+    uint32_t seqId;
+} EnetPhy_PtpPktTimestampInArgs;
+
+/*!
+ * \brief Input args for #ENET_PHY_IOCTL_ADJ_PTP_FREQ command.
+ */
+typedef struct EnetPhy_AdjPtpFreqInArgs_s
+{
+    Enet_MacPort macPort;
+    int64_t ppb;
+} EnetPhy_AdjPtpFreqInArgs;
+
+/*!
+ * \brief Input args for #ENET_PHY_IOCTL_ADJ_PTP_PHASE command.
+ */
+typedef struct EnetPhy_AdjPtpPhaseInArgs_s
+{
+    Enet_MacPort macPort;
+    int64_t offset;
+} EnetPhy_AdjPtpPhaseInArgs;
+
+/*!
+ * \brief Input args for #ENET_PHY_IOCTL_SET_PTP_TIME command.
+ */
+typedef struct EnetPhy_SetPtpTimeInArgs_s
+{
+    Enet_MacPort macPort;
+    uint64_t ts64;
+} EnetPhy_SetPtpTimeInArgs;
+
+/*!
+ * \brief Input args for #ENET_PHY_IOCTL_PROC_STATUS_FRAME command.
+ */
+typedef struct EnetPhy_ProcStatusFrameInArgs_s
+{
+    Enet_MacPort macPort;
+    uint8_t *frame;
+    uint32_t size;
+} EnetPhy_ProcStatusFrameInArgs;
+
+/*!
+ * \brief Output args for #ENET_PHY_IOCTL_PROC_STATUS_FRAME command.
+ */
+typedef struct EnetPhy_ProcStatusFrameOutArgs_s
+{
+    /* combination of any #ENETPHY_STATUS_FRAME_TYPE_x */
+    uint32_t types;
+} EnetPhy_ProcStatusFrameOutArgs;
+
+/*!
+ * \brief Input args for #ENET_PHY_IOCTL_GET_STATUS_FRAME_ETHDR command.
+ */
+typedef struct EnetPhy_GetStatusFrameEthdrOutArgs_s
+{
+    uint8_t *ethhdr;
+    uint32_t size;
+} EnetPhy_GetStatusFrameEthdrOutArgs;
+
+/*!
+ * \brief Input args for #ENET_PHY_IOCTL_ENABLE_PTP command.
+ */
+typedef struct EnetPhy_EnablePtpInArgs_s
+{
+    Enet_MacPort macPort;
+    bool on;
+    /* This PHY-specific parameter is used to distinguish status frames
+     * among multiple PHYs connected to the same SoC.
+     * Please check the PHY datasheet for supported value. */
+    uint32_t srcMacStatusFrameType;
+} EnetPhy_EnablePtpInArgs;
+
+/*!
+ * \brief Input args for #ENET_PHY_IOCTL_ENABLE_EVENT_CAPTURE command.
+ */
+typedef struct EnetPhy_EnableEventCaptureInArgs_s
+{
+    Enet_MacPort macPort;
+    uint32_t eventIdx;
+    bool falling;
+    bool on;
+} EnetPhy_EnableEventCaptureInArgs;
+
+/*!
+ * \brief Input args for #ENET_PHY_IOCTL_ENABLE_TRIGGER_OUTPUT command.
+ */
+typedef struct EnetPhy_EnableTriggerOutputInArgs_s
+{
+    Enet_MacPort macPort;
+    uint32_t triggerIdx;
+    uint64_t startNsec;
+    uint64_t periodNsec;
+    bool repeat;
+} EnetPhy_EnableTriggerOutputInArgs;
+
+/*!
+ * \brief Output args for #ENET_PHY_IOCTL_GET_EVENT_TIMESTAMP command.
+ */
+typedef struct EnetPhy_GetEventTimestampOutArgs_s
+{
+    uint32_t eventIdx;
+    uint32_t seqId;
+    uint64_t ts64;
+} EnetPhy_GetEventTimestampOutArgs;
 
 /* ========================================================================== */
 /*                         Global Variables Declarations                      */

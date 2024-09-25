@@ -65,6 +65,7 @@
 #define PSF_TX          0x1000
 #define PSF_RX          0x2000
 #define PSF_EVNT        0x4000
+#define DP83TG721_ONLY_TIMESTAMP_PTP_EVENTS 0
 
 #define NUM_TRIGGER       2
 #define NUM_EVENTS        2
@@ -265,6 +266,20 @@ EnetPhy_Drv gEnetPhyDrvDp83tg721 =
     .readExtReg          = Dp83tg721_readExtReg,
     .writeExtReg         = Dp83tg721_writeExtReg,
     .printRegs           = Dp83tg721_printRegs,
+    .adjPtpFreq              = Dp83tg721_adjFreq,
+    .adjPtpPhase             = Dp83tg721_adjPhase,
+    .getPtpTime              = Dp83tg721_getTime,
+    .setPtpTime              = Dp83tg721_setTime,
+    .getPtpTxTime            = Dp83tg721_getTxTs,
+    .getPtpRxTime            = Dp83tg721_getRxTs,
+    .waitPtpTxTime           = Dp83tg721_waitPtpTxTime,
+    .procStatusFrame         = Dp83tg721_procStatusFrame,
+    .getStatusFrameEthHeader = Dp83tg721_getStatusFrameEthHeader,
+    .enablePtp               = Dp83tg721_enablePtp,
+    .tickDriver              = Dp83tg721_tickDriver,
+    .enableEventCapture      = Dp83tg721_enableEventCapture,
+    .enableTriggerOutput     = Dp83tg721_enableTriggerOutput,
+    .getEventTs              = Dp83tg721_getEventTs,
 };
 
 /* PHY Device Attributes */
@@ -1107,9 +1122,11 @@ static int32_t Dp83tg721_enablePtp(EnetPhy_Handle hPhy, bool on,
         Dp83tg721_writeExtReg(hPhy, PTP_TXCFG0, txcfg0);
         Dp83tg721_writeExtReg(hPhy, PTP_RXCFG0, rxcfg0);
 
+		#if DP83TG721_ONLY_TIMESTAMP_PTP_EVENTS
         /* Timestamp only PTP events, not all PTP packets */
         Dp83tg721_writeExtReg(hPhy, PTP_TXCFG1, 0x0800);
         Dp83tg721_writeExtReg(hPhy, PTP_RXCFG1, 0x0800);
+		#endif
     }
 
     return ENETPHY_SOK;
@@ -1480,11 +1497,18 @@ static int32_t Dp83tg721_waitPtpTxTime(EnetPhy_Handle hPhy, uint32_t domain,
     int32_t status = ENETPHY_SOK;
     Dp83tg721Priv * priv = hPhy->priv;
 
-    /* Only accept the PTP event message (msgType < 8) */
-    if ((priv == NULL) || (msgType >= 8))
+	#if DP83TG721_ONLY_TIMESTAMP_PTP_EVENTS
+	if ((priv == NULL) || (msgType >= 8))
     {
         status = ENETPHY_EINVALIDPARAMS;
     }
+	#else
+    /* Only accept the PTP event message (msgType < 8) */
+    if (priv == NULL)
+    {
+        status = ENETPHY_EINVALIDPARAMS;
+    }
+	#endif
 
     if (status == ENETPHY_SOK)
     {

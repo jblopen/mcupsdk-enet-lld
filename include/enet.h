@@ -398,7 +398,7 @@ void Enet_close(Enet_Handle hEnet);
  * Save the Ethernet Peripheral.
  *
  * \param hEnet        Enet driver handle
- * 
+ *
  * \return status as ENET_SOK if successful
  */
 int32_t Enet_saveCtxt(Enet_Handle hEnet);
@@ -410,7 +410,7 @@ int32_t Enet_saveCtxt(Enet_Handle hEnet);
  *
  * \param enetType        Enet Peripheral type
  * \param instId          Enet Peripheral instance id
- * 
+ *
  * \return status as ENET_SOK if successful
  */
 int32_t Enet_restoreCtxt(Enet_Type enetType,
