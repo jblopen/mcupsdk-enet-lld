@@ -660,7 +660,7 @@ typedef struct EnetPhy_Obj_s
     void *mdioArgs;
 
     /*! Private data that is used by the driver */
-    void *private;
+    void *priv;
 } EnetPhy_Obj;
 
 /*!

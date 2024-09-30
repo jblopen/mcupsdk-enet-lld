@@ -405,7 +405,7 @@ static void InitPriv(Dp83tg721Priv *priv, EnetPhy_Handle hPhy)
     memset(priv, 0, sizeof(Dp83tg721Priv));
     priv->isMaster = false;
     priv->hPhy = hPhy;
-    hPhy->private = priv;
+    hPhy->priv = priv;
     ListInit(&priv->txTsWaitList);
     ListInit(&priv->txTsPoolList);
     for (i = 0; i < MAX_TXTS_POOL; i++)
@@ -516,7 +516,7 @@ static int32_t Dp83tg721_config(EnetPhy_Handle hPhy,
     bool enableAutoNeg = true;
     EnetPhy_State *state = &hPhy->state;
     int32_t status = ENETPHY_SOK;
-    Dp83tg721Priv *priv = hPhy->private;
+    Dp83tg721Priv *priv = hPhy->priv;
 
     if (priv == NULL)
     {
@@ -753,7 +753,7 @@ static void Dp83tg721_readStraps(EnetPhy_Handle hPhy)
 {
     uint16_t strap;
     int32_t status;
-    Dp83tg721Priv *priv = hPhy->private;
+    Dp83tg721Priv *priv = hPhy->priv;
 
     if (priv)
     {
@@ -775,7 +775,7 @@ static void Dp83tg721_readStraps(EnetPhy_Handle hPhy)
     }
     else
     {
-        ENETTRACE_ERR("No phy private\n");
+        ENETTRACE_ERR("No phy priv\n");
     }
 }
 
@@ -1026,7 +1026,7 @@ static void Dp83tg721_enableStatusFrames(EnetPhy_Handle hPhy, bool on,
 {
     uint16_t cfg0 = 0;
     uint16_t ver;
-    Dp83tg721Priv *priv = hPhy->private;
+    Dp83tg721Priv *priv = hPhy->priv;
 
     if (on == true)
     {
@@ -1169,7 +1169,7 @@ static int32_t Dp83tg721_getTs(EnetPhy_Handle hPhy, uint32_t domain, uint32_t ms
                                uint32_t seqId, uint64_t *ts64, bool tx)
 {
     int32_t status = ENETPHY_SOK;
-    Dp83tg721Priv *priv = hPhy->private;
+    Dp83tg721Priv *priv = hPhy->priv;
 
     if ((priv == NULL) || (ts64 == NULL))
     {
@@ -1417,7 +1417,7 @@ static int32_t Dp83tg721_procStatusFrame(EnetPhy_Handle hPhy,
     uint16_t ests;
     uint16_t type;
     int32_t status = ENETPHY_SOK;
-    Dp83tg721Priv * priv = hPhy->private;
+    Dp83tg721Priv * priv = hPhy->priv;
 
     if ((frame == NULL) || (priv == NULL) || (types == NULL))
     {
@@ -1478,7 +1478,7 @@ static int32_t Dp83tg721_waitPtpTxTime(EnetPhy_Handle hPhy, uint32_t domain,
                                        uint32_t msgType, uint32_t seqId)
 {
     int32_t status = ENETPHY_SOK;
-    Dp83tg721Priv * priv = hPhy->private;
+    Dp83tg721Priv * priv = hPhy->priv;
 
     /* Only accept the PTP event message (msgType < 8) */
     if ((priv == NULL) || (msgType >= 8))
@@ -1528,7 +1528,7 @@ static int32_t Dp83tg721_getStatusFrameEthHeader(EnetPhy_Handle hPhy,
                     uint8_t *ethhdr, uint32_t size)
 {
     int32_t status = ENETPHY_SOK;
-    Dp83tg721Priv *priv = hPhy->private;
+    Dp83tg721Priv *priv = hPhy->priv;
 
     if ((ethhdr == NULL) || (size < sizeof(priv->stsFrameEthHdr)) || (priv == NULL))
     {
@@ -1544,7 +1544,7 @@ static int32_t Dp83tg721_getStatusFrameEthHeader(EnetPhy_Handle hPhy,
 
 static int32_t Dp83tg721_tickDriver(EnetPhy_Handle hPhy)
 {
-    Dp83tg721Priv *priv = hPhy->private;
+    Dp83tg721Priv *priv = hPhy->priv;
     int32_t status = ENETPHY_SOK;
 
     if (priv == NULL)
@@ -1693,7 +1693,7 @@ static int32_t Dp83tg721_getEventTs(EnetPhy_Handle hPhy, uint32_t *eventIdx,
                     uint32_t *seqId, uint64_t *ts64)
 {
     int32_t status = ENETPHY_SOK;
-    Dp83tg721Priv *priv = hPhy->private;
+    Dp83tg721Priv *priv = hPhy->priv;
 
     if ((eventIdx == NULL) || (seqId == NULL) || (ts64 == NULL) || (priv == NULL))
     {
