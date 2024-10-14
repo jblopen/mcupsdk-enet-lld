@@ -91,7 +91,7 @@ INCLUDES_common := \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-config/am64x \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/lwip_ic \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/lwip_ic/lwipific/inc \
-	-I${MCU_PLUS_SDK_PATH}/examples/networking/lwip/enet_intercore_icssg/common \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/lwip/enet_intercore_icssg/common \
 	-Igenerated \
 
 DEFINES_common := \

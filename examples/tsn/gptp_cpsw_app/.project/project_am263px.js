@@ -54,7 +54,7 @@ const includes_freertos_r5f = {
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/soc/am263px",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/hw_include",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/hw_include/mdio/V4",
-        "${MCU_PLUS_SDK_PATH}/examples/networking/tsn",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/tsn",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_unibase",

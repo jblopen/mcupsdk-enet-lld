@@ -108,7 +108,11 @@
 #if (_DEBUG_ == 1)
 #define LWIPIF_POLL_TASK_STACK         (3072U)
 #else
+% if(common.getSelfSysCfgCoreName().includes("a53")) {
+#define LWIPIF_POLL_TASK_STACK         (2048U)
+% } else {
 #define LWIPIF_POLL_TASK_STACK         (1024U)
+%}
 #endif
 
 #define OS_TASKPRIHIGH              8U
@@ -386,7 +390,7 @@ void LwipifEnetAppCb_getTxHandleInfo(LwipifEnetAppIf_GetTxHandleInArgs *inArgs,
     outArgs->hTxChannel = txChInfo.hTxCh;
     outArgs->txChNum = txChInfo.txChNum;
     outArgs->numPackets = txChInfo.maxNumTxPkts;
-    outArgs->disableEvent = false;
+    outArgs->disableEvent = true;
 
     /* Initialize the DMA free queue */
     EnetQueue_initQ(inArgs->pktInfoQ);
@@ -411,9 +415,7 @@ void LwipifEnetAppCb_getRxHandleInfo(LwipifEnetAppIf_GetRxHandleInArgs *inArgs,
     uint32_t i;
     EnetDma_Pkt *pPktInfo;
     Rx_CustomPbuf *cPbuf;
-% if(module.getDmaInterface(instance) == "ENET_SOC_HOSTPORT_DMA_TYPE_UDMA") {
-    // bool useRingMon = false;
-% }
+
     EnetApp_HandleInfo handleInfo;
     EnetPer_AttachCoreOutArgs attachInfo;
     uint32_t coreId          = EnetSoc_getCoreId();
@@ -456,13 +458,10 @@ void LwipifEnetAppCb_getRxHandleInfo(LwipifEnetAppIf_GetRxHandleInArgs *inArgs,
     outArgs->rxFlowStartIdx = rxChInfo.rxFlowStartIdx;
     outArgs->rxFlowIdx = rxChInfo.rxFlowIdx;
 % }
-    outArgs->hRxFlow  = rxChInfo.hRxCh;
-    outArgs->numPackets  = rxChInfo.maxNumRxPkts;
-% if(module.getDmaInterface(instance) == "ENET_SOC_HOSTPORT_DMA_TYPE_UDMA") {
+    outArgs->hRxFlow      = rxChInfo.hRxCh;
+    outArgs->numPackets   = rxChInfo.maxNumRxPkts;
     outArgs->disableEvent = false;
-% } else{
-    outArgs->disableEvent = false;
-% }
+
     for (uint32_t i = 0; i < rxChInfo.numValidMacAddress; i++)
     {
         EnetUtils_copyMacAddr(&outArgs->macAddr[inArgs->chId][0U], rxChInfo.macAddr[i]);

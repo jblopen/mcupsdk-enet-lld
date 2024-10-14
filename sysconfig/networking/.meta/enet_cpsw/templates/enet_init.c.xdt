@@ -632,7 +632,7 @@ static int32_t EnetApp_enablePorts(Enet_Handle hEnet,
                        ENET_MDIO_IOCTL_IS_ALIVE,
                        &prms,
                        status);
-            
+
             if (status == ENET_SOK)
             {
                 if (alive == true)
@@ -644,7 +644,7 @@ static int32_t EnetApp_enablePorts(Enet_Handle hEnet,
             {
                 EnetAppUtils_print("Failed to get PHY %d alive status: %d\r\n", i, status);
             }
-        }        
+        }
     }
 
     return status;
@@ -778,7 +778,7 @@ static void EnetApp_openDmaChannels(EnetAppDmaSysCfg_Obj *dma,
 }
 
 
-%if ((soc === "am64x") || (soc === "am243x")){
+%if ((soc === "am64x") || (soc === "am243x") || (soc === "am62dx")){
 /*
  * Function to Poll the Verify status and restart verification.
  * Application needs to call this after link-up, Verify timeout

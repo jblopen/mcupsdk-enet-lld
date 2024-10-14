@@ -53,8 +53,8 @@ const includes_freertos_r5f = {
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/soc/am263x",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/hw_include",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/hw_include/mdio/V4",
-        "${MCU_PLUS_SDK_PATH}/examples/networking/enet_layer2_multi_channel/am263x",
-        "${MCU_PLUS_SDK_PATH}/examples/networking/enet_layer2_multi_channel/ptp_stack",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/enet_layer2_multi_channel/am263x",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/enet_layer2_multi_channel/ptp_stack",
     ],
 };
 

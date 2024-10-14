@@ -61,7 +61,7 @@ const includes_freertos_r5f = {
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/lwipif/inc",
         "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-stack/contrib",
         "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-config/am261x/enet",
-        "${MCU_PLUS_SDK_PATH}/examples/networking/lwip/enet_lwip_cpsw/extPhyMgmt"
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/lwip/enet_lwip_cpsw/extPhyMgmt"
     ],
 };
 

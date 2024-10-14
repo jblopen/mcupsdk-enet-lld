@@ -79,7 +79,7 @@ INCLUDES_common := \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/soc/k3/am64x_am243x \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/hw_include \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/hw_include/mdio/V4 \
-	-I${MCU_PLUS_SDK_PATH}/examples/networking/enet_layer2_multi_channel/ptp_stack \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/enet_layer2_multi_channel/ptp_stack \
 	-Igenerated \
 
 DEFINES_common := \

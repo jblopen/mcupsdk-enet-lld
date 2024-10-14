@@ -100,7 +100,7 @@ function getPeripheralRequirements(inst, peripheralName, name)
     }
     else if (name == "RMII")
     {
-		pinResource = pinmux.getPinRequirements(interfaceName, "RMII_REF_CLK", "REF_CLK");
+        pinResource = pinmux.getPinRequirements(interfaceName, "RMII_REF_CLK", "REF_CLK");
         pinmux.setConfigurableDefault( pinResource, "rx", true );
         resources.push( pinResource);
         if (inst.enablexmii1 == true)

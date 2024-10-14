@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) Texas Instruments Incorporated 2020
+ *  Copyright (c) Texas Instruments Incorporated 2024
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -31,12 +31,12 @@
  */
 
 /**
- *  \file ti_enet_config.h
+ *  \file ti_enet_open_close.h
  *
- *  \brief Enet config header file.
+ *  \brief Enet open header file.
  */
 % for(let subTemplate of args) {
-    % if (subTemplate.enet_config) {
-`system.getTemplate(subTemplate.enet_config)(subTemplate.moduleName)`
+    % if (subTemplate.enet_open) {
+`system.getTemplate(subTemplate.enet_open)(subTemplate.moduleName)`
     % }
 % }

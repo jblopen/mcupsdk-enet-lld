@@ -86,7 +86,7 @@ INCLUDES_common := \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/soc/am263px \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/hw_include \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/hw_include/mdio/V4 \
-	-I${MCU_PLUS_SDK_PATH}/examples/networking/tsn \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/tsn \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_combase/tilld/sitara \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/eval_inc \

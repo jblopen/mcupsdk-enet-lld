@@ -1,5 +1,7 @@
 %%{
     let module = system.modules["/networking/enet_cpsw/enet_cpsw"];
+    let common = system.getScript("/common");
+    let soc = common.getSocName();
 %%}
 % let instance = module.$instances[0];
 /*
@@ -31,7 +33,15 @@
 
 #include <drivers/hw_include/cslr_soc.h>
 #include <drivers/udma/include/udma_types.h>
+%if ((soc === "am64x") || (soc === "am243x")){
 #include <drivers/udma/soc/am64x_am243x/udma_soc.h>
+%}
+%if (soc === "am62ax"){
+#include <drivers/udma/soc/am62ax/udma_soc.h>
+%}
+%if (soc === "am62x"){
+#include <drivers/udma/soc/am62x/udma_soc.h>
+%}
 #include <networking/enet/hw_include/csl_cpswitch.h>
 #include <networking/enet/core/src/dma/udma/enet_udma_priv.h>
 
@@ -92,7 +102,7 @@ __attribute__ ((aligned(UDMA_CACHELINE_ALIGNMENT),
 static EnetDma_Pkt gAppPktInfoMem_`poolType`Pool[ENET_MEM_`poolType.toUpperCase()`_POOL_NUM_PKTS];
 
 /* Eth packet `poolType` pool memories */
-static uint8_t gEthPktMem_`poolType`Pool[ENET_MEM_`poolType.toUpperCase()`_POOL_NUM_PKTS][ENET_MEM_`poolType.toUpperCase()`_POOL_PKT_SIZE]
+static uint8_t gEthPktMem_`poolType`Pool[ENET_MEM_`poolType.toUpperCase()`_POOL_NUM_PKTS][(ENET_MEM_`poolType.toUpperCase()`_POOL_PKT_SIZE)]
 __attribute__ ((aligned(ENETDMA_CACHELINE_ALIGNMENT),
                 section(".bss:ENET_DMA_PKT_MEMPOOL")));
 static EnetMem_AppPktInfoMem gAppPktInfoContainerMem_`poolType`Pool[ENET_MEM_`poolType.toUpperCase()`_POOL_NUM_PKTS];
@@ -136,7 +146,7 @@ static const EnetMem_Cfg gEthMemCfg =
             .numPkts     = (ENET_MEM_`poolType.toUpperCase()`_POOL_NUM_PKTS),
             .pktInfoMem  = gAppPktInfoMem_`poolType`Pool,
             .pktInfoSize = sizeof(gAppPktInfoMem_`poolType`Pool),
-            .pktBufMem   = &gEthPktMem_`poolType`Pool[0][0],
+            .pktBufMem   = (uint8_t *)&gEthPktMem_`poolType`Pool[0][0],
             .pktBufSize  = sizeof(gEthPktMem_`poolType`Pool),
             .pktInfoContainerMem = gAppPktInfoContainerMem_`poolType`Pool,
             .pktInfoContainerSize = sizeof(gAppPktInfoContainerMem_`poolType`Pool),

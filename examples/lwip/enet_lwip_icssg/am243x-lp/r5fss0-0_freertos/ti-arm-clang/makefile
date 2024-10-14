@@ -87,7 +87,7 @@ INCLUDES_common := \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/lwipif/inc \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-stack/contrib \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-config/am243x \
-	-I${MCU_PLUS_SDK_PATH}/examples/networking/lwip/enet_lwip_icssg/extPhyMgmt \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/lwip/enet_lwip_icssg/extPhyMgmt \
 	-Igenerated \
 
 DEFINES_common := \
