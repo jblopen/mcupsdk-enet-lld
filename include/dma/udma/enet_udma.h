@@ -303,13 +303,13 @@ typedef struct EnetUdma_PktInfo_s
 
     /*! Packet time stamp information.
      *
-     * For TX, if tsInfo.enableHostTxTs flag is set to true, packet will be timestampped
+     * For TX, if tsInfo.enableHostTxTs flag is set to true, packet will be timestamped
      * on egress and will trigger host transmit event in CPTS. The timestamp value is then
      * stored in CPTS FIFO with given sequence Id, message type and domain value. This
      * can be used to timestamp any packet (even non-PTP) sent from host.
      *
      * For RX, the received packet's ingress timestamp is captured and is stored in
-     * tsInfo.rxPktTs. All ingress packets are timestampped. */
+     * tsInfo.rxPktTs. All ingress packets are timestamped. */
     EnetUdma_PktTsInfo tsInfo;
 
     /*! Directed port number.
@@ -341,8 +341,11 @@ typedef struct EnetUdma_PktInfo_s
       * Highest priority is '7' and lowest is '0'. Order of servicing the packet by the transmit port is based on this parameter. */
     uint32_t txPktTc;
 
-    /*! Transmit timestamp id. Used to correleate request with response */
+    /*! Transmit timestamp id. Used to correlate request with response */
     uint32_t txTsId;
+    
+    /*! Additional DMA metadata flags used to communicate with ICSSG based protocols */
+    uint32_t perDmaFlags;
 
     /*! Scatter Gather list information for packets to be transmitted.
      * A single tx packet can be fragmented across multiple chunks,

@@ -62,6 +62,13 @@ extern "C" {
 /*                                 Macros                                     */
 /* ========================================================================== */
 
+/*! IOCTL Interface Description
+    IOCTLs get resolved to command number after macro resolution which is then 
+    used to index into command array to find the function to execute
+    Command Structure:
+    |<TYPE - 8b>|<PERIPHERAL - 8b>|<MAJOR_NUMBER - 8b>|<MINOR_NUMBER - 8b>|
+ */
+
 /*! \brief IOCTL type bit offset. */
 #define ENET_IOCTL_TYPE_OFFSET                (24U)
 
@@ -83,13 +90,13 @@ extern "C" {
 /*! \brief Helper macro to get the IOCTL major number. */
 #define ENET_IOCTL_GET_MAJ(x)                 ((x) & 0x0000FF00U)
 
-/*! \brief Helper macro to get the IOCTL major number. */
+/*! \brief Helper macro to get the IOCTL minor number. */
 #define ENET_IOCTL_GET_MIN(x)                 ((x) & 0x000000FFU)
 
 /*! \brief Helper macro to set the IOCTL type. */
 #define ENET_IOCTL_TYPE(x)                    ((x) << ENET_IOCTL_TYPE_OFFSET)
 
-/*! \brief Helper macro to set the IOCTL type. */
+/*! \brief Helper macro to set the IOCTL hardware peripheral. */
 #define ENET_IOCTL_PER(x)                     ((x) << ENET_IOCTL_PER_OFFSET)
 
 /*! \brief Helper macro to set the IOCTL major number. */
@@ -175,10 +182,10 @@ extern "C" {
  * \param prms         IOCTL parameters
  * \param status       return status of the Enet_ioctl. 
  *                     #ENET_SOK if operation is synchronous and it was successful.
- *                     #ENET_SINPROGRESS if operation is asynchronous and was initiated sucessfully.
+ *                     #ENET_SINPROGRESS if operation is asynchronous and was initiated successfully.
  *                     \ref Enet_ErrorCodes in case of any failure.
  */
-#define ENET_IOCTL(hEnet, coreId, ioctlCmd,prms,status)                           \
+#define ENET_IOCTL(hEnet, coreId, ioctlCmd, prms, status)                         \
     do {                                                                          \
         extern int32_t Enet_ioctl(Enet_Handle enetHandle,                         \
                    uint32_t ioctlCoreId,                                          \
@@ -191,7 +198,7 @@ extern "C" {
         status = Enet_ioctl_register_##ioctlCmd(hEnet, coreId);                   \
         if (ENET_SOK == status)                                                   \
         {                                                                         \
-            status = Enet_ioctl(hEnet, coreId, ioctlCmd,prms);                    \
+            status = Enet_ioctl(hEnet, coreId, ioctlCmd, prms);                   \
         }                                                                         \
     } while (0)
 

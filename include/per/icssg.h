@@ -442,7 +442,7 @@ typedef enum Icssg_Ioctl_e
     ICSSG_FDB_IOCTL_REMOVE_ALL_ENTRIES = ICSSG_PUBLIC_IOCTL(8U),
 
     /*!
-     * \brief Remote all ageable entries.
+     * \brief Remove all ageable entries.
      *
      * IOCTL params:
      * -  inArgs: None
@@ -653,6 +653,28 @@ typedef enum Icssg_Ioctl_e
     ICSSG_MACPORT_IOCTL_CONFIG_SPL_FRAME_PRIO = ICSSG_PUBLIC_IOCTL(28U),
 
     /*!
+     * \brief Enable HSR Tag Removal Offload
+     *
+     * IOCTL params:
+     * -  inArgs: None
+     * - outArgs: None
+     *
+     * Type: Asynchronous.
+     */
+    ICSSG_HSR_IOCTL_ENABLE_TAG_REM_AND_HOST_DD = ICSSG_PUBLIC_IOCTL(29U),
+
+    /*!
+     * \brief Disable HSR Tag Removal Offload
+     *
+     * IOCTL params:
+     * -  inArgs: None
+     * - outArgs: None
+     *
+     * Type: Asynchronous.
+     */
+    ICSSG_HSR_IOCTL_DISABLE_TAG_REM_AND_HOST_DD = ICSSG_PUBLIC_IOCTL(30U),
+
+    /*!
      * \brief Register Handler for the IOCTL CMD
      *
      * IOCTL params:
@@ -661,7 +683,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Synchronous.
      */
-    ICSSG_INTERNAL_IOCTL_REGISTER_HANDLER = ICSSG_PUBLIC_IOCTL(29U),
+    ICSSG_INTERNAL_IOCTL_REGISTER_HANDLER = ICSSG_PUBLIC_IOCTL(31U),
 } Icssg_Ioctl;
 
 /*!

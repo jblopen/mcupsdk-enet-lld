@@ -385,7 +385,7 @@ int32_t EnetUdma_submitPkts(EnetPer_Handle hPer,
     EnetDma_Pkt *dmaPkt;
     uint32_t dstTag;
     EnetUdma_CppiRxControl *cppiRxCntr;
-    uint32_t *iccsgTxTsId, *tsInfo;
+    uint32_t *iccsgTxTsId, *dmaExtendedPktInfo;
     int32_t submitCnt = 0;
     bool isExposedRing;
     uint64_t *ringMemPtr = NULL, *currRingMemPtr = NULL;
@@ -470,44 +470,64 @@ int32_t EnetUdma_submitPkts(EnetPer_Handle hPer,
                                 CSL_udmapCppi5GetPsDataLen(pHostDesc));
 #endif
                 cppiRxCntr = (EnetUdma_CppiRxControl *)pHpdDesc->psInfo;
-
                 if (Enet_isIcssFamily(hPer->enetType))
                 {
                     cppiRxCntr->chkSumInfo = 0U;
-                    tsInfo = (uint32_t *)&pHpdDesc->extendedPktInfo[4U];
+                    dmaExtendedPktInfo = (uint32_t *)&pHpdDesc->extendedPktInfo[4U];
+                    /* ICSSG: Extended Packet Info Usage:
+                        pHpdDesc->extendedPktInfo[15:0] = 16B field (WORD_0, WORD_1, WORD_2, WORD_3)
+                        WORD_0       = txTsId - TX Timestamp Cookie
+                        WORD_1[31]   = TX Timestamp enable
+                        WORD_1[30]   = HSR Tag Insertion Enable
+                        WORD_1[29:0] = Unused
+                        WORD_2       = Unused
+                        WORD_3       = Unused
+                    */
+                    if (dmaPkt->tsInfo.enableHostTxTs == true)
+                    {
+                        /* Set Timestamp enable bit */
+                        ENETUDMA_CPPIPSI_SET_TSEN(*dmaExtendedPktInfo, 1U);
+
+                        /* psinfo word 0 is used for passing TS cookie to firmware */
+                        iccsgTxTsId = (uint32_t *)&pHpdDesc->extendedPktInfo[0U];
+                        *iccsgTxTsId = dmaPkt->txTsId;
+
+                        /* Set host Tx timestamp flag back to false */
+                        dmaPkt->tsInfo.enableHostTxTs = false;
+                    }
+                    else
+                    {
+                        ENETUDMA_CPPIPSI_SET_TSEN(*dmaExtendedPktInfo, 0U);
+                    }
+                    if (dmaPkt->icssgDmaFlags)
+                    {
+                        *dmaExtendedPktInfo |= ((dmaPkt->icssgDmaFlags) & (~(1<<31)));
+                    }
                 }
-                else
+                else    /* CPSW specific: */
                 {
                     cppiRxCntr->chkSumInfo = dmaPkt->chkSumInfo;
-                    tsInfo = (uint32_t *)&cppiRxCntr->tsInfo;
+                    dmaExtendedPktInfo = (uint32_t *)&cppiRxCntr->tsInfo;
+                    if (dmaPkt->tsInfo.enableHostTxTs == true)
+                    {
+                        ENETUDMA_CPPIPSI_SET_TSEN(*dmaExtendedPktInfo, 1U);
+
+                        ENETUDMA_CPPIPSI_SET_DOMAIN(*dmaExtendedPktInfo,
+                                                dmaPkt->tsInfo.txPktDomain);
+                        ENETUDMA_CPPIPSI_SET_MSGTYPE(*dmaExtendedPktInfo,
+                                                    dmaPkt->tsInfo.txPktMsgType);
+                        ENETUDMA_CPPIPSI_SET_SEQID(*dmaExtendedPktInfo,
+                                                dmaPkt->tsInfo.txPktSeqId);
+
+                        /* Set host Tx timestamp flag back to false. */
+                        dmaPkt->tsInfo.enableHostTxTs = false;
+                    }
+                    else
+                    {
+                        ENETUDMA_CPPIPSI_SET_TSEN(*dmaExtendedPktInfo, 0U);
+                    }
                 }
 
-                if (dmaPkt->tsInfo.enableHostTxTs == true)
-                {
-                    ENETUDMA_CPPIPSI_SET_TSEN(*tsInfo, 1U);
-
-                    /* Below fields are only valid for CPSW. In ICSSG, whole tsInfo word is
-                     * used for enabling timestamp.
-                     * This is don't care/reserved word for ICSSG so we set without any check */
-                    ENETUDMA_CPPIPSI_SET_DOMAIN(*tsInfo,
-                                               dmaPkt->tsInfo.txPktDomain);
-                    ENETUDMA_CPPIPSI_SET_MSGTYPE(*tsInfo,
-                                                dmaPkt->tsInfo.txPktMsgType);
-                    ENETUDMA_CPPIPSI_SET_SEQID(*tsInfo,
-                                              dmaPkt->tsInfo.txPktSeqId);
-
-                    /* Set host Tx timestamp flag back to false. */
-                    dmaPkt->tsInfo.enableHostTxTs = false;
-
-                    /* For ICSSG psinfo word 0 is used for passing cookie to the firmwareiccsgTxTsId
-                     * This is don't care/reserved word for CPSW so we set without any check */
-                    iccsgTxTsId = (uint32_t *)&pHpdDesc->extendedPktInfo[0U];
-                    *iccsgTxTsId = dmaPkt->txTsId;
-                }
-                else
-                {
-                    ENETUDMA_CPPIPSI_SET_TSEN(*tsInfo, 0U);
-                }
 #if defined(SOC_AM64X) || defined(SOC_AM243X)
                 if (Enet_isIcssFamily(hPer->enetType))
                 {
@@ -836,7 +856,7 @@ int32_t EnetUdma_submitSingleTxPkt(EnetPer_Handle hPer,
     EnetUdma_DmaDesc *pDmaDesc;
     uint32_t dstTag;
     EnetUdma_CppiRxControl *cppiRxCntr;
-    uint32_t *iccsgTxTsId, *tsInfo;
+    uint32_t *iccsgTxTsId, *dmaExtendedPktInfo;
     int32_t submitCnt = 0;
     bool isExposedRing;
     uint64_t *ringMemPtr = NULL, *currRingMemPtr = NULL;
@@ -860,7 +880,7 @@ int32_t EnetUdma_submitSingleTxPkt(EnetPer_Handle hPer,
         ringMemEleCnt = Udma_ringGetElementCnt(hUdmaRing);
     }
 
-    /* Enqueue sintgle packet */
+    /* Enqueue single packet */
     if (NULL != pPkt)
     {
         /* Enqueue desc to fqRing */
@@ -914,39 +934,59 @@ int32_t EnetUdma_submitSingleTxPkt(EnetPer_Handle hPer,
             if (Enet_isIcssFamily(hPer->enetType))
             {
                 cppiRxCntr->chkSumInfo = 0U;
-                tsInfo = (uint32_t *)&pHpdDesc->extendedPktInfo[4U];
+                dmaExtendedPktInfo = (uint32_t *)&pHpdDesc->extendedPktInfo[4U];
+                /* ICSSG: Extended Packet Info Usage:
+                    pHpdDesc->extendedPktInfo[15:0] = 16B field (WORD_0, WORD_1, WORD_2, WORD_3)
+                    WORD_0       = txTsId - TX Timestamp Cookie
+                    WORD_1[31]   = TX Timestamp enable
+                    WORD_1[30]   = HSR Tag Insertion Enable
+                    WORD_1[29:0] = Unused
+                    WORD_2       = Unused
+                    WORD_3       = Unused
+                */
+                if (pPkt->tsInfo.enableHostTxTs == true)
+                {
+                    /* Set Timestamp enable bit */
+                    ENETUDMA_CPPIPSI_SET_TSEN(*dmaExtendedPktInfo, 1U);
+
+                    /* psinfo word 0 is used for passing TS cookie to firmware */
+                    iccsgTxTsId = (uint32_t *)&pHpdDesc->extendedPktInfo[0U];
+                    *iccsgTxTsId = pPkt->txTsId;
+
+                    /* Set host Tx timestamp flag back to false */
+                    pPkt->tsInfo.enableHostTxTs = false;
+                }
+                else
+                {
+                    ENETUDMA_CPPIPSI_SET_TSEN(*dmaExtendedPktInfo, 0U);
+                }
+                if (pPkt->icssgDmaFlags)
+                {
+                    *dmaExtendedPktInfo |= ((pPkt->icssgDmaFlags) & (~(1<<31)));
+                }
             }
-            else
+            else    /* CPSW specific: */
             {
                 cppiRxCntr->chkSumInfo = pPkt->chkSumInfo;
-                tsInfo = (uint32_t *)&cppiRxCntr->tsInfo;
-            }
+                dmaExtendedPktInfo = (uint32_t *)&cppiRxCntr->tsInfo;
+                if (pPkt->tsInfo.enableHostTxTs == true)
+                {
+                    ENETUDMA_CPPIPSI_SET_TSEN(*dmaExtendedPktInfo, 1U);
 
-            if (pPkt->tsInfo.enableHostTxTs == true)
-            {
-                ENETUDMA_CPPIPSI_SET_TSEN(*tsInfo, 1U);
+                    ENETUDMA_CPPIPSI_SET_DOMAIN(*dmaExtendedPktInfo,
+                                            pPkt->tsInfo.txPktDomain);
+                    ENETUDMA_CPPIPSI_SET_MSGTYPE(*dmaExtendedPktInfo,
+                                                pPkt->tsInfo.txPktMsgType);
+                    ENETUDMA_CPPIPSI_SET_SEQID(*dmaExtendedPktInfo,
+                                            pPkt->tsInfo.txPktSeqId);
 
-                /* Below fields are only valid for CPSW. In ICSSG, whole tsInfo word is
-                 * used for enabling timestamp.
-                 * This is don't care/reserved word for ICSSG so we set without any check */
-                ENETUDMA_CPPIPSI_SET_DOMAIN(*tsInfo,
-                                           pPkt->tsInfo.txPktDomain);
-                ENETUDMA_CPPIPSI_SET_MSGTYPE(*tsInfo,
-                                            pPkt->tsInfo.txPktMsgType);
-                ENETUDMA_CPPIPSI_SET_SEQID(*tsInfo,
-                                          pPkt->tsInfo.txPktSeqId);
-
-                /* Set host Tx timestamp flag back to false. */
-                pPkt->tsInfo.enableHostTxTs = false;
-
-                /* For ICSSG psinfo word 0 is used for passing cookie to the firmwareiccsgTxTsId
-                 * This is don't care/reserved word for CPSW so we set without any check */
-                iccsgTxTsId = (uint32_t *)&pHpdDesc->extendedPktInfo[0U];
-                *iccsgTxTsId = pPkt->txTsId;
-            }
-            else
-            {
-                ENETUDMA_CPPIPSI_SET_TSEN(*tsInfo, 0U);
+                    /* Set host Tx timestamp flag back to false. */
+                    pPkt->tsInfo.enableHostTxTs = false;
+                }
+                else
+                {
+                    ENETUDMA_CPPIPSI_SET_TSEN(*dmaExtendedPktInfo, 0U);
+                }
             }
 
 #if defined(SOC_AM64X) || defined(SOC_AM243X)

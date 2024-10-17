@@ -246,6 +246,12 @@ static int32_t Icssg_ioctlPreemptSetMinFragSizeRemote(Icssg_Handle hIcssg,
 static int32_t Icssg_ioctlPortLinkCfg(Icssg_Handle hIcssg,
                                       const EnetPer_PortLinkCfg *portLinkCfg);
 
+static inline int32_t Icssg_ioctlEnableHsrTagRemovalOffload(Icssg_Handle hIcssg,
+                                                            Enet_MacPort macPort);
+
+static inline int32_t Icssg_ioctlDisableHsrTagRemovalOffload(Icssg_Handle hIcssg,
+                                                            Enet_MacPort macPort);
+
 static int32_t Icssg_handleLinkUp(Icssg_Handle hIcssg,
                                   Enet_MacPort macPort);
 
@@ -541,6 +547,14 @@ static Enet_IoctlValidate gIcssg_ioctlValidate[] =
     ENET_IOCTL_VALID_PRMS(ENET_PER_IOCTL_REGISTER_IOCTL_HANDLER,
                           sizeof(Enet_IoctlRegisterHandlerInArgs),
                           0U),
+
+    ENET_IOCTL_VALID_PRMS(ICSSG_HSR_IOCTL_ENABLE_TAG_REM_AND_HOST_DD,
+                          0U,
+                          0U),
+
+    ENET_IOCTL_VALID_PRMS(ICSSG_HSR_IOCTL_DISABLE_TAG_REM_AND_HOST_DD,
+                          0U,
+                          0U),
 };
 #endif
 
@@ -587,6 +601,8 @@ static IcssgInternalIoctlHandlerTableEntry_t IcssgInternalIoctlHandlerTable[] =
     ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_MACPORT_IOCTL_CONFIG_SPL_FRAME_PRIO),
     ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ENET_PER_IOCTL_HANDLE_EXTPHY_LINKUP_EVENT),
     ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ENET_PER_IOCTL_HANDLE_EXTPHY_LINKDOWN_EVENT),
+    ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_HSR_IOCTL_ENABLE_TAG_REM_AND_HOST_DD),
+    ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_HSR_IOCTL_DISABLE_TAG_REM_AND_HOST_DD),
     ICSSG_IOCTL_HANDLER_ENTRY_INIT(ENET_PER_IOCTL_REGISTER_IOCTL_HANDLER),
 };
 
@@ -2419,6 +2435,42 @@ static int32_t Icssg_ioctlPreemptSetMinFragSizeRemote(Icssg_Handle hIcssg,
         Icssg_wr16(hIcssg, dram + PRE_EMPTION_ADD_FRAG_SIZE_REMOTE,
                    (minFragSizeRemoteArgs->preemptMinFragSize + 1) * 64);
         retVal = ENET_SOK;
+    }
+
+    return retVal;
+}
+
+static inline int32_t Icssg_ioctlEnableHsrTagRemovalOffload(Icssg_Handle hIcssg,
+                                                            Enet_MacPort macPort)
+{
+    int32_t retVal = ENET_EINVALIDPARAMS;
+
+    if ((macPort == ENET_MAC_PORT_1) ||
+        (macPort == ENET_MAC_PORT_2))
+    {
+        retVal = Icssg_R30SendAsyncIoctl(hIcssg,
+                                         macPort,
+                                         ICSSG_UTILS_R30_CMD_HSR_TAG_REM_AND_HOST_DD_ENABLE,
+                                         &hIcssg->asyncIoctlSeqNum,
+                                         &hIcssg->asyncIoctlType);
+    }
+
+    return retVal;
+}
+
+static inline int32_t Icssg_ioctlDisableHsrTagRemovalOffload(Icssg_Handle hIcssg,
+                                                            Enet_MacPort macPort)
+{
+    int32_t retVal = ENET_EINVALIDPARAMS;
+
+    if ((macPort == ENET_MAC_PORT_1) ||
+        (macPort == ENET_MAC_PORT_2))
+    {
+        retVal = Icssg_R30SendAsyncIoctl(hIcssg,
+                                         macPort,
+                                         ICSSG_UTILS_R30_CMD_HSR_TAG_REM_AND_HOST_DD_DISABLE,
+                                         &hIcssg->asyncIoctlSeqNum,
+                                         &hIcssg->asyncIoctlType);
     }
 
     return retVal;
@@ -4934,6 +4986,46 @@ int32_t Icssg_ioctl_handler_ENET_PER_IOCTL_HANDLE_EXTPHY_LINKDOWN_EVENT(EnetPer_
     status = Icssg_handleLinkDown(hIcssg, macPort);
     ENETTRACE_ERR_IF((status != ENET_SOK),
                         "%s: Link Down failed: %d\r\n",
+                        ENET_PER_NAME(hIcssg), status);
+    return status;
+}
+
+int32_t Icssg_ioctl_handler_ICSSG_HSR_IOCTL_ENABLE_TAG_REM_AND_HOST_DD(EnetPer_Handle hPer,
+                                                            uint32_t cmd,
+                                                            Enet_IoctlPrms *prms)
+{
+    Icssg_Handle hIcssg = (Icssg_Handle)hPer;
+    int32_t status = ENET_SOK;
+
+    Enet_assert(cmd == ICSSG_HSR_IOCTL_ENABLE_TAG_REM_AND_HOST_DD);
+
+    status = Icssg_ioctlEnableHsrTagRemovalOffload(hIcssg, ENET_MAC_PORT_1);
+    if (status == ENET_SOK)
+    {
+        status = Icssg_ioctlEnableHsrTagRemovalOffload(hIcssg, ENET_MAC_PORT_2);
+    }
+    ENETTRACE_ERR_IF((status != ENET_SOK),
+                        "%s: Enable Host Offload failed: %d\r\n",
+                        ENET_PER_NAME(hIcssg), status);
+    return status;
+}
+
+int32_t Icssg_ioctl_handler_ICSSG_HSR_IOCTL_DISABLE_TAG_REM_AND_HOST_DD(EnetPer_Handle hPer,
+                                                            uint32_t cmd,
+                                                            Enet_IoctlPrms *prms)
+{
+    Icssg_Handle hIcssg = (Icssg_Handle)hPer;
+    int32_t status = ENET_SOK;
+
+    Enet_assert(cmd == ICSSG_HSR_IOCTL_DISABLE_TAG_REM_AND_HOST_DD);
+
+    status = Icssg_ioctlDisableHsrTagRemovalOffload(hIcssg, ENET_MAC_PORT_1);
+    if (status == ENET_SOK)
+    {
+        status = Icssg_ioctlDisableHsrTagRemovalOffload(hIcssg, ENET_MAC_PORT_2);
+    }
+    ENETTRACE_ERR_IF((status != ENET_SOK),
+                        "%s: Disable Host Offload failed: %d\r\n",
                         ENET_PER_NAME(hIcssg), status);
     return status;
 }
