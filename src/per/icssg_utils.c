@@ -163,6 +163,10 @@ static void IcssgUtils_pdInitAndPush(Icssg_Handle hIcssg,
 
 static IcssgUtils_R30Cmd IcssgUtils_R30Bitmask[ICSSG_UTILS_MAX_COMMANDS] =
 {
+    /* {RXPRU, TXPRU, RTU, RTU_REM}
+    *  R30 commands provides an interface between the driver and PRU Firmware to enable/disable the port state,
+    *  preemption, flooding, DSCP, VLAN aware and TAS based on the user input via respective IOCTLs.
+    */
     [ICSSG_UTILS_R30_CMD_DISABLE] =
     {
         { 0xffff0004, 0xffff0100, 0xffff0104, ICSSG_UTILS_CMD_NONE }
@@ -170,7 +174,7 @@ static IcssgUtils_R30Cmd IcssgUtils_R30Bitmask[ICSSG_UTILS_MAX_COMMANDS] =
 
     [ICSSG_UTILS_R30_CMD_BLOCK] =
     {
-        { 0xfffb0040, 0xfeff0200, 0xfefb0208, ICSSG_UTILS_CMD_NONE }
+        { 0xfffb0040, 0xfeff0200, 0xfffb0008, 0xffff0200 }
     },
 
     [ICSSG_UTILS_R30_CMD_FORWARD] =

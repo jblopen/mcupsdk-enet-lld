@@ -329,7 +329,16 @@ typedef struct EnetUdma_PktInfo_s
     Enet_MacPort rxPortNum;
 
     /*! TX packet traffic class indicates which TX port queue the ICSSG FW should
-      * use the transmit the packet to the PHY */
+      * use to transmit the packet to the PHY.
+      * QoS for transmission (TX) is achieved with help of two parameters:
+      * 1. PSI DMA channel number (Supports upto 4 Qos) - Per RTU (Max 2x RTU per ICSSG instance)
+      * has 4 x priority threads connected to PSI DMA used for fetching packet from host to send over the port. 
+      * Threads can be selected using the channel number. Order for threads serviced by RTU core is '3' - highest and '0' - lowest.
+      * Maximum TX channels supported is '8', if channel number is >= '4', then the packet is serviced by the RTU1 core else RTU0 core.
+      * To modify the PSI DMA channel number, refer: EnetDma_submitTxPktQ(), pass the TX Channel handle[channel_num] 
+      * 2. TX priority port queues - txPktTc(Supports upto 8 Qos as per 802.1Q bridging standard) 
+      * This priority port queues are mapped one-to-one with traffic class, means allowing seperate queues for each traffic class. 
+      * Highest priority is '7' and lowest is '0'. Order of servicing the packet by the transmit port is based on this parameter. */
     uint32_t txPktTc;
 
     /*! Transmit timestamp id. Used to correleate request with response */
