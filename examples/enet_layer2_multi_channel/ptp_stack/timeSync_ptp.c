@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) Texas Instruments Incorporated 2022
+ *  Copyright (C) Texas Instruments Incorporated 2022-2024
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -48,7 +48,7 @@
 
 #include "timeSync.h"
 #include "timeSync_tools.h"
-#include <networking/enet/utils/include/enet_apputils.h>
+#include <enet_apputils.h>
 
 #include "timeSync_ptp.h"
 #include "timeSync_ptp_priv.h"

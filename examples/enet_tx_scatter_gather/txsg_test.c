@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) Texas Instruments Incorporated 2022-23
+ *  Copyright (C) Texas Instruments Incorporated 2022-2024
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -45,7 +45,7 @@
 #include "FreeRTOS.h"
 
 
-#include <networking/enet/utils/include/enet_ethpatterns.h>
+#include <enet_ethpatterns.h>
 #include <networking/enet/core/include/core/enet_utils.h>
 #include "enet_appprofile.h"
 #include <drivers/soc.h>

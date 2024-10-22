@@ -111,8 +111,8 @@
 /* include the port-dependent configuration */
 #include "lwipcfg.h"
 
-#include <networking/enet/utils/include/enet_apputils.h>
-#include <networking/enet/utils/include/enet_board.h>
+#include <enet_apputils.h>
+#include <enet_board.h>
 
 #ifdef __cplusplus
 extern "C" {

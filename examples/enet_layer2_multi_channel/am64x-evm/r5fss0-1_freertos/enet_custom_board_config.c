@@ -35,7 +35,7 @@
 #include <networking/enet/core/include/phy/enetphy.h>
 #include <networking/enet/core/include/phy/dp83867.h>
 #include <networking/enet/core/include/phy/dp83869.h>
-#include <networking/enet/utils/include/enet_apputils.h>
+#include <enet_apputils.h>
 #include <kernel/dpl/SystemP.h>
 #include <kernel/dpl/AddrTranslateP.h>
 #include <networking/enet/core/src/phy/enetphy_priv.h>

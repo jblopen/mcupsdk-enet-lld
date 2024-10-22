@@ -32,11 +32,12 @@
 #ifndef _ENETAPP_H_
 #define _ENETAPP_H_
 
+#include "ShdMemCircularBufferP_nortos.h"
 /*============================================================================*/
 /*                           Macros and Constants                             */
 /*============================================================================*/
 
-#define ENETAPP_PORT_MAX            (3)
+#define MAX_NUM_MAC_PORTS           (3U)
 #define ENETAPP_DEFAULT_CFG_NAME    "sitara-cpsw"
 #define EnetAppAbort(message)       \
     EnetAppUtils_print(message);    \
@@ -50,59 +51,77 @@
 typedef struct EnetApp_Cfg_s
 {
     /* Peripheral type */
-    Enet_Type enetType;
+      Enet_Type enetType;
 
-    /* Peripheral instance */
-    uint32_t instId;
+      /* Peripheral instance */
+      uint32_t instId;
 
-    char *name;
+      char *name;
 
-    /* This core's id */
-    uint32_t coreId;
+      /* This core's id */
+      uint32_t coreId;
 
-    /* Core key returned by Enet RM after attaching this core */
-    uint32_t coreKey;
+      /* Core key returned by Enet RM after attaching this core */
+      uint32_t coreKey;
 
-    /* Enet driver handle for this peripheral type/instance */
-    Enet_Handle hEnet;
+      /* Enet driver handle for this peripheral type/instance */
+      Enet_Handle hEnet;
 
-    /* MAC address. It's port's MAC address in Dual-MAC or
-     * host port's MAC addres in Switch */
-    uint8_t macAddr[ENET_MAC_ADDR_LEN];
+      /* MAC address. It's port's MAC address in Dual-MAC or
+       * host port's MAC addres in Switch */
+      uint8_t macAddr[ENET_MAC_ADDR_LEN];
 
-    /* TX channel number */
-    uint32_t txChNum;
+      /* TX channel number */
+      uint32_t txChNum;
 
-    /* TX channel handle */
-    EnetDma_TxChHandle hTxCh;
+      /* TX channel handle */
+      EnetDma_TxChHandle hTxCh;
 
-    /* Queue of free TX packets */
-    EnetDma_PktQ txFreePktInfoQ;
+      /* Queue of free TX packets */
+      EnetDma_PktQ txFreePktInfoQ;
 
-    /* Start flow index */
-    uint32_t rxStartFlowIdx;
+      /* Start flow index */
+      uint32_t rxStartFlowIdx;
 
-    /* Regular traffic RX flow index */
-    uint32_t rxFlowIdx;
+      /* Regular traffic RX flow index */
+      uint32_t rxFlowIdx;
 
-    /* RX channel handle for regular traffic */
-    EnetDma_RxChHandle hRxCh;
+      /* RX channel handle for regular traffic */
+      EnetDma_RxChHandle hRxCh;
 
-    /* Number of Ethernet ports to be enabled */
-    uint8_t numMacPorts;
+      /* Number of Ethernet ports to be enabled */
+      uint8_t numMacPorts;
 
-    /* RX task handle - receives Regular packets, changes source/dest MAC addresses
-     * and transmits the packets back */
-    TaskP_Object rxTaskObj;
+      /* RX task handle - receives Regular packets, changes source/dest MAC addresses
+       * and transmits the packets back */
+      TaskP_Object rxTaskObj;
 
-    /* Semaphore posted from RX callback when Regular packets have arrived */
-    SemaphoreP_Object rxSemObj;
+      /* AVB talker task */
+      TaskP_Object talkerTaskObj;
 
-    /* Semaphore used to synchronize all Regular RX tasks exits */
-    SemaphoreP_Object rxDoneSemObj;
+      /* AVB listener task */
+      TaskP_Object listenerTaskObj;
 
-    /* Peripheral's MAC ports to use */
-    Enet_MacPort macPorts[ENETAPP_PORT_MAX];
+      /*! Shared mem object memory */
+      ShdMemCircularBufferP_Rsv shmQObjMem;
+
+      /*! Shared mem handle */
+      ShdMemCircularBufferP_Handle hShmListenerQ;
+
+      /* Semaphore posted from IPC Notify to start the listener */
+      SemaphoreP_Object startListnerSemObj;
+
+      /* Semaphore posted from IPC Notify to start the talker */
+      SemaphoreP_Object startTalkerSemObj;
+
+      /* Semaphore posted from RX callback when Regular packets have arrived */
+      SemaphoreP_Object rxSemObj;
+
+      /* Semaphore used to synchronize all Regular RX tasks exits */
+      SemaphoreP_Object rxDoneSemObj;
+
+      /* Peripheral's MAC ports to use */
+      Enet_MacPort macPorts[MAX_NUM_MAC_PORTS];
 } EnetApp_Cfg;
 
 /* ========================================================================== */

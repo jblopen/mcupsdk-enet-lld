@@ -46,10 +46,10 @@
 #include <stdlib.h>
 
 #include <networking/enet/core/include/enet.h>
-#include <networking/enet/utils/include/enet_appmemutils_cfg.h>
-#include <networking/enet/utils/include/enet_appmemutils.h>
-#include <networking/enet/utils/include/enet_apputils.h>
-#include <networking/enet/utils/include/enet_ethutils.h>
+#include <enet_appmemutils_cfg.h>
+#include <enet_appmemutils.h>
+#include <enet_apputils.h>
+#include <enet_ethutils.h>
 
 #include "cpsw_test_intervlan.h"
 

@@ -31,7 +31,7 @@
  */
 
 /*!
- * \file  tsnapp_main.c
+ * \file  tsnapp_cpsw_main.c
  *
  * \brief This file contains the implementation of the Enet TSN example entry
  *        point

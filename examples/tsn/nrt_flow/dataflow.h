@@ -43,8 +43,8 @@
 #include "FreeRTOS.h"
 #include <kernel/dpl/TaskP.h>
 #include <task.h>
-#include <networking/enet/utils/include/enet_apputils.h>
-#include <networking/enet/utils/include/enet_appmemutils.h>
+#include <enet_apputils.h>
+#include <enet_appmemutils.h>
 #include "ti_drivers_open_close.h"
 #include "ti_board_open_close.h"
 #include "ti_enet_open_close.h"
@@ -52,12 +52,11 @@
   * e.g. ENET_SYSCFG_ENABLE_MDIO_MANUALMODE */
 #include "ti_enet_config.h"
 #include <tsn_combase/tilld/cb_lld_ethernet.h>
+#include "tsnapp_porting.h"
 
 /* ========================================================================== */
 /*                           Macros & Typedefs                                */
 /* ========================================================================== */
-
-#define MAX_NUM_MAC_PORTS                         (3U)
 
 /* Task stack size */
 #define ENETAPP_TASK_STACK_SZ                     (10U * 1024U)
@@ -67,6 +66,8 @@
 /* ========================================================================== */
 /*                                Function Declarations                       */
 /* ========================================================================== */
+void EnetApp_destroyRxTask();
+void EnetApp_createRxTask();
 int EnetApp_lldCfgUpdateCb(cb_socket_lldcfg_update_t *update_cfg);
 void rxDefaultDataCb(void *data, int size, int port, void *cbArg);
 

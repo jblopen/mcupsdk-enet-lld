@@ -40,8 +40,8 @@
 #include <enet.h>
 #include <networking/enet/core/include/phy/enetphy.h>
 #include <networking/enet/core/include/phy/dp83869.h>
-#include <networking/enet/utils/include/enet_apputils.h>
-#include <networking/enet/utils/include/enet_appboardutils.h>
+#include <enet_apputils.h>
+#include <enet_appboardutils.h>
 #include <drivers/hw_include/cslr_soc.h>
 #include <networking/enet/core/src/phy/enetphy_priv.h>
 #include "ti_board_open_close.h"

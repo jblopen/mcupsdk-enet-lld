@@ -45,7 +45,7 @@
 #include "FreeRTOS.h"
 
 
-#include <networking/enet/utils/include/enet_ethpatterns.h>
+#include <enet_ethpatterns.h>
 #include <networking/enet/core/include/core/enet_utils.h>
 #include "enet_appprofile.h"
 

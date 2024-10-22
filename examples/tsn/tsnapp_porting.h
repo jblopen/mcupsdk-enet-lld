@@ -58,6 +58,13 @@ typedef FF_Stat_t       EnetApp_fsInfo_t;
 #define EnetApp_yield           TaskP_yield
 #define ENDLINE "\r\n"
 #define USE_CRLF
+#ifndef BTRUE
+#define BTRUE    ((bool) 1)
+#endif
+
+#ifndef BFALSE
+#define BFALSE    ((bool) 0)
+#endif
 
 static inline char EnetTsnApp_getChar(void)
 {

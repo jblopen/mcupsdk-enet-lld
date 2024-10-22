@@ -49,8 +49,8 @@
 #include <kernel/dpl/TaskP.h>
 #include <kernel/dpl/ClockP.h>
 #include <kernel/dpl/ClockP.h>
-#include <networking/enet/utils/include/enet_apputils.h>
-#include <networking/enet/utils/include/enet_board.h>
+#include <enet_apputils.h>
+#include <enet_board.h>
 #include "ti_board_config.h"
 #include "ti_board_open_close.h"
 #include "ti_drivers_open_close.h"

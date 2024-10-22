@@ -38,7 +38,7 @@
 #include <kernel/dpl/CpuIdP.h>
 #include "ti_enet_config.h"
 #include <drivers/soc.h>
-#include <networking/enet/utils/include/enet_apputils.h>
+#include <enet_apputils.h>
 
 
 /* ========================================================================== */

@@ -39,8 +39,8 @@
 #include "lwip/opt.h"
 #include "lwip/sys.h"
 #include "lwip/api.h"
-#include <networking/enet/utils/include/enet_apputils.h>
-#include <networking/enet/utils/include/enet_board.h>
+#include <enet_apputils.h>
+#include <enet_board.h>
 #include <enet.h>
 #include <kernel/dpl/TaskP.h>
 #include <kernel/dpl/ClockP.h>

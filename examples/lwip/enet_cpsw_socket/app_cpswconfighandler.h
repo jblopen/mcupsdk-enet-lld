@@ -36,8 +36,8 @@
 #include <string.h>
 #include "FreeRTOS.h"
 #include "task.h"
-#include <networking/enet/utils/include/enet_apputils.h>
-#include <networking/enet/utils/include/enet_board.h>
+#include <enet_apputils.h>
+#include <enet_board.h>
 
 #ifndef __APP_CPSWCONFIGHANDLER_H_
 #define __APP_CPSWCONFIGHANDLER_H_

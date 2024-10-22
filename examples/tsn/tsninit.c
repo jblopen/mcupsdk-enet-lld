@@ -56,7 +56,7 @@
 #define UNICONF_TASK_NAME       "uniconf_task"
 
 #ifndef TSNAPP_LOGLEVEL
-#define TSNAPP_LOGLEVEL "4,ubase:45,cbase:45,uconf:45,gptp:55,lldp:45,avtp:45,nconf:45"
+#define TSNAPP_LOGLEVEL "4,ubase:45,cbase:45,uconf:45,gptp:55,lldp:45,avtp:45,nconf:45,xmrpd:45"
 #endif
 
 /* ========================================================================== */
@@ -96,6 +96,10 @@ extern int EnetApp_addEstAppModCtx(EnetApp_ModuleCtx_t *modCtxTbl);
 #ifdef CBS_APP_ENABLED
 extern int EnetApp_addCbsAppModCtx(EnetApp_ModuleCtx_t *modCtxTbl);
 #endif /* EST_APP_ENABLED */
+
+#ifdef XMRPD_ENABLED
+extern int EnetApp_addMrpconfModCtx(EnetApp_ModuleCtx_t *modCtxTbl);
+#endif //XMRPD_ENABLED
 /* ========================================================================== */
 /*                            Global Variables                                */
 /* ========================================================================== */
@@ -328,6 +332,13 @@ int EnetApp_initTsnByCfg(AppTsnCfg_t *cfg)
         res = EnetApp_addCbsAppModCtx(gModCtxTable);
     }
 #endif //CBS_APP_ENABLED
+
+#ifdef XMRPD_ENABLED
+    if (res == 0)
+    {
+        res = EnetApp_addMrpconfModCtx(gModCtxTable);
+    }
+#endif //XMRPD_ENABLED
     return res;
 }
 

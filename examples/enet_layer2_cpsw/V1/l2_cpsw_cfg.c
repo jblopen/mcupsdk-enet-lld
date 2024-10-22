@@ -44,7 +44,7 @@
 #include "l2_cpsw_dataflow.h"
 #include "ti_enet_open_close.h"
 #include "ti_enet_config.h"
-#include <networking/enet/utils/include/enet_apputils.h>
+#include <enet_apputils.h>
 
 /* ========================================================================== */
 /*                           Macros & Typedefs                                */

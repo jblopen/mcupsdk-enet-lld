@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) Texas Instruments Incorporated 2020
+ *  Copyright (C) Texas Instruments Incorporated 2020-2024
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -51,7 +51,7 @@
 #include <kernel/dpl/TaskP.h>
 #include <kernel/dpl/ClockP.h>
 #include <kernel/dpl/SemaphoreP.h>
-#include <networking/enet/utils/include/enet_apputils.h>
+#include <enet_apputils.h>
 
 
 #ifdef __cplusplus

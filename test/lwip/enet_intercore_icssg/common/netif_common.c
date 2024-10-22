@@ -48,12 +48,12 @@
 #include "netif/bridgeif.h"
 
 #include <enet.h>
-#include <networking/enet/utils/include/enet_appmemutils_cfg.h>
-#include <networking/enet/utils/include/enet_apputils.h>
-#include <networking/enet/utils/include/enet_appmemutils.h>
-#include <networking/enet/utils/include/enet_appboardutils.h>
-#include <networking/enet/utils/include/enet_appsoc.h>
-#include <networking/enet/utils/include/enet_apprm.h>
+#include <enet_appmemutils_cfg.h>
+#include <enet_apputils.h>
+#include <enet_appmemutils.h>
+#include <enet_appboardutils.h>
+#include <enet_appsoc.h>
+#include <enet_apprm.h>
 #include <networking/enet/core/lwipif/inc/pbufQ.h>
 #include <networking/enet/core/include/per/icssg.h>
 

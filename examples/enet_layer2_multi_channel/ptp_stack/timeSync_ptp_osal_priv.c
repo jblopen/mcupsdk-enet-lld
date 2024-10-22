@@ -52,7 +52,7 @@
 #include "timeSync_ptp_init_priv.h"
 #include "timeSync_ptp_osal_priv.h"
 #include "timeSync_ptp_priv.h"
-#include <networking/enet/utils/include/enet_apputils.h>
+#include <enet_apputils.h>
 /* ========================================================================== */
 /*                            Global Variables                                */
 /* ========================================================================== */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Texas Instruments Incorporated
+ *  Copyright (C) Texas Instruments Incorporated 2022-2024
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -49,11 +49,9 @@
 #include <enet.h>
 #include <enet_cfg.h>
 #include <include/core/enet_dma.h>
-#include <include/per/icssg.h>
-#include <include/per/cpsw.h>
-#include <networking/enet/utils/include/enet_apputils.h>
-#include <networking/enet/utils/include/enet_appmemutils.h>
-#include <networking/enet/utils/include/enet_appmemutils_cfg.h>
+#include <enet_apputils.h>
+#include <enet_appmemutils.h>
+#include <enet_appmemutils_cfg.h>
 #include "ti_board_config.h"
 #include "ti_drivers_open_close.h"
 #include "ti_board_open_close.h"

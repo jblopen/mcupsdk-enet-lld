@@ -36,4 +36,7 @@ exports = {
     getDriverVer: function(driverName) {
         return driverVer[driverName].version;
     },
+    getDirName: function(driverName) {
+        return driverVer[driverName].version;
+    },
 };

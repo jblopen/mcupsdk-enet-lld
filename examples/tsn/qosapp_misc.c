@@ -122,7 +122,7 @@ bool EnetQoSApp_checkTransmitReady(BitrateCtrl_t *bc,
     else
     {
         uint64_t tokens = bytes-bc->tokens;
-        *sleepTimeUs = (tokens*8*1000000U)/bc->bitRate;
+        *sleepTimeUs = (tokens*8*1000000ULL)/bc->bitRate;
         if (*sleepTimeUs == 0)
         {
             res = true;
@@ -204,7 +204,7 @@ int EnetQoSApp_setCommonParam(QoSAppCommonParam_t *prm,
         snprintf(buffer, sizeof(buffer),
                  TRAFFIC_CLASS_DATA_NODE"|tc:%d|/lqueue",
                  prm->netdev, prm->priority2TcMapping[i]);
-        snprintf(val, sizeof(val), "%d", i);
+        snprintf(val, sizeof(val), "%d", prm->priority2TcMapping[i]);
         YANGDB_RUNTIME_WRITE(buffer, val);
     }
 
@@ -218,8 +218,8 @@ int EnetQoSApp_setCommonParam(QoSAppCommonParam_t *prm,
     {
         snprintf(buffer, sizeof(buffer),
                  PHYSICAL_QUEUE_MAP_NODE"|pqueue:%d|/lqueue",
-                 prm->netdev, i);
-        snprintf(val, sizeof(val), "%d", i);
+                 prm->netdev, prm->priority2TcMapping[i]);
+        snprintf(val, sizeof(val), "%d", prm->priority2TcMapping[i]);
         YANGDB_RUNTIME_WRITE(buffer, val);
     }
 
@@ -253,6 +253,7 @@ int EnetQoSApp_initialize(EnetQoSApp_AppCtx_t *ctx,
     ctx->netdevSize = ectx->netdevSize;
 
     ctx->ectx = ectx;
+    ctx->notice_sem = NULL;
 
     ctx->packetHandlerCb = cb;
     ctx->talker.vid = DEFAULT_VLAN_ID;
@@ -366,12 +367,12 @@ static void EnetQosApp_initTalker(EnetQoSApp_TaskCtx_t *talker)
     {
         bitRate = talker->streams[i].bitRate;
         EnetQoSApp_initBitrateCtrl(&talker->bitrateCtrl[i],
-                                   2*sizeof(talker->buffer), bitRate);
+                                   50*sizeof(talker->buffer), bitRate);
         payloadLen = talker->streams[i].payloadLen;
         char buffer[MAX_KEY_SIZE];
         snprintf(buffer, sizeof(buffer),
                  "Talker[%d], payloadLen: %d bytes, bitRate: %lld kbps",
-                i, payloadLen, bitRate/1000);
+		 talker->streams[i].priority, payloadLen, bitRate/1000);
         DPRINT("%s ", buffer);
     }
 }
@@ -385,13 +386,27 @@ static void *EnetQoSApp_talkerHandler(void *arg)
     EthVlanFrame *txFrame;
     AVTPCommonStreamHdr_t *avtphdr;
     uint32_t payloadLen, frameLen;
-    uint32_t nShortSleep = 0;
-#define HIGH_CPU_LOAD_THRESHOLD (15)
 
+    talker->enable = BTRUE;
+    talker->state = TALKER_STATE_RUNNING;
     while (talker->enable)
     {
+        if (talker->state != TALKER_STATE_RUNNING)
+        {
+            if (talker->state == TALKER_STATE_PAUSE_REQ)
+            {
+                talker->state = TALKER_STATE_PAUSED;
+            }
+            DPRINT("%s sleeping", __func__);
+            CB_USLEEP(10*UB_MSEC_US);
+            continue;
+        }
         for (i = 0; i < talker->nStreams; i++)
         {
+            if (talker->streams[i].bitRate == 0)
+            {
+                continue;
+            }
             payloadLen = talker->streams[i].payloadLen;
             frameLen = sizeof(EthVlanFrameHeader) + payloadLen;
             uint64_t sleepTimeUs = 0;
@@ -400,6 +415,7 @@ static void *EnetQoSApp_talkerHandler(void *arg)
                                               &sleepTimeUs))
             {
                 txFrame = (EthVlanFrame *)talker->buffer;
+                txFrame->hdr.dstMac[5] = talker->streams[i].priority;
                 int tci = ENETAPP_VLAN_TCI(talker->streams[i].priority, 0, talker->vid);
                 txFrame->hdr.tci  = Enet_htons(tci);
                 avtphdr = (AVTPCommonStreamHdr_t *)txFrame->payload;
@@ -407,13 +423,10 @@ static void *EnetQoSApp_talkerHandler(void *arg)
                 EnetQoSApp_createAVTPHeader(&talker->streams[i], avtphdr, dataLen);
                 memset(&txFrame->payload[sizeof(AVTPCommonStreamHdr_t)],
                        talker->streams[i].tc, payloadLen - sizeof(AVTPCommonStreamHdr_t));
-                int ret = CB_SOCK_SENDTO(ctx->est_sock, talker->buffer,
-                                         frameLen, 0, &ctx->sockAddress,
-                                         sizeof(ctx->sockAddress));
-                if (ret == -1)
-                {
-                    DPRINT("Failed to send %d bytes on stream %d", frameLen, i);
-                }
+                (void)CB_SOCK_SENDTO(ctx->est_sock, talker->buffer,
+                                     frameLen, 0, &ctx->sockAddress,
+                                     sizeof(ctx->sockAddress));
+                talker->streams[i].txBytes += frameLen;
                 minSleepTime = 0;
             }
             else
@@ -423,28 +436,42 @@ static void *EnetQoSApp_talkerHandler(void *arg)
                     minSleepTime = sleepTimeUs;
                 }
             }
+            if (talker->state != TALKER_STATE_RUNNING)
+            {
+                minSleepTime = 0;
+                break;
+            }
         }
 
-        /* sleep less than 1ms doesn't help to reduce cpuload. Therefore, to reduce 
-         * the cpu load in case of high bitrate, it need to take a sufficient sleep (1ms)
-         */
-        nShortSleep = minSleepTime < UB_MSEC_US? (nShortSleep+1): 0;
-
-        if (nShortSleep >= HIGH_CPU_LOAD_THRESHOLD && minSleepTime > 0)
-        {
-            minSleepTime = UB_MSEC_US;
-            TaskP_yield();
-            nShortSleep = 0;
-        }
         if (minSleepTime != UINT64_MAX && minSleepTime > 0)
         {
+            int64_t now = EnetQoSApp_getCurrentTimeUs();
+            for (i = 0; i < talker->nStreams; i++)
+            {
+                if (talker->streams[i].txBytes == 0)
+                {
+                    continue;
+                }
+                uint64_t delta = now - talker->streams[i].prevTs;
+                if (delta >= 5000000ULL) {
+                    talker->streams[i].prevTs = now;
+                    double br = (talker->streams[i].txBytes*8.0)/delta;
+                    talker->streams[i].txBytes = 0;
+                    DPRINT("Stream[%d] birate: %f Mbps",
+                           talker->streams[i].priority, br);
+                }
+            }
+            if (minSleepTime < UB_MSEC_US) {
+                /* Need at least 1ms to be able to sleep */ 
+                minSleepTime = UB_MSEC_US;
+            }
             CB_USLEEP(minSleepTime);
         }
         minSleepTime = UINT64_MAX;
     }
 
     CB_SEM_POST(&talker->terminatedSem);
-    DPRINT("EST App talker is terminating ...");
+    DPRINT("App talker is terminating ...");
 
     return NULL;
 }
@@ -493,65 +520,108 @@ void EnetQoSApp_startTalker(EnetQoSApp_AppCtx_t *ctx,
     EnetQoSApp_TaskCtx_t *talker = &ctx->talker;
 
     DebugP_assert(stParams != NULL);
-    if (!talker->enable)
+    if (!talker->terminatedSem)
     {
         if (CB_SEM_INIT(&talker->terminatedSem, 0, 0) < 0)
         {
             DPRINT("Failed to create terminatedSem");
             err = -1;
         }
-        talker->enable = true;
-        if (!talker->hTaskHandle && err == 0)
+    }
+    if (!talker->hTaskHandle && err == 0)
+    {
+        cb_tsn_thread_attr_t attr;
+
+        /* Init default parameters for all streams */
+        EnetQoSApp_initStreamParams(ctx);
+
+        EnetQoSApp_initTaskCtx(&attr, cfg);
+
+        err = EnetQoSApp_setInputParam(ctx, stParams);
+
+        if (err == 0)
         {
-            cb_tsn_thread_attr_t attr;
-
-            /* Init default parameters for all streams */
-            EnetQoSApp_initStreamParams(ctx);
-
-            EnetQoSApp_initTaskCtx(&attr, cfg);
-
-            err = EnetQoSApp_setInputParam(ctx, stParams);
-
-            if (err == 0)
-            {
-                EnetQosApp_initTalker(&ctx->talker);
-                err = CB_THREAD_CREATE(&talker->hTaskHandle,
-                                       &attr, EnetQoSApp_talkerHandler,
-                                       ctx);
-            }
-            else
-            {
-                talker->enable = false;
-                DPRINT("User request to terminate the talker");
-            }
-        }
-        if (err != 0)
-        {
-            DPRINT("Failed to start the talker task!");
-            CB_SEM_DESTROY(&talker->terminatedSem);
-            talker->enable = false;
+            EnetQosApp_initTalker(&ctx->talker);
+            err = CB_THREAD_CREATE(&talker->hTaskHandle,
+                                   &attr, EnetQoSApp_talkerHandler,
+                                   ctx);
         }
         else
         {
-            DPRINT("Start the talker successfully!");
+            talker->enable = BFALSE;
+            DPRINT("User request to terminate the talker");
         }
+        /* Waiting for the talker thread actually start running */
+        while (!talker->enable && err == 0)
+        {
+            CB_USLEEP(2*UB_MSEC_US);
+        }
+    } else if (talker->hTaskHandle && err == 0)
+    {
+        while (ctx->talker.state  != TALKER_STATE_PAUSED)
+        {
+            DPRINT("%s, Talker is not in PAUSED state, waiting",
+                   __func__);
+            CB_USLEEP(10*UB_MSEC_US);
+            continue;
+        }
+        memset(&talker->bitrateCtrl, 0, sizeof(talker->bitrateCtrl));
+        memset(&talker->streams, 0, sizeof(talker->streams));
+        (void)EnetQoSApp_setInputParam(ctx, stParams);
+        EnetQosApp_initTalker(&ctx->talker);
+        ctx->talker.state = TALKER_STATE_RUNNING;
+    } else
+    {
+        DPRINT("Failed to start talker");
+    }
+    if (err != 0)
+    {
+        DPRINT("Failed to start the talker task!");
+        CB_SEM_DESTROY(&talker->terminatedSem);
+        talker->enable = BFALSE;
     }
     else
     {
-        DPRINT("The talker has been started, no need to start again!");
+        DPRINT("Start the talker successfully!");
+    }
+}
+
+void EnetQoSApp_pauseTalker(EnetQoSApp_AppCtx_t *ctx)
+{
+    if (ctx->talker.enable)
+    {
+        ctx->talker.state = TALKER_STATE_PAUSE_REQ;
+        while (ctx->talker.state == TALKER_STATE_PAUSE_REQ)
+        {
+            CB_USLEEP(10*UB_MSEC_US);
+        }
     }
 }
 
 void EnetQoSApp_stopTalker(EnetQoSApp_AppCtx_t *ctx)
 {
+    int err = 0;
     if (ctx->talker.enable)
     {
-        ctx->talker.enable = false;
-        CB_SEM_WAIT(&ctx->talker.terminatedSem);
-        CB_THREAD_JOIN(ctx->talker.hTaskHandle, NULL);
+        ctx->talker.enable = BFALSE;
+        err=CB_SEM_WAIT(&ctx->talker.terminatedSem);
+        if (err)
+        {
+            DPRINT("Failed to wait the talker to trigger the terminatedSem");
+        }
+        err=CB_THREAD_JOIN(ctx->talker.hTaskHandle, NULL);
+        if (err)
+        {
+            DPRINT("Failed to join the talker thread");
+        }
 
         ctx->talker.hTaskHandle = NULL;
-        CB_SEM_DESTROY(&ctx->talker.terminatedSem);
+        err=CB_SEM_DESTROY(&ctx->talker.terminatedSem);
+        if (err)
+        {
+            DPRINT("Failed to destroy the terminateSem");
+        }
+        memset(ctx->talker.streams, 0, sizeof(ctx->talker.streams));
         DPRINT("Terminate the talker succesfully!");
     }
 }

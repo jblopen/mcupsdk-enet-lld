@@ -44,7 +44,7 @@
 #include "multi_channel_dataflow.h"
 #include "ti_enet_open_close.h"
 #include "ti_enet_config.h"
-#include <networking/enet/utils/include/enet_apputils.h>
+#include <enet_apputils.h>
 #include "timeSync_ptp.h"
 #include "timeSync_tools.h"
 /* ========================================================================== */

@@ -41,8 +41,8 @@
 /* lwIP core includes */
 #include "lwip/opt.h"
 /* SDK includes */
-#include <networking/enet/utils/include/enet_apputils.h>
-#include <networking/enet/utils/include/enet_board.h>
+#include <enet_apputils.h>
+#include <enet_board.h>
 #include <enet.h>
 #include <kernel/dpl/TaskP.h>
 #include <kernel/dpl/ClockP.h>

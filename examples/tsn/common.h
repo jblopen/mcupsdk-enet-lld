@@ -32,6 +32,11 @@
 
 #ifndef __COMMON_H__
 #define __COMMON_H__
+#include <tsn_uniconf/yangs/yang_db_runtime.h>
+#include <tsn_uniconf/ucman.h>
+#include <tsn_uniconf/uc_dbal.h>
+#include <tsn_unibase/unibase_binding.h>
+#include <tsn_unibase/unibase.h>
 #include "tsnapp_porting.h"
 
 /* ========================================================================== */
@@ -50,11 +55,11 @@
 #endif //DISABLE_FAT_FS
 
 #ifndef AVTP_TALKER_NUM
-#define AVTP_TALKER_NUM         (2)
+#define AVTP_TALKER_NUM         (1)
 #endif
 
 #ifndef AVTP_LISTENER_NUM
-#define AVTP_LISTENER_NUM       (2)
+#define AVTP_LISTENER_NUM       (1)
 #endif
 
 typedef enum {
@@ -70,6 +75,10 @@ typedef enum {
     ENETAPP_LISTENER_TASK_IDX = ENETAPP_TALKER_TASK_IDX + AVTP_TALKER_NUM,
     ENETAPP_EST_TASK_IDX = ENETAPP_LISTENER_TASK_IDX + AVTP_LISTENER_NUM,
     ENETAPP_CBS_TASK_IDX,
+    ENETAPP_XMRPD_TASK_IDX,
+    ENETAPP_XMRPC_TASK_IDX,
+    ENETAPP_AAF_DOLBY_EC3_TASK_IDX,
+    ENETAPP_AAF_PCM_TASK_IDX,
     ENETAPP_MAX_TASK_IDX
 } EnetApp_TsnTask_Idx_t;
 

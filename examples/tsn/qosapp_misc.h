@@ -47,7 +47,7 @@
 
 #define QOSAPP_MAX_STREAMS      (8)
 #define QOSAPP_NUM_OF_STREAMS   (7)
-#define QOSAPP_TASK_PRIORITY    (1)
+#define QOSAPP_TASK_PRIORITY    (2)
 #define QOSAPP_PRIORITY_MAX     (8)
 
 #define ENETAPP_VLAN_TPID       (0x8100U)
@@ -140,6 +140,7 @@ typedef struct StreamParam
     uint32_t payloadLen;
     /*!  Num of broken packets. */
     uint32_t nBrokenPkt;
+    uint64_t txBytes;
 } StreamParam_t;
 
 typedef struct EnetQoSApp_TaskCfg
@@ -153,6 +154,12 @@ typedef struct EnetQoSApp_TaskCfg
     /*! Size of buffer allocated for the stack */
     int stackBufferSize;
 } EnetQoSApp_TaskCfg_t;
+
+typedef enum  {
+    TALKER_STATE_RUNNING = 0,
+    TALKER_STATE_PAUSE_REQ,
+    TALKER_STATE_PAUSED,
+} TALKER_STATE_E;
 
 typedef struct EnetQoSApp_TaskCtx
 {
@@ -178,6 +185,10 @@ typedef struct EnetQoSApp_TaskCtx
      * child thread is terminated.
      */
     CB_SEM_T terminatedSem;
+    /*!
+       A state of talker whether it is in running or pausing state;
+     */
+    TALKER_STATE_E state;
 } EnetQoSApp_TaskCtx_t;
 
 typedef struct EnetQoSApp_Packet
@@ -217,6 +228,8 @@ typedef struct EnetQoSApp_AppCtx
     void *ectx;
     /*! Callback to notify application on packet receiption */
     PacketHandlerCb packetHandlerCb;
+    /*! A semaphore to receive event from the uniconf */
+    UC_NOTICE_SIG_T *notice_sem;
 } EnetQoSApp_AppCtx_t;
 
 typedef struct StreamConfigParam
