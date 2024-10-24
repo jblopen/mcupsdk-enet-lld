@@ -70,13 +70,17 @@ mmu_armv83.attribute = "MAIR7";
 enet_cpsw1.$name                 = "CONFIG_ENET_CPSW0";
 enet_cpsw1.DisableMacPort2       = true;
 enet_cpsw1.mdioMode              = "MDIO_MODE_MANUAL";
-enet_cpsw1.phyAddr2              = 1;
 enet_cpsw1.MDIO.$assign          = "MDIO0";
 enet_cpsw1.MDIO.MDC.$assign      = "PRG0_PRU1_GPO19";
 enet_cpsw1.MDIO.MDIO.$assign     = "PRG0_PRU1_GPO18";
 enet_cpsw1.RGMII.$assign         = "CPSW";
 enet_cpsw1.txDmaChannel[0].$name = "ENET_DMA_TX_CH0";
 enet_cpsw1.rxDmaChannel[0].$name = "ENET_DMA_RX_CH0";
+
+const ethphy_cpsw_icssg  = scripting.addModule("/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg", {}, false);
+const ethphy_cpsw_icssg1 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg1.$name = "CONFIG_ENET_ETHPHY0";
+enet_cpsw1.ethphy1       = ethphy_cpsw_icssg1;
 
 const udma         = scripting.addModule("/drivers/udma/udma", {}, false);
 const udma1        = udma.addInstance({}, false);

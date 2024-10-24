@@ -10,8 +10,8 @@
     </applicability>
 
     <project
-        title="Enet L2 Cpsw"
-        name = "enet_l2_cpsw_am64x-sk_a53ss0-0_freertos_gcc-aarch64"
+        title="Enet Cpsw Loopback Phy End"
+        name = "enet_cpsw_loopback_phy_end_am64x-sk_a53ss0-0_freertos_gcc-aarch64"
         products="sysconfig;com.ti.MCU_PLUS_SDK_AMXXX"
         configurations="
                 Debug,
@@ -70,7 +70,7 @@
             -L${MCU_PLUS_SDK_PATH}/source/networking/enet/lib
             -L$(CGT_GCC_AARCH64_PATH)/lib
             -i${PROJECT_BUILD_DIR}/syscfg
-            -Wl,-Map=enet_l2_cpsw.${ConfigName}.map
+            -Wl,-Map=enet_cpsw_loopback_phy_end.${ConfigName}.map
             -Wl,-static
             -Wl,--gc-sections
             -Wl,--build-id=none
@@ -88,7 +88,7 @@
             --context a53ss0-0 --part Default --package ALV
         "
 
-        description="A Enet L2 Cpsw FREERTOS project">
+        description="A Enet Cpsw Loopback Phy End FREERTOS project">
 
         <configuration name="Debug"
             compilerBuildOptions="
@@ -105,7 +105,6 @@
             compilerBuildOptions="
                 -O2
                 -flto
-                -Wno-unused-function
             "
             linkerBuildOptions="
                 -lfreertos.am64x.a53.gcc-aarch64.release.lib
@@ -115,19 +114,19 @@
             "
         ></configuration>
         <pathVariable name="MCU_PLUS_SDK_PATH" path="${COM_TI_MCU_PLUS_SDK_AMXXX_INSTALL_DIR}" scope="project" />
-        <file path="../../../V0/l2_cpsw_main.c" openOnCreation="false" excludeFromBuild="false" action="link">
+        <file path="../../../..//loopback_cfg.c" openOnCreation="false" excludeFromBuild="false" action="link">
+        </file>
+        <file path="../../../..//loopback_test.c" openOnCreation="false" excludeFromBuild="false" action="link">
+        </file>
+        <file path="../../../..//loopback_main.c" openOnCreation="false" excludeFromBuild="false" action="link">
         </file>
         <file path="../main.c" openOnCreation="false" excludeFromBuild="false" action="link">
-        </file>
-        <file path="../../../V0/l2_cpsw_cfg.c" openOnCreation="false" excludeFromBuild="false" action="link">
-        </file>
-        <file path="../../../V0/l2_cpsw_dataflow.c" openOnCreation="false" excludeFromBuild="false" action="link">
         </file>
         <file path="linker.cmd" openOnCreation="false" excludeFromBuild="false" action="link">
         </file>
         <file path="../example.syscfg" openOnCreation="false" excludeFromBuild="false" action="link">
         </file>
-        <file path="${MCU_PLUS_SDK_PATH}/docs/api_guide_am64x/EXAMPLES_ENET_LAYER2_CPSW.html"
+        <file path="${MCU_PLUS_SDK_PATH}/docs/api_guide_am64x/EXAMPLES_ENET_CPSW_LOOPBACK.html"
                 openOnCreation="false" excludeFromBuild="false" targetName="README.html" action="link">
         </file>
         <file path="syscfg_c.rov.xs" openOnCreation="false" excludeFromBuild="false" action="copy">

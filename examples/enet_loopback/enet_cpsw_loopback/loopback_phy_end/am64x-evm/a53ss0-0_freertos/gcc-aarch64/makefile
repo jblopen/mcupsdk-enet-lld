@@ -1,5 +1,5 @@
 
-export MCU_PLUS_SDK_PATH?=$(abspath ../../../../../../../../..)
+export MCU_PLUS_SDK_PATH?=$(abspath ../../../../../../../../../../..)
 include $(MCU_PLUS_SDK_PATH)/imports.mak
 include $(MCU_PLUS_SDK_PATH)/devconfig/devconfig.mak
 
@@ -18,26 +18,26 @@ endif
 PROFILE?=release
 ConfigName:=$(PROFILE)
 
-OUTNAME:=enet_l2_cpsw_switch.$(PROFILE).out
-COREOUTNAME:=enet_l2_cpsw_switch.$(PROFILE).optishare.out
+OUTNAME:=enet_cpsw_loopback_phy_end.$(PROFILE).out
+COREOUTNAME:=enet_cpsw_loopback_phy_end.$(PROFILE).optishare.out
 
 BOOTIMAGE_PATH=$(abspath .)
-BOOTIMAGE_NAME:=enet_l2_cpsw_switch.$(PROFILE).appimage
-BOOTIMAGE_NAME_XIP:=enet_l2_cpsw_switch.$(PROFILE).appimage_xip
-BOOTIMAGE_NAME_SIGNED:=enet_l2_cpsw_switch.$(PROFILE).appimage.signed
-BOOTIMAGE_RPRC_NAME:=enet_l2_cpsw_switch.$(PROFILE).rprc
-BOOTIMAGE_RPRC_NAME_XIP:=enet_l2_cpsw_switch.$(PROFILE).rprc_xip
-BOOTIMAGE_RPRC_NAME_TMP:=enet_l2_cpsw_switch.$(PROFILE).rprc_tmp
-BOOTIMAGE_NAME_HS:=enet_l2_cpsw_switch.$(PROFILE).appimage.hs
-BOOTIMAGE_NAME_HS_FS:=enet_l2_cpsw_switch.$(PROFILE).appimage.hs_fs
+BOOTIMAGE_NAME:=enet_cpsw_loopback_phy_end.$(PROFILE).appimage
+BOOTIMAGE_NAME_XIP:=enet_cpsw_loopback_phy_end.$(PROFILE).appimage_xip
+BOOTIMAGE_NAME_SIGNED:=enet_cpsw_loopback_phy_end.$(PROFILE).appimage.signed
+BOOTIMAGE_RPRC_NAME:=enet_cpsw_loopback_phy_end.$(PROFILE).rprc
+BOOTIMAGE_RPRC_NAME_XIP:=enet_cpsw_loopback_phy_end.$(PROFILE).rprc_xip
+BOOTIMAGE_RPRC_NAME_TMP:=enet_cpsw_loopback_phy_end.$(PROFILE).rprc_tmp
+BOOTIMAGE_NAME_HS:=enet_cpsw_loopback_phy_end.$(PROFILE).appimage.hs
+BOOTIMAGE_NAME_HS_FS:=enet_cpsw_loopback_phy_end.$(PROFILE).appimage.hs_fs
 TARGETS := $(BOOTIMAGE_NAME)
 
 
 FILES_common := \
-	l2_cpsw_main.c \
+	loopback_cfg.c \
+	loopback_test.c \
+	loopback_main.c \
 	main.c \
-	l2_cpsw_cfg.c \
-	l2_cpsw_dataflow.c \
 	ti_drivers_config.c \
 	ti_drivers_open_close.c \
 	ti_board_config.c \
@@ -52,7 +52,7 @@ FILES_common := \
 
 FILES_PATH_common = \
 	.. \
-	../../../V0 \
+	../../../../ \
 	generated \
 
 INCLUDES_common := \
@@ -63,9 +63,9 @@ INCLUDES_common := \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/portable/GCC/ARM_CA53 \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/config/am64x/a53 \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet \
-	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils \
-	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils/include \
-	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils/V3 \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/utils \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/utils/include \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/utils/V3 \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include/phy \
@@ -94,7 +94,6 @@ CFLAGS_common := \
 	-fdata-sections \
 	-ffunction-sections \
 	-Wno-unused-function \
-	-Wno-unused-variable \
 
 CFLAGS_release := \
 	-O2 \
@@ -218,7 +217,7 @@ clean:
 	$(RMDIR) generated/
 
 scrub:
-	@echo  Scrubing: am64x:a53ss0-0:freertos:gcc-aarch64 enet_l2_cpsw_switch ...
+	@echo  Scrubing: am64x:a53ss0-0:freertos:gcc-aarch64 enet_cpsw_loopback_phy_end ...
 	$(RMDIR) obj
 ifeq ($(OS),Windows_NT)
 	$(RM) \*.out
