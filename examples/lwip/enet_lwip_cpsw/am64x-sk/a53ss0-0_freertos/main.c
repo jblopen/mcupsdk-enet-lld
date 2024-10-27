@@ -47,7 +47,7 @@ StackType_t gMainTaskStack[MAIN_TASK_SIZE] __attribute__((aligned(32)));
 StaticTask_t gMainTaskObj;
 TaskHandle_t gMainTask;
 
-void appMain(void *args);
+void enet_lwip_example(void *args);
 
 void freertos_main(void *args)
 {
@@ -59,7 +59,7 @@ void freertos_main(void *args)
     status = Board_driversOpen();
     DebugP_assert(status==SystemP_SUCCESS);
 
-    appMain(NULL);
+    enet_lwip_example(NULL);
 
     /* Close board and flash drivers */
     Board_driversClose();

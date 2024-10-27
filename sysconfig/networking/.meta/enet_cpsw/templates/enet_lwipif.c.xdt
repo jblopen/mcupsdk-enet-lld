@@ -99,10 +99,18 @@
 #define NUM_NETIF_SUPPORTED_MAX        (2U)
 
 /*! \brief RX packet task stack size */
+% if(common.getSelfSysCfgCoreName().includes("a53")){
+#define LWIPIF_RX_PACKET_TASK_STACK    (2048U)
+% } else {
 #define LWIPIF_RX_PACKET_TASK_STACK    (1024U)
+%}
 
 /*! \brief TX packet task stack size */
+% if(common.getSelfSysCfgCoreName().includes("a53")) {
+#define LWIPIF_TX_PACKET_TASK_STACK    (2048U)
+% } else {
 #define LWIPIF_TX_PACKET_TASK_STACK    (1024U)
+%}
 
 /*! \brief Links status poll task stack size */
 #if (_DEBUG_ == 1)

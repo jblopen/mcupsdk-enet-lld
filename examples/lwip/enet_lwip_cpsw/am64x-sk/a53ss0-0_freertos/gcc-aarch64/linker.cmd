@@ -61,11 +61,5 @@ SECTIONS {
         KEEP(*(.stack))
         . = . + __TI_STACK_SIZE;
     } > DDR
-        .enet_dma_mem (NOLOAD) : {
-        *(*ENET_DMA_DESC_MEMPOOL)
-        *(*ENET_DMA_RING_MEMPOOL)
-        *(*ENET_DMA_PKT_MEMPOOL)
-
-    } > DDR
 
 }
