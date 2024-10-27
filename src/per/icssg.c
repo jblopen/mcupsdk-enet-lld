@@ -2670,7 +2670,6 @@ static int32_t Icssg_handleLinkDown(Icssg_Handle hIcssg,
 
     ENETTRACE_VAR(portId);
     ENETTRACE_INFO("%s: Port %d: Link down\r\n", ENET_PER_NAME(hIcssg), portId);
-    Icssg_updateLinkDown(hIcssg, macPort);
 
     /*Set port state to ICSSG_PORT_STATE_DISABLED on link down*/
     IcssgUtils_ioctlR30Cmd cmd = ICSSG_UTILS_R30_CMD_DISABLE;
