@@ -160,8 +160,8 @@ const enet_cpsw_phy1_config =
             getValue:function (inst) {
                 const cpswPhyAddrInfoMap = new Map(
                                            [
-                                             ['am261x-lp (dp83tg720 phy)',{phyAddr1: 12, phyAddr2: 12}],
-                                             ['am261x-lp (dp83826 phy)', {phyAddr1: 1, phyAddr2: 1}],
+                                             ['am261x-lp (dp83tg720 phy)',{phyAddr1: 8, phyAddr2: 12}],
+                                             ['am261x-lp (dp83826 phy)', {phyAddr1: 3, phyAddr2: 1}],
                                            ],
                                          );
                 let phyInfo =  cpswPhyAddrInfoMap.get(inst.BoardType);
@@ -208,8 +208,8 @@ const enet_cpsw_phy2_config =
             getValue:function (inst) {
                 const cpswPhyAddrInfoMap = new Map(
                                            [
-                                             ['am261x-lp (dp83tg720 phy)',{phyAddr1: 3, phyAddr2: 12}],
-                                             ['am261x-lp (dp83826 phy)', {phyAddr1: 1, phyAddr2: 1}],
+                                             ['am261x-lp (dp83tg720 phy)',{phyAddr1: 8, phyAddr2: 12}],
+                                             ['am261x-lp (dp83826 phy)', {phyAddr1: 3, phyAddr2: 1}],
                                            ],
                                          );
                 let phyInfo =  cpswPhyAddrInfoMap.get(inst.BoardType);

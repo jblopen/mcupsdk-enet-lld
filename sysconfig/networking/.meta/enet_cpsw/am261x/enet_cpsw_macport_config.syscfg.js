@@ -53,6 +53,20 @@ function enet_cpsw_macport_validate(inst, report) {
             report.logError("Link capabilty cannot support with 1G speed with half duplex", inst);
         }
     }
+    if(inst.macport2LinkSpeed == "ENET_SPEED_1GBIT")
+    {
+        if(inst.phyToMacInterfaceMode == "RMII")
+        {
+            report.logError("RMII Interface can not support with 1Gbps", inst);
+        }
+    }
+    if(inst.macport1LinkSpeed == "ENET_SPEED_1GBIT")
+    {
+        if(inst.phyToMacInterfaceMode == "RMII")
+        {
+            report.logError("RMII Interface can not support with 1Gbps", inst);
+        }
+    }
 }
 
 const enet_cpsw_macport_config = {

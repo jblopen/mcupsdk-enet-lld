@@ -43,7 +43,7 @@ const includes_freertos_r5f = {
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/core",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include/phy",
-                "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include/core",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include/core",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/soc/am261x",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/hw_include",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/hw_include/mdio/V4",
@@ -125,7 +125,8 @@ const templates_freertos_r5f =
 ];
 
 const buildOptionCombos = [
-    { device: device, cpu: "r5fss0-0", cgt: "ti-arm-clang", board: "am261x-lp", os: "freertos"},
+    { device: device, cpu: "r5fss0-0", cgt: "ti-arm-clang", board: "am261x-lp-dp83tg720", os: "freertos"},
+    { device: device, cpu: "r5fss0-0", cgt: "ti-arm-clang", board: "am261x-lp-dp83826", os: "freertos"},
 ];
 
 function getComponentProperty() {
