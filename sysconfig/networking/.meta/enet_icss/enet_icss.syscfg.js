@@ -1117,15 +1117,27 @@ let enet_icss_module = {
                     name: "DUAL MAC",
                 },
             ],
-            onChange: function (inst, ui) {
-                /* Init delay applicable only for single master mode */
-                if(inst.mode == "SWITCH") {
-                    ui.dualMacPortSelected.hidden = true;
-                }
-                else {
-                    ui.dualMacPortSelected.hidden = false;
+            onChange: (inst, ui) => ui.dualMacPortSelected.hidden = !(inst.mode == "DUAL MAC"),
+        },
+        {
+            name: "derivedMode",
+            displayName: "Protocol",
+            description: "Internal configuration used by protocols based on switch or mac modes",
+            default: "NONE",
+            options: [
+                { name: "NONE"},
+                { name: "HSR" },
+                { name: "PRP" },
+            ],
+            onChange: function(inst, ui) {
+                if (inst.derivedMode !== "NONE") {
+                    inst.mode = "SWITCH";
+                    ui.mode.hidden = true;
+                } else {
+                    ui.mode.hidden = false;
                 }
             },
+            hidden: true,   // internal only, used by ICSDK examples
         },
         {
             name: "GigabitSupportEnable",
@@ -1136,7 +1148,7 @@ let enet_icss_module = {
         {
             name: "phyToMacInterfaceMode",
             displayName: "MII/RGMII",
-            default: "MII",
+            default: "RGMII",
             onChange: function(inst, ui) {
                 if (inst.phyToMacInterfaceMode == "RGMII")
                 {

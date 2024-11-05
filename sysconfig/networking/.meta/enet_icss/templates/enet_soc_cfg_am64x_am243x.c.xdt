@@ -1,6 +1,7 @@
 %%{
     let module = system.modules["/networking/enet_icss/enet_icss"];
 %%}
+% const icsdk = require('./enet_icsdk_helper_functions');
 % let instance = module.$instances[0];
 % let instances = module.$instances;
 % let common = system.getScript("/common");
@@ -105,6 +106,10 @@ function getIcssgInstName(instance)
 #include <networking/enet/core/src/per/firmware/icssg/switch/RTU0_SLICE1_bin.h>
 #include <networking/enet/core/src/per/firmware/icssg/switch/TX_PRU_SLICE0_bin.h>
 #include <networking/enet/core/src/per/firmware/icssg/switch/TX_PRU_SLICE1_bin.h>
+
+% /* Import HSR PRP headers incase we are in HSR-PRP mode (used by ICSDK only) */
+`icsdk.importHsrHeaders(instances)`
+`icsdk.importPrpHeaders(instances)`
 
 #include "ti_enet_config.h"
 #include "ti_drivers_config.h"
@@ -1160,6 +1165,7 @@ static Icssg_Obj gEnetSoc_icssg0Swt =
 
     .pruss = &gEnetSoc_PruIcssg0,
 
+    %if (instances[i].derivedMode === "NONE") {     // This check is used by ICSDK examples
     /* Switch firmware for both slices */
     .fw =
     {
@@ -1180,6 +1186,8 @@ static Icssg_Obj gEnetSoc_icssg0Swt =
             .txpruSize = sizeof(TX_PRU_SLICE1_b00_Swt)
         },
     },
+    % }
+    `icsdk.assignHsrPrpFirmware(instances[i])`
 
     /* TimeSync module object */
     .timeSyncObj =
@@ -1313,6 +1321,7 @@ static Icssg_Obj gEnetSoc_icssg1Swt =
 
     .pruss = &gEnetSoc_PruIcssg1,
 
+    %if (instances[i].derivedMode === "NONE") {
     /* Switch firmware for both slices */
     .fw =
     {
@@ -1333,6 +1342,8 @@ static Icssg_Obj gEnetSoc_icssg1Swt =
             .txpruSize = sizeof(TX_PRU_SLICE1_b00_Swt)
         },
     },
+    % }
+    `icsdk.assignHsrPrpFirmware(instances[i])`
 
     /* TimeSync module object */
     .timeSyncObj =
@@ -2282,7 +2293,6 @@ const EnetRm_IoctlPermissionTable *EnetAppRm_getIoctlPermissionInfo(Enet_Type en
 
     return(ioctlPerm);
 }
-
 
 
 
