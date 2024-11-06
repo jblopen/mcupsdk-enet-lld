@@ -261,16 +261,6 @@ static IcssgUtils_R30Cmd IcssgUtils_R30Bitmask[ICSSG_UTILS_MAX_COMMANDS] =
     {
         { 0xffef0000, ICSSG_UTILS_CMD_NONE, 0xffef0000, ICSSG_UTILS_CMD_NONE},
     },
-
-    [ICSSG_UTILS_R30_CMD_DSCP_ENABLE] =
-    {
-        { 0xffff0040, ICSSG_UTILS_CMD_NONE, 0xffff0040, ICSSG_UTILS_CMD_NONE },
-    },
-
-    [ICSSG_UTILS_R30_CMD_DSCP_DISABLE] =
-    {
-        { 0xffbf0000, ICSSG_UTILS_CMD_NONE, 0xffbf0000, ICSSG_UTILS_CMD_NONE},
-    },
 };
 
 IcssgUtils_R30Cmd *IcssgUtils_R30DmemAddr[ICSSG_INSTANCE_NUM][ICSSG_MAC_PORT_MAX] =

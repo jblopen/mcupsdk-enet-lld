@@ -297,12 +297,6 @@ static int32_t Icssg_setVlanAwareMode(Icssg_Handle hIcssg);
 
 static int32_t Icssg_setVlanUnawareMode(Icssg_Handle hIcssg);
 
-static int32_t Icssg_setDscpEnable(Icssg_Handle hIcssg,
-                                   Enet_MacPort macPort);
-
-static int32_t Icssg_setDscpDisable(Icssg_Handle hIcssg,
-                                   Enet_MacPort macPort);
-
 static int32_t Icssg_setAcceptableFrameCheck(Icssg_Handle hIcssg,
                                              Enet_MacPort macPort,
                                              Icssg_AcceptFrameCheck acceptFrameCheck);
@@ -311,11 +305,11 @@ static int32_t Icssg_setAcceptableFrameCheckSync(Icssg_Handle hIcssg,
                                                  Enet_MacPort macPort,
                                                  Icssg_AcceptFrameCheck acceptFrameCheck);
 
-static int32_t Icssg_setPriorityMapping(Icssg_Handle hIcssg,
+static int32_t Icssg_setPcpBasedClassification(Icssg_Handle hIcssg,
                                         Enet_MacPort macPort,
                                         EnetPort_PriorityMap *priMap);
 
-static int32_t Icssg_setPriorityRegen(Icssg_Handle hIcssg,
+static int32_t Icssg_setVlanPriorityRegen(Icssg_Handle hIcssg,
                                       Enet_MacPort macPort,
                                       EnetPort_PriorityMap *priMap);
 
@@ -958,12 +952,13 @@ static void Icssg_initR30Cmd(Icssg_Handle hIcssg)
 static int32_t Icssg_initPriorityRegen(Icssg_Handle hIcssg)
 {
     EnetPer_Handle hPer = (EnetPer_Handle)hIcssg;
+    /* No PCP remapping */
     EnetPort_PriorityMap priMap = {
         .priorityMap = { 0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U }
     };
     int32_t status;
 
-    status = Icssg_setPriorityRegen(hIcssg, ENET_MAC_PORT_1, &priMap);
+    status = Icssg_setVlanPriorityRegen(hIcssg, ENET_MAC_PORT_1, &priMap);
     ENETTRACE_ERR_IF((status != ENET_SOK),
                      "%s: Port 1: failed to initialize priority regeneration: %d\r\n",
                      ENET_PER_NAME(hIcssg), status);
@@ -971,7 +966,7 @@ static int32_t Icssg_initPriorityRegen(Icssg_Handle hIcssg)
     if ((status == ENET_SOK) &&
         (hPer->enetType == ENET_ICSSG_SWITCH))
     {
-        status = Icssg_setPriorityRegen(hIcssg, ENET_MAC_PORT_2, &priMap);
+        status = Icssg_setVlanPriorityRegen(hIcssg, ENET_MAC_PORT_2, &priMap);
         ENETTRACE_ERR_IF((status != ENET_SOK),
                          "%s: Port 2: failed to initialize priority regeneration: %d\r\n",
                          ENET_PER_NAME(hIcssg), status);
@@ -2959,34 +2954,6 @@ static int32_t Icssg_setVlanUnawareMode(Icssg_Handle hIcssg)
     return status;
 }
 
-static int32_t Icssg_setDscpEnable(Icssg_Handle hIcssg, Enet_MacPort macPort)
-{
-    int32_t status = ENET_SOK;
-
-    /* Send DSCP Enable cmd for MAC port */
-    status = Icssg_R30SendSyncIoctl(hIcssg,
-                                    macPort,
-                                    ICSSG_UTILS_R30_CMD_DSCP_ENABLE);
-    ENETTRACE_ERR_IF((status != ENET_SOK),
-                     "%s: Port %d: failed to send DSCP Enable R30 cmd: %d\r\n",
-                     ENET_PER_NAME(hIcssg), macPort, status);
-    return status;
-}
-
-static int32_t Icssg_setDscpDisable(Icssg_Handle hIcssg, Enet_MacPort macPort)
-{
-    int32_t status;
-
-    /* Send VLAN_AWARE_DISABLE cmd for MAC port */
-    status = Icssg_R30SendSyncIoctl(hIcssg,
-                                    macPort,
-                                    ICSSG_UTILS_R30_CMD_DSCP_DISABLE);
-    ENETTRACE_ERR_IF((status != ENET_SOK),
-                     "%s: Port %d: failed to send DSCP Disable R30 cmd: %d\r\n",
-                     ENET_PER_NAME(hIcssg), macPort, status);
-    return status;
-}
-
 static int32_t Icssg_setAcceptableFrameCheck(Icssg_Handle hIcssg,
                                              Enet_MacPort macPort,
                                              Icssg_AcceptFrameCheck acceptFrameCheck)
@@ -3052,28 +3019,39 @@ static int32_t Icssg_setAcceptableFrameCheckSync(Icssg_Handle hIcssg,
     return status;
 }
 
-static int32_t Icssg_setPriorityMapping(Icssg_Handle hIcssg,
-                                        Enet_MacPort macPort,
-                                        EnetPort_PriorityMap *priMap)
+static int32_t Icssg_setNoClassification(Icssg_Handle hIcssg,
+                                         Enet_MacPort macPort)
 {
+    /* 
+     * All classifiers are kept disabled in case no packet classification is needed
+     * All packets will use Queue 0/Flow 0 (except for special packets)
+     */
+    uint32_t slice = IcssgUtils_getSliceNum(hIcssg, macPort);
     uintptr_t dram = Icssg_getDramAddr(hIcssg, macPort);
-    uintptr_t dfltVlanAddr = Icssg_getDfltVlanAddr(hIcssg, macPort);
-    uint8_t untaggedQueueNum;
-    uint8_t tempVal;
-    uint32_t i;
+    uintptr_t cfgRegs = Icssg_getCfgAddr(hIcssg);
+    uint8_t queue;
 
-    for (i = 0U; i < ENET_PRI_NUM; i++)
+    if (ICSSG_IS_SLICE_1(slice))
     {
-        tempVal = (uint8_t)priMap->priorityMap[i];
-        Icssg_wr8(hIcssg, dram + PORT_Q_PRIORITY_MAPPING_OFFSET + i, tempVal);
+        cfgRegs += (CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS0_OR_EN_PRU1
+                    - CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS0_OR_EN_PRU0);
     }
 
-    /* Update default queue number for untagged packet */
-    tempVal = Icssg_rd8(hIcssg, dfltVlanAddr + 2); /* Read the configured PCP value */
-    tempVal = tempVal >> 5;                        /* Shift to get the value in correct format */
+    /* Program classifiers */
+    for (queue = 0U; queue < ENET_PRI_NUM; queue++)
+    {
+        /* Disable OR Enable*/
+        Icssg_wr32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS0_OR_EN_PRU0 + (8U * queue), 0x0);
 
-    untaggedQueueNum = priMap->priorityMap[tempVal];
-    Icssg_wr8(hIcssg, dram + QUEUE_NUM_UNTAGGED, untaggedQueueNum);
+        /* Disable AND Enable */
+        Icssg_wr32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS0_AND_EN_PRU0 + (8U * queue), 0x0);
+
+        /* Disable class gate */
+        Icssg_wr32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS_GATES0_PRU0 + (4U * queue), 0x0);
+    }
+
+    /* Set default queue = 0 */
+    Icssg_wr8(hIcssg, dram + QUEUE_NUM_UNTAGGED, 0);
 
     return ENET_SOK;
 }
@@ -3082,12 +3060,14 @@ static int32_t Icssg_setDscpPriority(Icssg_Handle hIcssg,
                                       Enet_MacPort macPort,
                                       EnetPort_DscpPriorityMap *dscpPriority)
 {
-    /* One-to-one mapping from PCP -> Traffic Class.
-     * Managed using FT3[0:7] and Classifier[0:7]. */
-    uintptr_t dram = Icssg_getDramAddr(hIcssg, macPort);
+    /*
+     *  DSCP ToS based packet classification:
+     *  Port Q & RX Flow is decided using Classifier Hit, One-to-one mapping: CL0 -> Q0, ... CL7 -> Q7
+     *  Managed using FT3[0:7] and Classifier[0:7]
+     */
     uintptr_t cfgRegs = Icssg_getCfgAddr(hIcssg);
     uint32_t ft3Type = 0U;
-    uint32_t classSelect = 0U;
+    uint32_t filterSelect = 0U;
     uint32_t orEnable[ENET_PRI_NUM] = { 0U, };
     uint32_t andEnable[ENET_PRI_NUM] = { 0U, };
     uint16_t orNvEnable[ENET_PRI_NUM] = { 0U, };
@@ -3097,7 +3077,7 @@ static int32_t Icssg_setDscpPriority(Icssg_Handle hIcssg,
     Icssg_Filter3Cfg ft3CfgPcp = {0xc, 0, 0, 0, 0, 1, 0, 0x03ff0000, 0, 0, 0xffffffff, 0xffffffff};
     uint32_t slice = IcssgUtils_getSliceNum(hIcssg, macPort);
     uint32_t tempVal, loopCnt = 1U;
-    uint8_t pcp;
+    uint8_t queue;
     uint32_t i;
     int32_t status = ENET_SOK;
 
@@ -3113,38 +3093,32 @@ static int32_t Icssg_setDscpPriority(Icssg_Handle hIcssg,
 
     if (status == ENET_SOK)
     {
-        /* Set up filter type 3's to match pcp bits */
-        /* First 8 non zero indexes are mapped to 8 pcp values*/
-        for (pcp = 0U; pcp < ENET_PRI_NUM; pcp++)
+        /* Set up Type3 Filters to enable DSCP based classification */
+        /* First 8 non zero indexes are mapped to 8 Qs*/
+        /* Filter configuration: */
+        /* Q0 means best effort and last priority*/
+        ft3Type = (uint32_t)((((uint32_t)(0)) << 26U) | 0x00000008U);
+        ft3CfgPcp.ft3Type = ft3Type;
+        IcssgUtils_configFilter3(hIcssg, macPort, 0, &ft3CfgPcp);
+
+        for (queue = 1U; queue < ENET_PRI_NUM; queue++)
         {
-            if(pcp)
+            do
             {
-                do
-                {
-                    tempVal =  dscpPriority->tosMap[loopCnt];
-                    loopCnt++;
-                }while(tempVal == 0);
-                /* Setup FT3[1:7] to detect PCP1 - PCP7 */
-                ft3Type = (uint32_t)((((uint32_t)(loopCnt - 1)) << 26U) | 0x00000008U);
-                ft3CfgPcp.ft3Type = ft3Type;
-                IcssgUtils_configFilter3(hIcssg, macPort, tempVal, &ft3CfgPcp);
-                Icssg_wr8(hIcssg, dram + DSCP_BASED_PRI_MAP_INDEX_OFFSET + tempVal, (loopCnt - 1));
-            }
-            else
-            {
-                /* pcp = 0 means best effort and last priority*/
-                ft3Type = (uint32_t)((((uint32_t)(0)) << 26U) | 0x00000008U);
-                ft3CfgPcp.ft3Type = ft3Type;
-                IcssgUtils_configFilter3(hIcssg, macPort, pcp, &ft3CfgPcp);
-                Icssg_wr8(hIcssg, dram + DSCP_BASED_PRI_MAP_INDEX_OFFSET, pcp);
-            }
+                tempVal =  dscpPriority->tosMap[loopCnt];
+                loopCnt++;
+            }while(tempVal == 0);
+            /* Setup FT3[1:7] to detect DSCP ToS value = loopCnt */
+            ft3Type = (uint32_t)((((uint32_t)(loopCnt - 1)) << 26U) | 0x00000008U);
+            ft3CfgPcp.ft3Type = ft3Type;
+            IcssgUtils_configFilter3(hIcssg, macPort, tempVal, &ft3CfgPcp);
         }
 
         /* Build up the or lists */
-        for (pcp = 0U; pcp < ENET_PRI_NUM; pcp++)
+        for (queue = 0U; queue < ENET_PRI_NUM; queue++)
         {
-            classSelect = pcp;
-            orEnable[classSelect] |= (1U << pcp);
+            filterSelect = queue;
+            orEnable[filterSelect] |= (1U << queue);
         }
 
         if (ICSSG_IS_SLICE_1(slice))
@@ -3153,61 +3127,80 @@ static int32_t Icssg_setDscpPriority(Icssg_Handle hIcssg,
                         - CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS0_OR_EN_PRU0);
         }
 
-        /* Now program classifier c */
-        for (pcp = 0U; pcp < ENET_PRI_NUM; pcp++)
+        /* Now program classifiers */
+        for (queue = 0U; queue < ENET_PRI_NUM; queue++)
         {
             /* Configure OR Enable*/
-            Icssg_wr32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS0_OR_EN_PRU0 + (8U * pcp), orEnable[pcp]);
+            Icssg_wr32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS0_OR_EN_PRU0 + (8U * queue), orEnable[queue]);
 
             /* Configure AND Enable */
-            Icssg_wr32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS0_AND_EN_PRU0 + (8U * pcp), andEnable[pcp]);
+            Icssg_wr32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS0_AND_EN_PRU0 + (8U * queue), andEnable[queue]);
             tempReg = Icssg_rd32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS_CFG1_PRU0);
-            tempReg &= ~(0x3U << (pcp * 2U));
+            tempReg &= ~(0x3U << (queue * 2U));
             Icssg_wr32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS_CFG1_PRU0, tempReg);
 
             /* Configure NV Enable bits (1 bit in upper16, 1bit in lower16 */
             tempReg = Icssg_rd32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS_CFG2_PRU0);
-            if (orNvEnable[pcp])
+            if (orNvEnable[queue])
             {
-                tempReg |= 1U << (pcp + 16U);
+                tempReg |= 1U << (queue + 16U);
             }
             else
             {
-                tempReg &= ~(1U << (pcp + 16U));
+                tempReg &= ~(1U << (queue + 16U));
             }
 
-            if (andNvEnable[pcp])
+            if (andNvEnable[queue])
             {
-                tempReg |= 1U << (pcp);
+                tempReg |= 1U << (queue);
             }
             else
             {
-                tempReg &= ~(1U << (pcp));
+                tempReg &= ~(1U << (queue));
             }
 
             Icssg_wr32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS_CFG2_PRU0, tempReg);
             /* Configure class gate */
-            Icssg_wr32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS_GATES0_PRU0 + (4U * pcp), gateConfig);
-        }
-
-        for (i = 0; i < ENET_PRI_NUM; i++)
-        {
-            tempVal = (uint32_t)i;
-
-            /* Shift PCP value by 5 so HW can save a cycle */
-            tempVal = tempVal << 5;
-            Icssg_wr8(hIcssg, dram + PORT_Q_PRIORITY_REGEN_OFFSET + i, tempVal);
+            Icssg_wr32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS_GATES0_PRU0 + (4U * queue), gateConfig);
         }
     }
     return status;
 }
 
-static int32_t Icssg_setPriorityRegen(Icssg_Handle hIcssg,
-                                      Enet_MacPort macPort,
-                                      EnetPort_PriorityMap *priMap)
+static int32_t Icssg_setVlanPriorityRegen(Icssg_Handle hIcssg,
+                                          Enet_MacPort macPort,
+                                          EnetPort_PriorityMap *priMap)
 {
-    /* One-to-one mapping from PCP -> Traffic Class.
-     * Managed using FT3[0:7] and Classifier[0:7]. */
+    /*
+     *  PCP -> Traffic Class Remapping/Regeneration:
+     *  PCP in received packet is replaced with remapped PCP value from offset PORT_Q_PRIORITY_REGEN_OFFSET[PCP]
+     *  Common PCP remapping for both Host port and Forward port
+     */
+    uintptr_t dram = Icssg_getDramAddr(hIcssg, macPort);
+    uint8_t pcp, remappedPcp;
+
+    /* Configure PCP remapping array at: PORT_Q_PRIORITY_REGEN_OFFSET */
+    for (pcp = 0U; pcp < ENET_PRI_NUM; pcp++)
+    {
+        remappedPcp = (uint32_t)priMap->priorityMap[pcp];
+        /* Shift PCP value by 5 so HW can save a cycle */
+        remappedPcp = remappedPcp << 5;
+        Icssg_wr8(hIcssg, dram + PORT_Q_PRIORITY_REGEN_OFFSET + pcp, remappedPcp);
+    }
+
+    return ENET_SOK;
+}
+
+static int32_t Icssg_setPcpBasedClassification(Icssg_Handle hIcssg,
+                                               Enet_MacPort macPort,
+                                               EnetPort_PriorityMap *priMap)
+{
+    /* 
+     * PCP based classification:
+     * Mapping: PCP0 -> Q0, ... PCP7 -> Q7
+     * Managed using FT3[0:7] and Classifier[0:7]
+     */
+    uintptr_t dfltVlanAddr = Icssg_getDfltVlanAddr(hIcssg, macPort);
     uintptr_t dram = Icssg_getDramAddr(hIcssg, macPort);
     uintptr_t cfgRegs = Icssg_getCfgAddr(hIcssg);
     uint32_t ft3Type = 0U;
@@ -3220,9 +3213,9 @@ static int32_t Icssg_setPriorityRegen(Icssg_Handle hIcssg,
     uint32_t tempReg = 0U;
     Icssg_Filter3Cfg ft3CfgPcp = {0xc, 0, 0, 0, 0, 5, 0, 0xff1f0000, 0, 0, 0xffffffff, 0xffffffff};
     uint32_t slice = IcssgUtils_getSliceNum(hIcssg, macPort);
-    uint32_t tempVal;
+    uint8_t untaggedQueueNum;
+    uint8_t temp;
     uint8_t pcp;
-    uint8_t i;
 
     /* Set up filter type 3's to match pcp bits */
     for (pcp = 0U; pcp < ENET_PRI_NUM; pcp++)
@@ -3246,7 +3239,7 @@ static int32_t Icssg_setPriorityRegen(Icssg_Handle hIcssg,
                      - CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS0_OR_EN_PRU0);
     }
 
-    /* Now program classifier c */
+    /* Now program classifiers */
     for (pcp = 0U; pcp < ENET_PRI_NUM; pcp++)
     {
         /* Configure OR Enable*/
@@ -3283,14 +3276,12 @@ static int32_t Icssg_setPriorityRegen(Icssg_Handle hIcssg,
         Icssg_wr32(hIcssg, cfgRegs + CSL_ICSS_G_PR1_MII_RT_PR1_MII_RT_G_CFG_REGS_G_RX_CLASS_GATES0_PRU0 + (4U * pcp), gateConfig);
     }
 
-    for (i = 0; i < ENET_PRI_NUM; i++)
-    {
-        tempVal = (uint32_t)priMap->priorityMap[i];
+    /* Update default queue number for untagged packet */
+    temp = Icssg_rd8(hIcssg, dfltVlanAddr + 2); /* Read the configured PCP value */
+    temp = temp >> 5;                           /* Shift to get the value in correct format */
 
-        /* Shift PCP value by 5 so HW can save a cycle */
-        tempVal = tempVal << 5;
-        Icssg_wr8(hIcssg, dram + PORT_Q_PRIORITY_REGEN_OFFSET + i, tempVal);
-    }
+    untaggedQueueNum = priMap->priorityMap[temp];
+    Icssg_wr8(hIcssg, dram + QUEUE_NUM_UNTAGGED, untaggedQueueNum);
 
     return ENET_SOK;
 }
@@ -4958,7 +4949,7 @@ int32_t IcssgMacPort_ioctl_handler_ENET_MACPORT_IOCTL_SET_EGRESS_QOS_PRI_MAP(Ene
 
     Enet_assert(cmd == ENET_MACPORT_IOCTL_SET_EGRESS_QOS_PRI_MAP);
 
-    status = Icssg_setPriorityMapping(hIcssg, macPort, &inArgs->priorityMap);
+    status = Icssg_setPcpBasedClassification(hIcssg, macPort, &inArgs->priorityMap);
     ENETTRACE_ERR_IF((status != ENET_SOK),
                         "%s: Port %u: failed to set QoS priority: %d\r\n",
                         ENET_PER_NAME(hIcssg), ENET_MACPORT_ID(macPort), status);
@@ -4977,12 +4968,11 @@ int32_t IcssgMacPort_ioctl_handler_ENET_MACPORT_IOCTL_SET_PRI_REGEN_MAP(EnetPer_
 
     Enet_assert(cmd == ENET_MACPORT_IOCTL_SET_PRI_REGEN_MAP);
 
-    status = Icssg_setPriorityRegen(hIcssg, macPort, &inArgs->priorityRegenMap);
+    status = Icssg_setVlanPriorityRegen(hIcssg, macPort, &inArgs->priorityRegenMap);
     ENETTRACE_ERR_IF((status != ENET_SOK),
                         "%s: Port %u: failed to set priority regeneration: %d\r\n",
                         ENET_PER_NAME(hIcssg), ENET_MACPORT_ID(macPort), status);
     return status;
-
 }
 
 int32_t IcssgMacPort_ioctl_handler_ENET_MACPORT_IOCTL_SET_INGRESS_DSCP_PRI_MAP(EnetPer_Handle hPer,
@@ -5005,19 +4995,12 @@ int32_t IcssgMacPort_ioctl_handler_ENET_MACPORT_IOCTL_SET_INGRESS_DSCP_PRI_MAP(E
         ENETTRACE_ERR_IF((status != ENET_SOK),
                         "%s: Port %u: failed to set dscp priority map: %d\r\n",
                         ENET_PER_NAME(hIcssg), ENET_MACPORT_ID(macPort), status);
-        if(status == ENET_SOK)
-        {
-            status = Icssg_setDscpEnable(hIcssg, macPort);
-            ENETTRACE_ERR_IF((status != ENET_SOK),
-                            "%s: failed to set DSCP enable: %d\r\n",
-                            ENET_PER_NAME(hIcssg), status);
-        }
     }
     else
     {
-        status = Icssg_setDscpDisable(hIcssg, macPort);
+        status = Icssg_setNoClassification(hIcssg, macPort);
         ENETTRACE_ERR_IF((status != ENET_SOK),
-                        "%s: failed to set DSCP disable: %d\r\n",
+                        "%s: failed to remove DSCP based classification: %d\r\n",
                         ENET_PER_NAME(hIcssg), status);
     }
 
