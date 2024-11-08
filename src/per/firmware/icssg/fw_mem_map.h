@@ -263,7 +263,7 @@
 #define TAS_ACTIVE_LIST_INDEX                              0x001B
 /*Cycle time for the new TAS schedule*/
 #define TAS_ADMIN_CYCLE_TIME                               0x001C
-/*Cycle counts remaining till the TAS list update*/
+/*Cycle counter when the TAS list update needs to be done*/
 #define TAS_CONFIG_CHANGE_CYCLE_COUNT                      0x0020
 /*Base Flow ID for sending packets to Host for Slice0*/
 #define PSI_L_REGULAR_FLOW_ID_BASE_OFFSET                  0x0024
@@ -347,17 +347,17 @@
  */
 /*Start of 64 bits PA_STAT counters*/
 #define PA_STAT_64b_START_OFFSET                           0x0000
-/*Number of valid bytes sent by Rx PRU to Host on PSI. Currently disabled*/
+/*Number of valid bytes sent by Rx PRU to Host on PSI.*/
 #define NRT_HOST_RX_BYTE_COUNT_PASTATID                    0x0000
-/*Number of valid bytes copied by RTU0 to Tx queues. Currently disabled*/
+/*Number of valid bytes copied by RTU0 to Tx queues.*/
 #define NRT_HOST_TX_BYTE_COUNT_PASTATID                    0x0008
-/*Number of valid bytes sent by Rx PRU to Host on PSI. Currently disabled*/
+/*Number of valid bytes sent by Rx PRU to Host on PSI.*/
 #define NRT_HOST_RX_BYTE_COUNT_MAC_SLICE0_PASTATID         0x0010
-/*Number of valid bytes sent by Rx PRU to Host on PSI. Currently disabled*/
+/*Number of valid bytes sent by Rx PRU to Host on PSI.*/
 #define NRT_HOST_RX_BYTE_COUNT_MAC_SLICE1_PASTATID         0x0018
-/*Number of valid bytes sent by Rx PRU to Host on PSI. Currently disabled*/
+/*Number of valid bytes sent by Rx PRU to Host on PSI.*/
 #define NRT_HOST_TX_BYTE_COUNT_MAC_SLICE0_PASTATID         0x0020
-/*Number of valid bytes sent by Rx PRU to Host on PSI. Currently disabled*/
+/*Number of valid bytes sent by Rx PRU to Host on PSI.*/
 #define NRT_HOST_TX_BYTE_COUNT_MAC_SLICE1_PASTATID         0x0028
 /*Start of 32 bits PA_STAT counters*/
 #define PA_STAT_32b_START_OFFSET                           0x0080
@@ -529,5 +529,9 @@
 #define NRT_HOST_EGRESS_Q_EXP_OVERFLOW_MAC_SLICE0_PASTATID 0x0260
 /*Host Egress Q (Pre-emptible) Overflow Counter*/
 #define NRT_HOST_EGRESS_Q_EXP_OVERFLOW_MAC_SLICE1_PASTATID 0x0264
+/*Cut-through packet Counter*/
+#define NRT_CUT_THR_PKT_SLICE0_PASTATID                    0x0268
+/*Cut-through packet Counter*/
+#define NRT_CUT_THR_PKT_SLICE1_PASTATID                    0x026C
 
 #endif /* ____fw_mem_map_h*/
