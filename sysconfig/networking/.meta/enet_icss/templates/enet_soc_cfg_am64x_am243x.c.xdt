@@ -66,6 +66,13 @@ function getIcssgInstName(instance)
 #include <stdarg.h>
 #include <drivers/sciclient.h>
 #include <drivers/hw_include/cslr_soc.h>
+#include <drivers/qos/v0/qos.h>
+% if(common.getSocName() == "am64x"){
+#include <drivers/qos/v0/soc/am64x/qos_soc.h>
+% }
+% if(common.getSocName() == "am243x"){
+#include <drivers/qos/v0/soc/am243x/qos_soc.h>
+% }
 #include <hw_include/cslr_icss.h>
 #include <priv/mod/cpsw_clks.h>
 #include <enet.h>
@@ -513,6 +520,65 @@ static Icssg_FwPoolMem gEnetSoc_Icssg1_Swt_FwPoolMem[] =
 };
 % }
 % }
+
+/* QoS for ICSSG data movement accelerators: These widgets move the data between ICSS internal registers to MSRAM outside the ICSS module. 
+ * In K3 SoC arch, the transactions goes through the CBASS interconnect. The CBASS interconnect provides MMRs to define the QoS.
+ * EPRIORITY = 3 bits QoS field - 0x0 <Highest>, 0x7 <lowest>
+ * TXPRU_XFRVBUS_RD - TXPRU uses read widget to read the packet content from the target memory during port egress.
+ * RXPRU_XFRVBUS_WR - RXPRU uses write widget to write the packet content to the target memory during port ingress.
+ * Default EPRIORITY is 0x7 (lowest).
+ */
+QOS_Config soc_qos_data[] = {
+    /* ICSSG0_RXPRU_XFRVBUS_WR_NRT_RT - 1 endpoints, 2 channels */
+    {
+        .reg = ICSS_G_16FF_MAIN_0_PR1_EXT_VBUSM + 0x100 + 0x4 * 6,
+        .val = EPRIORITY_1 | ORDERID_15,
+    },
+    {
+        .reg = ICSS_G_16FF_MAIN_0_PR1_EXT_VBUSM + 0x100 + 0x4 * 7,
+        .val = EPRIORITY_1 | ORDERID_15,
+    },
+
+    /* ICSSG0_TXPRU_XFRVBUS_RD_NRT - 1 endpoints, 2 channels */
+    {
+        .reg = ICSS_G_16FF_MAIN_0_PR1_EXT_VBUSM + 0x100 + 0x4 * 10,
+        .val = ORDERID_15,
+    },
+    {
+        .reg = ICSS_G_16FF_MAIN_0_PR1_EXT_VBUSM + 0x100 + 0x4 * 11,
+        .val = ORDERID_15,
+    },
+
+    /* ICSSG1_RXPRU_XFRVBUS_WR_NRT_RT - 1 endpoints, 2 channels */
+    {
+        .reg = ICSS_G_16FF_MAIN_1_PR1_EXT_VBUSM + 0x100 + 0x4 * 6,
+        .val = EPRIORITY_1 | ORDERID_15,
+    },
+    {
+        .reg = ICSS_G_16FF_MAIN_1_PR1_EXT_VBUSM + 0x100 + 0x4 * 7,
+        .val = EPRIORITY_1 | ORDERID_15,
+    },
+
+    /* ICSSG1_TXPRU_XFRVBUS_RD_NRT - 1 endpoints, 2 channels */
+    {
+        .reg = ICSS_G_16FF_MAIN_1_PR1_EXT_VBUSM + 0x100 + 0x4 * 10,
+        .val = ORDERID_15,
+    },
+    {
+        .reg = ICSS_G_16FF_MAIN_1_PR1_EXT_VBUSM + 0x100 + 0x4 * 11,
+        .val = ORDERID_15,
+    },
+
+
+    /* Following registers set 1:1 mapping for orderID MAP1/MAP2
+     * remap registers. orderID x is remapped to orderID x again
+     * This is to ensure orderID from MAP register is unchanged
+     */
+
+    /* ICSS_G_16FF_MAIN_0_PR1_EXT_VBUSM - 0 groups */
+
+    /* ICSS_G_16FF_MAIN_1_PR1_EXT_VBUSM - 0 groups */
+};
 
 /* PRU_ICSSG 0 */
 Icssg_Pruss gEnetSoc_PruIcssg0 =
@@ -1571,6 +1637,9 @@ extern EnetUdma_DrvObjMemInfo gEnetSoc_dmaObjMemInfo;
 
 int32_t EnetSoc_init(void)
 {
+    uint32_t qos_count = sizeof(soc_qos_data) / sizeof(soc_qos_data[0]);
+
+    QOS_init(soc_qos_data, qos_count);
     memset(gEnetSoc_dmaObjMemInfo.drvObjMem, 0,
     gEnetSoc_dmaObjMemInfo.numObjs * sizeof(*(gEnetSoc_dmaObjMemInfo.drvObjMem)));
 
