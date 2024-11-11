@@ -38,7 +38,7 @@
 /* ========================================================================== */
 
 #define ENETAPP_PORT_MAX                          (ENET_SYSCFG_NUM_EXT_MAC_PORTS)
-
+#define MAX_NUM_MAC_PORTS                         ENETAPP_PORT_MAX
 #define ENETAPP_ICSSG_INSTANCE_MAX                (2U)
 #define ENETAPP_PER_MAX                           (ENETAPP_ICSSG_INSTANCE_MAX)
 
