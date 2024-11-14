@@ -11,7 +11,7 @@
 
     <project
         title="Enet Cpsw Loopback Phy End"
-        name = "enet_cpsw_loopback_phy_end_am261x-lp-dp83tg720/am261x-lp-lp_r5fss0-0_freertos_ti-arm-clang"
+        name = "enet_cpsw_loopback_phy_end_am261x-lp-dp83tg720/am261x-lp_r5fss0-0_freertos_ti-arm-clang"
         products="sysconfig;com.ti.MCU_PLUS_SDK_AMXXX"
         configurations="
             Release,
@@ -19,7 +19,7 @@
         "
         connection="TIXDS110_Connection.xml"
         toolChain="TICLANG"
-        cgtVersion="4.0.0"
+        cgtVersion="4.0.1"
         device="Cortex R.AM261x"
         deviceCore="Cortex_R5_0"
         ignoreDefaultDeviceSettings="true"
@@ -35,8 +35,8 @@
             -I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/portable/TI_ARM_CLANG/ARM_CR5F
             -I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/config/am261x/r5f
             -I${MCU_PLUS_SDK_PATH}/source/networking/enet
-            -I${MCU_PLUS_SDK_PATH}/source/networking/enet/utils
-            -I${MCU_PLUS_SDK_PATH}/source/networking/enet/utils/include
+            -I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils
+            -I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils/include
             -I${MCU_PLUS_SDK_PATH}/source/networking/enet/core
             -I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include
             -I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include/phy
