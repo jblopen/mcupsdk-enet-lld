@@ -28,6 +28,8 @@ BOOTIMAGE_PATH=$(abspath .)
 BOOTIMAGE_NAME:=enet_cpsw_udpclient.$(PROFILE).appimage
 BOOTIMAGE_NAME_XIP:=enet_cpsw_udpclient.$(PROFILE).appimage_xip
 BOOTIMAGE_NAME_SIGNED:=enet_cpsw_udpclient.$(PROFILE).appimage.signed
+oeconfig?=None
+
 BOOTIMAGE_NAME_MCELF:=enet_cpsw_udpclient.$(PROFILE).mcelf
 BOOTIMAGE_NAME_MCELF_HS:=enet_cpsw_udpclient.$(PROFILE).mcelf.hs
 BOOTIMAGE_RPRC_NAME:=enet_cpsw_udpclient.$(PROFILE).rprc
@@ -70,7 +72,7 @@ INCLUDES_common := \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/portable/TI_ARM_CLANG/ARM_CR5F \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/config/am263x/r5f \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet \
-	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/utils/include \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils/include \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include/phy \
@@ -363,7 +365,7 @@ endif
 	$(RM) $(BOOTIMAGE_TEMP_OUT_FILE)
 	@echo  Boot image: am263x:r5fss0-0:freertos:ti-arm-clang $(BOOTIMAGE_PATH)/$@ Done !!!
 	@echo  Boot MulticoreELF image: $(BOOTIMAGE_PATH)/$(BOOTIMAGE_NAME_MCELF) ...
-	$(PYTHON) $(MCELF_IMAGE_GEN) --core-img=$(BOOTIMAGE_CORE_ID_r5fss0-0):$(OUTNAME) --output=$(BOOTIMAGE_NAME_MCELF) --merge-segments=$(MCELF_MERGE_SEGMENTS_FLAG) --tolerance-limit=$(MCELF_MERGE_SEGMENTS_TOLERANCE_LIMIT) --ignore-context=$(MCELF_IGNORE_CONTEXT_FLAG) --xip=$(MCELF_XIP_RANGE) --xlat=$(MCELF_ADDR_TRANSLATION_PATH) --max_segment_size=$(MCELF_MAX_SEGMENT_SIZE)
+	$(PYTHON) $(MCELF_IMAGE_GEN) --core-img=$(BOOTIMAGE_CORE_ID_r5fss0-0):$(OUTNAME) --output=$(BOOTIMAGE_NAME_MCELF) --merge-segments=$(MCELF_MERGE_SEGMENTS_FLAG) --tolerance-limit=$(MCELF_MERGE_SEGMENTS_TOLERANCE_LIMIT) --ignore-context=$(MCELF_IGNORE_CONTEXT_FLAG) --xip=$(MCELF_XIP_RANGE) --xlat=$(MCELF_ADDR_TRANSLATION_PATH) --max_segment_size=$(MCELF_MAX_SEGMENT_SIZE) --otfaConfigFile=$(oeconfig)
 	@echo  Boot MulticoreELF ELF image: $(BOOTIMAGE_PATH)/$(BOOTIMAGE_NAME_MCELF) Done !!!
 	@echo  .
 
