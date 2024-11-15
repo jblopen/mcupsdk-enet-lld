@@ -73,6 +73,41 @@ const includes_freertos_r5f = {
     ],
 };
 
+const includes_freertos_a53 = {
+    common: [
+        "${MCU_PLUS_SDK_PATH}/source/board/ethphy/enet/rtos_drivers/include",
+        "${MCU_PLUS_SDK_PATH}/source/board/ethphy/port",
+        "${MCU_PLUS_SDK_PATH}/source/kernel/freertos/FreeRTOS-Kernel/include",
+        "${MCU_PLUS_SDK_PATH}/source/kernel/freertos/portable/GCC/ARM_CA53",
+        "${MCU_PLUS_SDK_PATH}/source/kernel/freertos/config/am64x/a53",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils/include",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils/V3",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include/phy",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include/core",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/soc/k3/am64x_am243x",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/hw_include",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/hw_include/mdio/V4",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/tsn",
+        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack",
+        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp",
+        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp/tilld",
+        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_combase/tilld/sitara",
+        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp/gptpconf",
+        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_uniconf",
+        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_uniconf/yangs",
+        "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-stack/src/include",
+        "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-port/include",
+        "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-port/freertos/include",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/lwipif/inc",
+        "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-stack/contrib",
+        "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-config/am64x",
+    ],
+};
+
 const libs_freertos_r5f = {
     common: [
         "freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib",
@@ -88,6 +123,23 @@ const libs_freertos_r5f = {
         "lwipif-cpsw-freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib",
         "lwip-freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib",
         "lwip-contrib-freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib",
+    ],
+};
+
+const libs_freertos_a53 = {
+    common: [
+	
+        "freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib",
+        "drivers.am64x.a53.gcc-aarch64.${ConfigName}.lib",
+        "enet-cpsw.am64x.a53.gcc-aarch64.${ConfigName}.lib",
+        "board.am64x.a53.gcc-aarch64.${ConfigName}.lib",
+        "tsn_combase-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib",
+        "tsn_unibase-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib",
+        "tsn_gptp-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib",
+        "tsn_uniconf-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib",
+        "lwipif-cpsw-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib",
+        "lwip-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib",
+        "lwip-contrib-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib",
     ],
 };
 
@@ -108,6 +160,15 @@ const defines_r5f = {
     ],
 };
 
+const defines_a53 = {
+    common: [
+        "ENET_ENABLE_PER_CPSW=1",
+        'PRINT_FORMAT_NO_WARNING',
+        'SITARA',
+        'GPTP_ENABLED=1',
+    ],
+};
+
 const cflags_r5f = {
     common: [
         "--include tsn_buildconf/sitara_buildconf.h",
@@ -115,6 +176,16 @@ const cflags_r5f = {
     release: [
         "-Oz",
         "-flto",
+    ],
+};
+
+const cflags_a53 = {
+    common: [
+        "--include tsn_buildconf/sitara_buildconf.h",
+        "-Wno-unused-function",
+    ],
+    release: [
+       "-flto",
     ],
 };
 
@@ -126,9 +197,21 @@ const lflags_r5f = {
     ],
 };
 
+const lflags_a53 = {
+    common: [
+        
+    ],
+};
+
 const lnkfiles = {
     common: [
         "../linker.cmd",
+    ]
+};
+
+const lnkfiles_a53 = {
+    common: [
+        "linker.cmd",
     ]
 };
 
@@ -139,6 +222,12 @@ const loptflags_r5f = {
         "-mfpu=vfpv3-d16",
         "-mthumb",
         "-Oz",
+        "-flto"
+    ],
+};
+
+const loptflags_a53 = {
+    release: [
         "-flto"
     ],
 };
@@ -160,8 +249,30 @@ const templates_freertos_r5f =
     },
 ];
 
+const templates_freertos_a53 =
+[
+    {
+        input: ".project/templates/am64x/common/linker_a53.cmd.xdt",
+        output: "linker.cmd",
+        options: {
+            enableDMARegion: true,
+            dmaHeapSize: 0x20000,
+        }
+    },
+    {
+        input: "source/networking/enet/core/sysconfig/.project/templates/freertos/main_freertos.c.xdt",
+        output: "../main.c",
+        options: {
+            entryFunction: "EnetApp_mainTask",
+            taskPri : "2",
+            stackSize : "16384",
+        },
+    }
+];
+
 const buildOptionCombos = [
     { device: device, cpu: "r5fss0-0", cgt: "ti-arm-clang", board: "am64x-evm", os: "freertos"},
+    { device: device, cpu: "a53ss0-0", cgt: "gcc-aarch64", board: "am64x-evm", os: "freertos"},
 ];
 
 function getComponentProperty() {
@@ -181,12 +292,12 @@ function getComponentBuildProperty(buildOption) {
 
     build_property.files = files;
     build_property.filedirs = filedirs;
-    build_property.lnkfiles = lnkfiles;
     build_property.syscfgfile = syscfgfile;
     build_property.projecspecFileAction = "link";
     build_property.readmeDoxygenPageTag = readmeDoxygenPageTag;
 
     if(buildOption.cpu.match(/r5f*/)) {
+        build_property.lnkfiles = lnkfiles;
         if(buildOption.os.match(/freertos*/) )
         {
             const _ = require('lodash');
@@ -209,6 +320,34 @@ function getComponentBuildProperty(buildOption) {
             build_property.projectspecLnkPath = linker_includePath_freertos;
             build_property.loptflags = loptflags_r5f;
         }
+    }
+
+    if(buildOption.cpu.match(/a53*/)){
+        build_property.lnkfiles = lnkfiles_a53;
+        if(buildOption.os.match(/freertos*/) )
+            {
+                const _ = require('lodash');
+                let libdirs_freertos_cpy = _.cloneDeep(libdirs_freertos);
+                /* Logic to remove generated/ from libdirs_freertos, it generates warning for ccs build */
+                if (buildOption.isProjectSpecBuild === true)
+                {
+                    var delIndex = libdirs_freertos_cpy.common.indexOf('generated');
+                    if (delIndex !== -1) {
+                        libdirs_freertos_cpy.common.splice(delIndex, 1);
+                    }
+                    
+                }
+                build_property.includes = includes_freertos_a53;
+                build_property.libdirs = libdirs_freertos_cpy;
+                build_property.libs = libs_freertos_a53;
+                build_property.templates = templates_freertos_a53;
+                build_property.defines = defines_a53;
+                build_property.cflags = cflags_a53;
+                build_property.lflags = lflags_a53;
+                build_property.projectspecLnkPath = linker_includePath_freertos;
+                build_property.loptflags = loptflags_a53;
+            }
+
     }
 
     return build_property;

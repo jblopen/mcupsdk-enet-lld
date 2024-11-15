@@ -10,8 +10,8 @@
     </applicability>
 
     <project
-        title="Gptp App"
-        name = "gptp_app_am64x-evm_a53ss0-0_freertos_gcc-aarch64"
+        title="Gptp Lwip Cpsw"
+        name = "gptp_lwip_cpsw_am64x-evm_a53ss0-0_freertos_gcc-aarch64"
         products="sysconfig;com.ti.MCU_PLUS_SDK_AMXXX"
         configurations="
                 Debug,
@@ -49,12 +49,17 @@
             -I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/tsn
             -I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack
             -I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp
-            -I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_unibase
             -I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp/tilld
             -I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_combase/tilld/sitara
             -I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp/gptpconf
             -I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_uniconf
             -I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_uniconf/yangs
+            -I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-stack/src/include
+            -I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-port/include
+            -I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-port/freertos/include
+            -I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/lwipif/inc
+            -I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-stack/contrib
+            -I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-config/am64x
             -mcpu=cortex-a53+fp+simd
             -mabi=lp64
             -mcmodel=large
@@ -83,9 +88,10 @@
             -L${MCU_PLUS_SDK_PATH}/source/board/lib
             -L${MCU_PLUS_SDK_PATH}/source/networking/enet/lib
             -L${MCU_PLUS_SDK_PATH}/source/networking/tsn/lib
+            -L${MCU_PLUS_SDK_PATH}/source/networking/lwip/lib
             -L$(CGT_GCC_AARCH64_PATH)/lib
             -i${PROJECT_BUILD_DIR}/syscfg
-            -Wl,-Map=gptp_app.${ConfigName}.map
+            -Wl,-Map=gptp_lwip_cpsw.${ConfigName}.map
             -Wl,-static
             -Wl,--gc-sections
             -Wl,--build-id=none
@@ -103,7 +109,7 @@
             --context a53ss0-0 --part Default --package ALV
         "
 
-        description="A Gptp App FREERTOS project">
+        description="A Gptp Lwip Cpsw FREERTOS project">
 
         <configuration name="Debug"
             compilerBuildOptions="
@@ -118,6 +124,9 @@
                 -ltsn_unibase-freertos.am64x.a53.gcc-aarch64.debug.lib
                 -ltsn_gptp-freertos.am64x.a53.gcc-aarch64.debug.lib
                 -ltsn_uniconf-freertos.am64x.a53.gcc-aarch64.debug.lib
+                -llwipif-cpsw-freertos.am64x.a53.gcc-aarch64.debug.lib
+                -llwip-freertos.am64x.a53.gcc-aarch64.debug.lib
+                -llwip-contrib-freertos.am64x.a53.gcc-aarch64.debug.lib
             "
         ></configuration>
         <configuration name="Release"
@@ -134,6 +143,9 @@
                 -ltsn_unibase-freertos.am64x.a53.gcc-aarch64.release.lib
                 -ltsn_gptp-freertos.am64x.a53.gcc-aarch64.release.lib
                 -ltsn_uniconf-freertos.am64x.a53.gcc-aarch64.release.lib
+                -llwipif-cpsw-freertos.am64x.a53.gcc-aarch64.release.lib
+                -llwip-freertos.am64x.a53.gcc-aarch64.release.lib
+                -llwip-contrib-freertos.am64x.a53.gcc-aarch64.release.lib
             "
         ></configuration>
         <pathVariable name="MCU_PLUS_SDK_PATH" path="${COM_TI_MCU_PLUS_SDK_AMXXX_INSTALL_DIR}" scope="project" />
@@ -145,11 +157,9 @@
         </file>
         <file path="../../../../debug_log.c" openOnCreation="false" excludeFromBuild="false" action="link">
         </file>
-        <file path="../../../../enetapp_cpsw.c" openOnCreation="false" excludeFromBuild="false" action="link">
+        <file path="../../../../tsnapp_lwip_cpsw_main.c" openOnCreation="false" excludeFromBuild="false" action="link">
         </file>
-        <file path="../../../../tsnapp_cpsw_main.c" openOnCreation="false" excludeFromBuild="false" action="link">
-        </file>
-        <file path="../../../../nrt_flow/default_flow_cpsw.c" openOnCreation="false" excludeFromBuild="false" action="link">
+        <file path="../../../../nrt_flow/app_tcpserver.c" openOnCreation="false" excludeFromBuild="false" action="link">
         </file>
         <file path="../main.c" openOnCreation="false" excludeFromBuild="false" action="link">
         </file>
@@ -157,7 +167,7 @@
         </file>
         <file path="../example.syscfg" openOnCreation="false" excludeFromBuild="false" action="link">
         </file>
-        <file path="${MCU_PLUS_SDK_PATH}/docs/api_guide_am64x/EXAMPLES_ENET_CPSW_TSN_GPTP.html"
+        <file path="${MCU_PLUS_SDK_PATH}/docs/api_guide_am64x/EXAMPLES_ENET_CPSW_TSN_LWIP_GPTP.html"
                 openOnCreation="false" excludeFromBuild="false" targetName="README.html" action="link">
         </file>
         <file path="syscfg_c.rov.xs" openOnCreation="false" excludeFromBuild="false" action="copy">

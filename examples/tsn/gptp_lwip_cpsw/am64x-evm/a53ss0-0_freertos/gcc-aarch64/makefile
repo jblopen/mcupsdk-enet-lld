@@ -3,15 +3,12 @@ export MCU_PLUS_SDK_PATH?=$(abspath ../../../../../../../../../..)
 include $(MCU_PLUS_SDK_PATH)/imports.mak
 include $(MCU_PLUS_SDK_PATH)/devconfig/devconfig.mak
 
-CG_TOOL_ROOT=$(CGT_TI_ARM_CLANG_PATH)
+CG_TOOL_ROOT=$(CGT_GCC_AARCH64_PATH)
 
-CC=$(CG_TOOL_ROOT)/bin/tiarmclang
-LNK=$(CG_TOOL_ROOT)/bin/tiarmclang
-STRIP=$(CG_TOOL_ROOT)/bin/tiarmstrip
-OBJCOPY=$(CG_TOOL_ROOT)/bin/tiarmobjcopy
-COV=$(CG_TOOL_ROOT)/bin/tiarmcov
-PROFDATA=$(CG_TOOL_ROOT)/bin/tiarmprofdata
-COVERAGE_PATH=$(abspath .)
+CC=$(CG_TOOL_ROOT)/bin/aarch64-none-elf-gcc
+LNK=$(CG_TOOL_ROOT)/bin/aarch64-none-elf-gcc
+STRIP=$(CG_TOOL_ROOT)/bin/aarch64-none-elf-strip
+OBJCOPY=$(CG_TOOL_ROOT)/bin/aarch64-none-elf-objcopy
 ifeq ($(OS), Windows_NT)
 	PYTHON=python
 else
@@ -21,18 +18,18 @@ endif
 PROFILE?=release
 ConfigName:=$(PROFILE)
 
-OUTNAME:=gptp_app.$(PROFILE).out
-COREOUTNAME:=gptp_app.$(PROFILE).optishare.out
+OUTNAME:=gptp_lwip_cpsw.$(PROFILE).out
+COREOUTNAME:=gptp_lwip_cpsw.$(PROFILE).optishare.out
 
 BOOTIMAGE_PATH=$(abspath .)
-BOOTIMAGE_NAME:=gptp_app.$(PROFILE).appimage
-BOOTIMAGE_NAME_XIP:=gptp_app.$(PROFILE).appimage_xip
-BOOTIMAGE_NAME_SIGNED:=gptp_app.$(PROFILE).appimage.signed
-BOOTIMAGE_RPRC_NAME:=gptp_app.$(PROFILE).rprc
-BOOTIMAGE_RPRC_NAME_XIP:=gptp_app.$(PROFILE).rprc_xip
-BOOTIMAGE_RPRC_NAME_TMP:=gptp_app.$(PROFILE).rprc_tmp
-BOOTIMAGE_NAME_HS:=gptp_app.$(PROFILE).appimage.hs
-BOOTIMAGE_NAME_HS_FS:=gptp_app.$(PROFILE).appimage.hs_fs
+BOOTIMAGE_NAME:=gptp_lwip_cpsw.$(PROFILE).appimage
+BOOTIMAGE_NAME_XIP:=gptp_lwip_cpsw.$(PROFILE).appimage_xip
+BOOTIMAGE_NAME_SIGNED:=gptp_lwip_cpsw.$(PROFILE).appimage.signed
+BOOTIMAGE_RPRC_NAME:=gptp_lwip_cpsw.$(PROFILE).rprc
+BOOTIMAGE_RPRC_NAME_XIP:=gptp_lwip_cpsw.$(PROFILE).rprc_xip
+BOOTIMAGE_RPRC_NAME_TMP:=gptp_lwip_cpsw.$(PROFILE).rprc_tmp
+BOOTIMAGE_NAME_HS:=gptp_lwip_cpsw.$(PROFILE).appimage.hs
+BOOTIMAGE_NAME_HS_FS:=gptp_lwip_cpsw.$(PROFILE).appimage.hs_fs
 TARGETS := $(BOOTIMAGE_NAME)
 
 
@@ -41,9 +38,8 @@ FILES_common := \
 	default_flow_cfg.c \
 	tsninit.c \
 	debug_log.c \
-	enetapp_cpsw.c \
-	tsnapp_cpsw_main.c \
-	default_flow_cpsw.c \
+	tsnapp_lwip_cpsw_main.c \
+	app_tcpserver.c \
 	main.c \
 	ti_drivers_config.c \
 	ti_drivers_open_close.c \
@@ -65,13 +61,12 @@ FILES_PATH_common = \
 	generated \
 
 INCLUDES_common := \
-	-I${CG_TOOL_ROOT}/include/c \
 	-I${MCU_PLUS_SDK_PATH}/source \
 	-I${MCU_PLUS_SDK_PATH}/source/board/ethphy/enet/rtos_drivers/include \
 	-I${MCU_PLUS_SDK_PATH}/source/board/ethphy/port \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/FreeRTOS-Kernel/include \
-	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/portable/TI_ARM_CLANG/ARM_CR5F \
-	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/config/am64x/r5f \
+	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/portable/GCC/ARM_CA53 \
+	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/config/am64x/a53 \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils/include \
@@ -86,12 +81,17 @@ INCLUDES_common := \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/tsn \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp \
-	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_unibase \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp/tilld \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_combase/tilld/sitara \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp/gptpconf \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_uniconf \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_uniconf/yangs \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-stack/src/include \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-port/include \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-port/freertos/include \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/lwipif/inc \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-stack/contrib \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-config/am64x \
 	-Igenerated \
 
 DEFINES_common := \
@@ -102,94 +102,79 @@ DEFINES_common := \
 	-DGPTP_ENABLED=1 \
 
 CFLAGS_common := \
-	-mcpu=cortex-r5 \
-	-mfloat-abi=hard \
-	-mfpu=vfpv3-d16 \
-	-mthumb \
+	-mcpu=cortex-a53+fp+simd \
+	-mabi=lp64 \
+	-mcmodel=large \
+	-mstrict-align \
+	-mfix-cortex-a53-835769 \
+	-mfix-cortex-a53-843419 \
 	-Wall \
 	-Werror \
 	-g \
-	-Wno-gnu-variable-sized-type-not-at-end \
-	-Wno-unused-function \
+	-Wno-int-to-pointer-cast \
+	-Wno-pointer-to-int-cast \
+	-Wno-unused-but-set-variable \
+	-fdata-sections \
+	-ffunction-sections \
 	--include tsn_buildconf/sitara_buildconf.h \
+	-Wno-unused-function \
 
 CFLAGS_release := \
-	-Os \
-	-Oz \
+	-O2 \
 	-flto \
-
-CFLAGS_cpp_common := \
-	-Wno-c99-designator \
-	-Wno-extern-c-compat \
-	-Wno-c++11-narrowing \
-	-Wno-reorder-init-list \
-	-Wno-register \
-	-Wno-writable-strings \
-	-Wno-enum-compare \
-	-Wno-reserved-user-defined-literal \
-	-Wno-unused-const-variable \
-	-Wno-vla-cxx-extension \
-	-x c++ \
 
 CFLAGS_debug := \
 	-D_DEBUG_=1 \
 
 LNK_FILES_common = \
-	generated/../linker.cmd \
+	linker.cmd \
 
 LIBS_PATH_common = \
-	-Wl,-igenerated \
-	-Wl,-i${MCU_PLUS_SDK_PATH}/source/kernel/freertos/lib \
-	-Wl,-i${MCU_PLUS_SDK_PATH}/source/drivers/lib \
-	-Wl,-i${MCU_PLUS_SDK_PATH}/source/board/lib \
-	-Wl,-i${MCU_PLUS_SDK_PATH}/source/networking/enet/lib \
-	-Wl,-i${MCU_PLUS_SDK_PATH}/source/networking/tsn/lib \
-	-Wl,-i${CG_TOOL_ROOT}/lib \
+	-Lgenerated \
+	-L${MCU_PLUS_SDK_PATH}/source/kernel/freertos/lib \
+	-L${MCU_PLUS_SDK_PATH}/source/drivers/lib \
+	-L${MCU_PLUS_SDK_PATH}/source/board/lib \
+	-L${MCU_PLUS_SDK_PATH}/source/networking/enet/lib \
+	-L${MCU_PLUS_SDK_PATH}/source/networking/tsn/lib \
+	-L${MCU_PLUS_SDK_PATH}/source/networking/lwip/lib \
+	-L$(CGT_GCC_AARCH64_PATH)/lib \
 
 LIBS_common = \
-	-lfreertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	-ldrivers.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	-lenet-cpsw.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	-lboard.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	-llibc.a \
-	-llibsysbm.a \
-	-ltsn_combase-freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	-ltsn_unibase-freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	-ltsn_gptp-freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	-ltsn_uniconf-freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	-llibc.a \
-	-llibsysbm.a \
+	-l:freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:drivers.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:enet-cpsw.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:board.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:tsn_combase-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:tsn_unibase-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:tsn_gptp-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:tsn_uniconf-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:lwipif-cpsw-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:lwip-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:lwip-contrib-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
 
 LFLAGS_common = \
-	-Wl,--diag_suppress=10063 \
-	-Wl,--ram_model \
-	-Wl,--reread_libs \
-	-Wl,--gen_xml_func_hash \
-	-Wl,--zero_init=on \
-	-Wl,--use_memset=fast \
-	-Wl,--use_memcpy=fast \
+	-Wl,-static \
+	-Wl,--gc-sections \
+	-Wl,--build-id=none \
+	-lstdc++ \
+	-lgcc \
+	-lm \
+	-lc \
+	-lrdimon \
 
-LNKOPTFLAGS_release = \
-		   -mcpu=cortex-r5 \
-		   -mfloat-abi=hard \
-		   -mfpu=vfpv3-d16 \
-		   -mthumb \
-		   -Oz \
-		   -flto \
 
 LIBS_NAME = \
-	freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	drivers.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	enet-cpsw.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	board.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	libc.a \
-	libsysbm.a \
-	tsn_combase-freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	tsn_unibase-freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	tsn_gptp-freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	tsn_uniconf-freertos.am64x.r5f.ti-arm-clang.${ConfigName}.lib \
-	libc.a \
-	libsysbm.a \
+	freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	drivers.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	enet-cpsw.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	board.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	tsn_combase-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	tsn_unibase-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	tsn_gptp-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	tsn_uniconf-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	lwipif-cpsw-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	lwip-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
+	lwip-contrib-freertos.am64x.a53.gcc-aarch64.${ConfigName}.lib \
 
 LIBS_PATH_NAME = \
 	generated \
@@ -198,21 +183,18 @@ LIBS_PATH_NAME = \
 	${MCU_PLUS_SDK_PATH}/source/board/lib \
 	${MCU_PLUS_SDK_PATH}/source/networking/enet/lib \
 	${MCU_PLUS_SDK_PATH}/source/networking/tsn/lib \
-	${CG_TOOL_ROOT}/lib \
+	${MCU_PLUS_SDK_PATH}/source/networking/lwip/lib \
+	$(CGT_GCC_AARCH64_PATH)/lib \
 
 FILES := $(FILES_common) $(FILES_$(PROFILE))
 ASMFILES := $(ASMFILES_common) $(ASMFILES_$(PROFILE))
 FILES_PATH := $(FILES_PATH_common) $(FILES_PATH_$(PROFILE))
 CFLAGS := $(CFLAGS_common) $(CFLAGS_$(PROFILE))
-ifeq ($(INSTRUMENTATION_MODE), yes)
-CFLAGS += -fprofile-instr-generate -fcoverage-mapping
-endif
 DEFINES := $(DEFINES_common) $(DEFINES_$(PROFILE))
 INCLUDES := $(INCLUDES_common) $(INCLUDE_$(PROFILE))
 LIBS := $(LIBS_common) $(LIBS_$(PROFILE))
 LIBS_PATH := $(LIBS_PATH_common) $(LIBS_PATH_$(PROFILE))
 LFLAGS := $(LFLAGS_common) $(LFLAGS_$(PROFILE))
-LNKOPTFLAGS := $(LNKOPTFLAGS_common) $(LNKOPTFLAGS_$(PROFILE))
 LNK_FILES := $(LNK_FILES_common) $(LNK_FILES_$(PROFILE))
 
 OBJDIR := obj/$(PROFILE)/
@@ -227,12 +209,12 @@ vpath %.lib $(LIBS_PATH_NAME)
 vpath %.a $(LIBS_PATH_NAME)
 
 $(OBJDIR)/%.obj %.obj: %.c
-	@echo  Compiling: am64x:r5fss0-0:freertos:ti-arm-clang $(OUTNAME): $<
-	$(CC) -c $(CFLAGS) $(INCLUDES) $(DEFINES) -MMD -o $(OBJDIR)/$@ $<
+	@echo  Compiling: am64x:a53ss0-0:freertos:gcc-aarch64 $(OUTNAME): $<
+	$(CC) -c $(CFLAGS) $(INCLUDES) $(DEFINES) -MMD -MT $@ -o $(OBJDIR)/$@ $<
 
 $(OBJDIR)/%.obj %.obj: %.S
-	@echo  Compiling: am64x:r5fss0-0:freertos:ti-arm-clang $(LIBNAME): $<
-	$(CC) -c $(CFLAGS) -o $(OBJDIR)/$@ $<
+	@echo  Compiling: am64x:a53ss0-0:freertos:gcc-aarch64 $(LIBNAME): $<
+	$(CC) -c -x assembler-with-cpp $(CFLAGS) $(INCLUDES) $(DEFINES) -o $(OBJDIR)$@ $<
 
 all: $(TARGETS)
 
@@ -257,21 +239,14 @@ endif
 
 $(OUTNAME):  $(SYSTEM_COMMAND)
 	@echo  .
-	@echo  Linking: am64x:r5fss0-0:freertos:ti-arm-clang $@ ...
-	$(LNK) $(LNKOPTFLAGS) $(LFLAGS) $(LIBS_PATH) -Wl,-m=$(basename $@).map -o $@ $(addprefix $(OBJDIR), $(OBJS)) $(LIBS) $(LNK_FILES) -Wl,--xml_link_info=$(basename $@).lnkxml
-	@echo  Linking: am64x:r5fss0-0:freertos:ti-arm-clang $@ Done !!!
+	@echo  Linking: am64x:a53ss0-0:freertos:gcc-aarch64 $@ ...
+	$(LNK) $(LIBS_PATH) -Wl,-Map=$(OUTNAME:%.out=%.map) -o $@ -Wl,--start-group $(LFLAGS) $(addprefix $(OBJDIR), $(OBJS)) $(LIBS) -Wl,--end-group -Wl,-T,$(LNK_FILES)
+	@echo  Linking: am64x:a53ss0-0:freertos:gcc-aarch64 $@ Done !!!
 	@echo  .
 
-coreout: $(COREOUTNAME)
-$(COREOUTNAME):  $(SYSTEM_COMMAND)
-	@echo  .
-	@echo  Relinking Linking: am64x:r5fss0-0:freertos:ti-arm-clang $@ with OptiShare SSO..
-	$(LNK) $(LNKOPTFLAGS) $(LFLAGS) $(LIBS_PATH) -Wl,-m=$(basename $@).map -o $@ $(addprefix $(OBJDIR), $(OBJS)) $(LIBS) $(LNK_FILES) -Wl,--xml_link_info=$(basename $@).lnkxml -Wl,--import_sso=$(SSO_PATH)
-	@echo  Relinking with optishare: am64x:r5fss0-0:freertos:ti-arm-clang $@ Done !!!
-	@echo  .
 
 clean:
-	@echo  Cleaning: am64x:r5fss0-0:freertos:ti-arm-clang $(OUTNAME) ...
+	@echo  Cleaning: am64x:a53ss0-0:freertos:gcc-aarch64 $(OUTNAME) ...
 	$(RMDIR) $(OBJDIR)
 	$(RM) $(OUTNAME)
 	$(RM) $(BOOTIMAGE_NAME)
@@ -284,7 +259,7 @@ clean:
 	$(RMDIR) generated/
 
 scrub:
-	@echo  Scrubing: am64x:r5fss0-0:freertos:ti-arm-clang gptp_app ...
+	@echo  Scrubing: am64x:a53ss0-0:freertos:gcc-aarch64 gptp_lwip_cpsw ...
 	$(RMDIR) obj
 ifeq ($(OS),Windows_NT)
 	$(RM) \*.out
@@ -321,11 +296,11 @@ $(SYSCFG_GEN_FILES): syscfg
 ifeq ($(SYSTEM_FLAG), false)
 syscfg: ../example.syscfg
 	@echo Generating SysConfig files ...
-	$(SYSCFG_NODE) $(SYSCFG_CLI_PATH)/dist/cli.js --product $(SYSCFG_SDKPRODUCT) --context r5fss0-0 --part Default --package ALV --output generated/ ../example.syscfg
+	$(SYSCFG_NODE) $(SYSCFG_CLI_PATH)/dist/cli.js --product $(SYSCFG_SDKPRODUCT) --context a53ss0-0 --part Default --package ALV --output generated/ --compiler gcc ../example.syscfg
 endif
 
 syscfg-gui:
-	$(SYSCFG_NWJS) $(SYSCFG_PATH) --product $(SYSCFG_SDKPRODUCT) --device AM64x --context r5fss0-0 --part Default --package ALV --output generated/  ../example.syscfg
+	$(SYSCFG_NWJS) $(SYSCFG_PATH) --product $(SYSCFG_SDKPRODUCT) --device AM64x --context a53ss0-0 --part Default --package ALV --output generated/ --compiler gcc ../example.syscfg
 
 #
 # Generation of boot image which can be loaded by Secondary Boot Loader (SBL)
@@ -367,13 +342,13 @@ endif
 endif
 
 MULTI_CORE_IMAGE_PARAMS = \
-	$(BOOTIMAGE_RPRC_NAME)@$(BOOTIMAGE_CORE_ID_r5fss0-0) \
+	$(BOOTIMAGE_RPRC_NAME)@$(BOOTIMAGE_CORE_ID_a53ss0-0) \
 
 MULTI_CORE_IMAGE_PARAMS_XIP = \
-	$(BOOTIMAGE_RPRC_NAME_XIP)@$(BOOTIMAGE_CORE_ID_r5fss0-0) \
+	$(BOOTIMAGE_RPRC_NAME_XIP)@$(BOOTIMAGE_CORE_ID_a53ss0-0) \
 
 $(BOOTIMAGE_NAME): $(OUTNAME)
-	@echo  Boot image: am64x:r5fss0-0:freertos:ti-arm-clang $(BOOTIMAGE_PATH)/$@ ...
+	@echo  Boot image: am64x:a53ss0-0:freertos:gcc-aarch64 $(BOOTIMAGE_PATH)/$@ ...
 ifneq ($(OS),Windows_NT)
 	$(CHMOD) a+x $(XIPGEN_CMD)
 endif
@@ -396,26 +371,16 @@ else
 	$(RM) $(BOOTIMAGE_NAME)-enc
 endif
 	$(RM) $(BOOTIMAGE_NAME)
-	@echo  Boot image: am64x:r5fss0-0:freertos:ti-arm-clang $(BOOTIMAGE_PATH)/$(BOOTIMAGE_NAME_HS) Done !!!
+	@echo  Boot image: am64x:a53ss0-0:freertos:gcc-aarch64 $(BOOTIMAGE_PATH)/$(BOOTIMAGE_NAME_HS) Done !!!
 	@echo  .
 else
 # Sign the appimage for HS-FS using appimage signing script
 	$(PYTHON) $(APP_IMAGE_SIGN_CMD) --bin $(BOOTIMAGE_NAME) --authtype 1 --key $(APP_SIGNING_KEY) --output $(BOOTIMAGE_NAME_HS_FS)
 	$(RM) $(BOOTIMAGE_NAME)
-	@echo  Boot image: am64x:r5fss0-0:freertos:ti-arm-clang $(BOOTIMAGE_PATH)/$(BOOTIMAGE_NAME_HS_FS) Done !!!
+	@echo  Boot image: am64x:a53ss0-0:freertos:gcc-aarch64 $(BOOTIMAGE_PATH)/$(BOOTIMAGE_NAME_HS_FS) Done !!!
 	@echo  .
 endif
 
 
-
-.PHONY: coverage
-coverage:
-	@echo Creating Coverage Report for gptp_app.$(PROFILE) ...
-	$(MKDIR) coverage
-	$(PROFDATA) merge -sparse -obj-file=$(OUTNAME) $(OUTNAME).cnt -o gptp_app.$(PROFILE).profdata
-	$(COV) show --format=html --show-expansions --show-instantiations --show-branches=count --object=$(OUTNAME) -instr-profile=gptp_app.$(PROFILE).profdata --output-dir=$(COVERAGE_PATH)/coverage --ignore-filename-regex=build_jenkins
-	$(COV) export --format=text --object=$(OUTNAME) --instr-profile=gptp_app.$(PROFILE).profdata > coverage/gptp_app.$(PROFILE).profdata.json
-	node $(MCU_PLUS_SDK_PATH)/tools/smart_placement/clang_coverage_analyse.js --input=coverage/gptp_app.$(PROFILE).profdata.json --output-json=coverage/gptp_app.$(PROFILE).analysis.json --output=../gptp_app.annotations.$(PROFILE).S --top-function-count=500
-	@echo Coverage Report Generated at $(COVERAGE_PATH)/coverage folder !!!
 
 -include $(addprefix $(OBJDIR)/, $(DEPS))
