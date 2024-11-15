@@ -8,9 +8,8 @@ const files = {
         "default_flow_cfg.c",
         "tsninit.c",
         "debug_log.c",
-        "enetapp_cpsw.c",
-        "tsnapp_cpsw_main.c",
-        "default_flow_cpsw.c",
+        "tsnapp_lwip_cpsw_main.c",
+        "app_tcpserver.c",
         "main.c",
     ],
 };
@@ -34,9 +33,11 @@ const libdirs_freertos = {
         "${MCU_PLUS_SDK_PATH}/source/drivers/lib",
         "${MCU_PLUS_SDK_PATH}/source/board/lib",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/lib",
+        "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lib",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/lib",
     ],
 };
+
 
 const includes_freertos_a53 = {
     common: [
@@ -59,33 +60,39 @@ const includes_freertos_a53 = {
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/tsn",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp",
-        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_unibase",
-        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stacktsn_gptp/tilld",
+        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp/tilld",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_combase/tilld/sitara",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp/gptpconf",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_uniconf",
-        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stacktsn_uniconf/yangs",
+        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_uniconf/yangs",
+        "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-stack/src/include",
+        "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-port/include",
+        "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-port/freertos/include",
+        "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/lwipif/inc",
+        "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-stack/contrib",
+        "${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-config/am62x",
     ],
 };
 
 const libs_freertos_a53 = {
     common: [
-	
-    "freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib",
+        "freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib",
         "drivers.am62x.a53.gcc-aarch64.${ConfigName}.lib",
-        "enet-cpsw.am62x.a53.gcc-aarch64.${ConfigName}.lib",
         "board.am62x.a53.gcc-aarch64.${ConfigName}.lib",
+        "enet-cpsw.am62x.a53.gcc-aarch64.${ConfigName}.lib",
         "tsn_combase-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib",
         "tsn_unibase-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib",
         "tsn_gptp-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib",
         "tsn_uniconf-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib",
+        "lwipif-cpsw-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib",
+        "lwip-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib",
+        "lwip-contrib-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib",
     ],
 };
 
 const linker_includePath_freertos = {
     common: [
         "${PROJECT_BUILD_DIR}/syscfg",
-
     ],
 };
 
@@ -98,20 +105,19 @@ const defines_a53 = {
     ],
 };
 
-
 const cflags_a53 = {
     common: [
-        "--include tsn_buildconf/sitara_buildconf.h",
         "-Wno-unused-function",
+        "-Wno-format",
+        "--include tsn_buildconf/sitara_buildconf.h",
     ],
     release: [
-       "-flto",
+        "-flto",
     ],
 };
 
 const lflags_a53 = {
     common: [
-        
     ],
 };
 
@@ -129,10 +135,18 @@ const lnkfiles = {
 
 const syscfgfile = "../example.syscfg";
 
-const readmeDoxygenPageTag = "EXAMPLES_ENET_CPSW_TSN_GPTP";
+const readmeDoxygenPageTag = "EXAMPLES_ENET_CPSW_TSN_LWIP_GPTP";
 
 const templates_freertos_a53 =
 [
+    {
+        input: ".project/templates/am62x/common/linker_a53.cmd.xdt",
+        output: "linker.cmd",
+        options: {
+            enableDMARegion: true,
+            dmaHeapSize: 0x20000,
+        }
+    },
     {
         input: "source/networking/enet/core/sysconfig/.project/templates/freertos/main_freertos.c.xdt",
         output: "../main.c",
@@ -141,21 +155,11 @@ const templates_freertos_a53 =
             taskPri : "2",
             stackSize : "16384",
         },
-    },
-
-    {
-        input: ".project/templates/am62x/common/linker_a53.cmd.xdt",
-        output: "linker.cmd",
-        options: {
-            enableDMARegion: true,
-            dmaHeapSize: 0x20000,
-        }
-    },    
-
+    }
 ];
 
 const buildOptionCombos = [
-	{ device: device, cpu: "a53ss0-0", cgt: "gcc-aarch64", board: "am62x-sk", os: "freertos"},
+    { device: device, cpu: "a53ss0-0", cgt: "gcc-aarch64", board: "am62x-sk", os: "freertos"},
 ];
 
 function getComponentProperty() {
@@ -163,7 +167,7 @@ function getComponentProperty() {
 
     property.dirPath = path.resolve(__dirname, "..");
     property.type = "executable";
-    property.name = "gptp_app";
+    property.name = "gptp_lwip_cpsw";
     property.isInternal = false;
     property.buildOptionCombos = buildOptionCombos;
 
@@ -179,32 +183,30 @@ function getComponentBuildProperty(buildOption) {
     build_property.syscfgfile = syscfgfile;
     build_property.projecspecFileAction = "link";
     build_property.readmeDoxygenPageTag = readmeDoxygenPageTag;
-    
-    if(buildOption.cpu.match(/a53*/)){
-        if(buildOption.os.match(/freertos*/) )
-            {
-                const _ = require('lodash');
-                let libdirs_freertos_cpy = _.cloneDeep(libdirs_freertos);
-                /* Logic to remove generated/ from libdirs_freertos, it generates warning for ccs build */
-                if (buildOption.isProjectSpecBuild === true)
-                {
-                    var delIndex = libdirs_freertos_cpy.common.indexOf('generated');
-                    if (delIndex !== -1) {
-                        libdirs_freertos_cpy.common.splice(delIndex, 1);
-                    }
-                    
-                }
-                build_property.includes = includes_freertos_a53;
-                build_property.libdirs = libdirs_freertos_cpy;
-                build_property.libs = libs_freertos_a53;
-                build_property.templates = templates_freertos_a53;
-                build_property.defines = defines_a53;
-                build_property.cflags = cflags_a53;
-                build_property.lflags = lflags_a53;
-                build_property.projectspecLnkPath = linker_includePath_freertos;
-                build_property.loptflags = loptflags_a53;
-            }
 
+    if(buildOption.cpu.match(/a53*/)) {
+        if(buildOption.os.match(/freertos*/) )
+        {
+            const _ = require('lodash');
+            let libdirs_freertos_cpy = _.cloneDeep(libdirs_freertos);
+            /* Logic to remove generated/ from libdirs_freertos, it generates warning for ccs build */
+            if (buildOption.isProjectSpecBuild === true)
+            {
+                var delIndex = libdirs_freertos_cpy.common.indexOf('generated');
+                if (delIndex !== -1) {
+                    libdirs_freertos_cpy.common.splice(delIndex, 1);
+                }
+            }
+            build_property.includes = includes_freertos_a53;
+            build_property.libdirs = libdirs_freertos_cpy;
+            build_property.libs = libs_freertos_a53;
+            build_property.templates = templates_freertos_a53;
+            build_property.defines = defines_a53;
+            build_property.cflags = cflags_a53;
+            build_property.lflags = lflags_a53;
+            build_property.projectspecLnkPath = linker_includePath_freertos;
+            build_property.loptflags = loptflags_a53;
+        }
     }
 
     return build_property;

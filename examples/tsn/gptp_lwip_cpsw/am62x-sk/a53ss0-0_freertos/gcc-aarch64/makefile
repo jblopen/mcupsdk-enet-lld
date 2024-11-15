@@ -24,17 +24,17 @@ ATF_INTEGRATED_BOOT?=yes
 PROFILE?=release
 ConfigName:=$(PROFILE)
 
-OUTNAME:=gptp_app.$(PROFILE).out
+OUTNAME:=gptp_lwip_cpsw.$(PROFILE).out
 
 BOOTIMAGE_PATH=$(abspath .)
-BOOTIMAGE_NAME:=gptp_app.$(PROFILE).appimage
-BOOTIMAGE_NAME_XIP:=gptp_app.$(PROFILE).appimage_xip
-BOOTIMAGE_NAME_SIGNED:=gptp_app.$(PROFILE).appimage.signed
-BOOTIMAGE_RPRC_NAME:=gptp_app.$(PROFILE).rprc
-BOOTIMAGE_RPRC_NAME_XIP:=gptp_app.$(PROFILE).rprc_xip
-BOOTIMAGE_RPRC_NAME_TMP:=gptp_app.$(PROFILE).rprc_tmp
-BOOTIMAGE_NAME_HS:=gptp_app.$(PROFILE).appimage.hs
-BOOTIMAGE_NAME_HS_FS:=gptp_app.$(PROFILE).appimage.hs_fs
+BOOTIMAGE_NAME:=gptp_lwip_cpsw.$(PROFILE).appimage
+BOOTIMAGE_NAME_XIP:=gptp_lwip_cpsw.$(PROFILE).appimage_xip
+BOOTIMAGE_NAME_SIGNED:=gptp_lwip_cpsw.$(PROFILE).appimage.signed
+BOOTIMAGE_RPRC_NAME:=gptp_lwip_cpsw.$(PROFILE).rprc
+BOOTIMAGE_RPRC_NAME_XIP:=gptp_lwip_cpsw.$(PROFILE).rprc_xip
+BOOTIMAGE_RPRC_NAME_TMP:=gptp_lwip_cpsw.$(PROFILE).rprc_tmp
+BOOTIMAGE_NAME_HS:=gptp_lwip_cpsw.$(PROFILE).appimage.hs
+BOOTIMAGE_NAME_HS_FS:=gptp_lwip_cpsw.$(PROFILE).appimage.hs_fs
 TARGETS := $(BOOTIMAGE_NAME)
 ifeq ($(DEVICE_TYPE), HS)
    TARGETS += $(BOOTIMAGE_NAME_HS)
@@ -50,9 +50,8 @@ FILES_common := \
 	default_flow_cfg.c \
 	tsninit.c \
 	debug_log.c \
-	enetapp_cpsw.c \
-	tsnapp_cpsw_main.c \
-	default_flow_cpsw.c \
+	tsnapp_lwip_cpsw_main.c \
+	app_tcpserver.c \
 	main.c \
 	ti_drivers_config.c \
 	ti_drivers_open_close.c \
@@ -94,12 +93,17 @@ INCLUDES_common := \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/examples/tsn \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp \
-	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_unibase \
-	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stacktsn_gptp/tilld \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp/tilld \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_combase/tilld/sitara \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp/gptpconf \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_uniconf \
-	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stacktsn_uniconf/yangs \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_uniconf/yangs \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-stack/src/include \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-port/include \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-port/freertos/include \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/lwipif/inc \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-stack/contrib \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/lwip/lwip-config/am62x \
 	-Igenerated \
 
 DEFINES_common := \
@@ -124,8 +128,9 @@ CFLAGS_common := \
 	-Wno-unused-but-set-variable \
 	-fdata-sections \
 	-ffunction-sections \
-	--include tsn_buildconf/sitara_buildconf.h \
 	-Wno-unused-function \
+	-Wno-format \
+	--include tsn_buildconf/sitara_buildconf.h \
 
 CFLAGS_release := \
 	-O2 \
@@ -143,18 +148,22 @@ LIBS_PATH_common = \
 	-L${MCU_PLUS_SDK_PATH}/source/drivers/lib \
 	-L${MCU_PLUS_SDK_PATH}/source/board/lib \
 	-L${MCU_PLUS_SDK_PATH}/source/networking/enet/lib \
+	-L${MCU_PLUS_SDK_PATH}/source/networking/lwip/lib \
 	-L${MCU_PLUS_SDK_PATH}/source/networking/tsn/lib \
 	-L$(CGT_GCC_AARCH64_PATH)/lib \
 
 LIBS_common = \
 	-l:freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 	-l:drivers.am62x.a53.gcc-aarch64.${ConfigName}.lib \
-	-l:enet-cpsw.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 	-l:board.am62x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:enet-cpsw.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 	-l:tsn_combase-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 	-l:tsn_unibase-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 	-l:tsn_gptp-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 	-l:tsn_uniconf-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:lwipif-cpsw-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:lwip-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
+	-l:lwip-contrib-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 
 LFLAGS_common = \
 	-Wl,-static \
@@ -172,12 +181,15 @@ LNKOPTFLAGS_release = \
 LIBS_NAME = \
 	freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 	drivers.am62x.a53.gcc-aarch64.${ConfigName}.lib \
-	enet-cpsw.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 	board.am62x.a53.gcc-aarch64.${ConfigName}.lib \
+	enet-cpsw.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 	tsn_combase-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 	tsn_unibase-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 	tsn_gptp-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 	tsn_uniconf-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
+	lwipif-cpsw-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
+	lwip-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
+	lwip-contrib-freertos.am62x.a53.gcc-aarch64.${ConfigName}.lib \
 
 LIBS_PATH_NAME = \
 	generated \
@@ -185,6 +197,7 @@ LIBS_PATH_NAME = \
 	${MCU_PLUS_SDK_PATH}/source/drivers/lib \
 	${MCU_PLUS_SDK_PATH}/source/board/lib \
 	${MCU_PLUS_SDK_PATH}/source/networking/enet/lib \
+	${MCU_PLUS_SDK_PATH}/source/networking/lwip/lib \
 	${MCU_PLUS_SDK_PATH}/source/networking/tsn/lib \
 	$(CGT_GCC_AARCH64_PATH)/lib \
 
@@ -252,7 +265,7 @@ clean:
 	$(RMDIR) generated/
 
 scrub:
-	@echo  Scrubing: am62x:a53ss0-0:freertos:gcc-aarch64 gptp_app ...
+	@echo  Scrubing: am62x:a53ss0-0:freertos:gcc-aarch64 gptp_lwip_cpsw ...
 	$(RMDIR) obj
 ifeq ($(OS),Windows_NT)
 	$(RM) \*.out
