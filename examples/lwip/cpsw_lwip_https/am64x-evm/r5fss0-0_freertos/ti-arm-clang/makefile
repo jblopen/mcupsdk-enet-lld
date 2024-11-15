@@ -66,8 +66,8 @@ INCLUDES_common := \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/portable/TI_ARM_CLANG/ARM_CR5F \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/config/am64x/r5f \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet \
-	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/utils/include \
-	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/utils/V3 \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils/include \
+	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils/V3 \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/include/core \
@@ -156,7 +156,6 @@ LFLAGS_common = \
 	-Wl,--zero_init=on \
 	-Wl,--use_memset=fast \
 	-Wl,--use_memcpy=fast \
-	-Wl,--mapfile_contents=noltosymrefs \
 
 
 LIBS_NAME = \

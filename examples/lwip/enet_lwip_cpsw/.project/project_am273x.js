@@ -106,8 +106,7 @@ const lflags_r5f = {
         "--rom_model",
     ],
     release: [
-        "--rom_model",
-        "--mapfile_contents=noltosymrefs"
+        "--rom_model"
     ],
 };
 
