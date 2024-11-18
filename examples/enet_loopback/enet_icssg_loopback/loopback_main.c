@@ -78,9 +78,6 @@ void EnetLpbk_mainTask(void *args)
     Enet_MacPort macPortList[ENET_MAC_PORT_NUM];
     uint8_t numMacPorts;
 
-    Drivers_open();
-    Board_driversOpen();
-
     /* Initialize loopback test config */
     memset(&gEnetLpbk, 0, sizeof(gEnetLpbk));
     gEnetLpbk.exitFlag = false;

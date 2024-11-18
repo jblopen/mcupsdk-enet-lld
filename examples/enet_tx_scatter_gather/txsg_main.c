@@ -77,8 +77,6 @@ void EnetTxSG_mainTask(void *args)
     Enet_MacPort macPortList[ENET_MAC_PORT_NUM];
     uint8_t numMacPorts;
 
-	Drivers_open();
-    Board_driversOpen();
     /* Initialize txsg test config */
     memset(&gEnetTxSG, 0, sizeof(gEnetTxSG));
     gEnetTxSG.exitFlag = false;

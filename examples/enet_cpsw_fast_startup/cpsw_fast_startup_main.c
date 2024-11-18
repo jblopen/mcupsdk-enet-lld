@@ -82,9 +82,6 @@ void EnetApp_main(void *args)
     
     PROFILE_TIME(ClockP_getTimeUsec());
 
-    Drivers_open();
-    Board_driversOpen();
-
     EnetAppUtils_print("==========================\r\n");
     EnetAppUtils_print("    CPSW Fast Startup     \r\n");
     EnetAppUtils_print("==========================\r\n");

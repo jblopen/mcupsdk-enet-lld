@@ -141,7 +141,7 @@ const readmeDoxygenPageTag = "EXAMPLES_CPSW_TSN_EST";
 const templates_freertos_r5f =
 [
     {
-        input: ".project/templates/am62ax/freertos/main_freertos.c.xdt",
+        input: "source/networking/enet/core/sysconfig/.project/templates/freertos/main_freertos.c.xdt",
         output: "../main.c",
         options: {
             entryFunction: "EnetApp_mainTask",

@@ -151,7 +151,7 @@ const readmeDoxygenPageTag = "EXAMPLES_ENET_LWIP_CPSW";
 const templates_freertos_r5f =
 [
     {
-        input: ".project/templates/am62dx/freertos/main_freertos.c.xdt",
+        input: "source/networking/enet/core/sysconfig/.project/templates/freertos/main_freertos.c.xdt",
         output: "../main.c",
         options: {
             entryFunction: "enet_lwip_example",
@@ -171,7 +171,7 @@ const templates_freertos_a53 =
         }
     },
     {
-        input: ".project/templates/am62dx/freertos/main_freertos.c.xdt",
+        input: "source/networking/enet/core/sysconfig/.project/templates/freertos/main_freertos.c.xdt",
         output: "../main.c",
         options: {
             entryFunction: "enet_lwip_example",

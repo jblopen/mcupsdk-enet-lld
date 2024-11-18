@@ -55,9 +55,6 @@ void EnetApp_mainTask(void *args)
     EnetPer_AttachCoreOutArgs attachCoreOutArgs;
     EnetApp_HandleInfo handleInfo;
 
-    Drivers_open();
-    Board_driversOpen();
-
     DebugP_log("==========================\r\n");
     DebugP_log("       TSN CPSW App       \r\n");
     DebugP_log("==========================\r\n");

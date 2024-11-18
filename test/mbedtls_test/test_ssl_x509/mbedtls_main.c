@@ -73,8 +73,6 @@ void mbedtls_test_ssl_wrapper(void *args)
 
 int mbedtls_test_main()
 {
-    Drivers_open();
-    Board_driversOpen();
     UNITY_BEGIN();
     RUN_TEST((mbedtls_test_ssl_wrapper), 8584, NULL);
     RUN_TEST((mbedtls_test_x509_wrapper), 8584, NULL);

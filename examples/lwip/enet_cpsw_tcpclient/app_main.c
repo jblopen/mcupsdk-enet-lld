@@ -111,9 +111,6 @@ int appMain(void *args)
     Enet_Type enetType;
     uint32_t instId;
 
-    Drivers_open();
-    Board_driversOpen();
-
     DebugP_log("==========================\r\n");
     DebugP_log("  CPSW LWIP TCP CLIENT    \r\n");
     DebugP_log("==========================\r\n");

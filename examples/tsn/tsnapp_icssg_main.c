@@ -192,9 +192,6 @@ void EnetApp_mainTask(void *args)
     int32_t status = ENET_SOK;
     uint32_t i = 0U;
 
-    Drivers_open();
-    Board_driversOpen();
-
     DebugP_log("==========================\r\n");
     DebugP_log("          gPTP App        \r\n");
     DebugP_log("==========================\r\n");

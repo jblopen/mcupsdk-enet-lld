@@ -350,8 +350,6 @@ void EnetMp_mainTask(void *args)
     {
         iteration++;
         Dp83826_resetPHYs();
-        Drivers_open();
-        Board_driversOpen();
 
         DebugP_log("==========================\r\n");
         DebugP_log("      MULTIPORT TEST      \r\n");

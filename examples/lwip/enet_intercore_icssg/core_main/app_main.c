@@ -140,10 +140,6 @@ void appMain(void *args)
 {
     int32_t status = 1; //ENET_SOK
 
-
-    Drivers_open();
-    Board_driversOpen();
-
     DebugP_log("=================================\r\n");
     DebugP_log("  ICSS LWIP TCP ECHO SERVER 0-0 \r\n");
     DebugP_log("=================================\r\n");

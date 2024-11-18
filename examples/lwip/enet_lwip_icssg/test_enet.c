@@ -139,9 +139,6 @@ int enet_lwip_example(void *args)
     uint32_t i;
     int32_t status = ENET_SOK;
 
-    Drivers_open();
-    Board_driversOpen();
-
     DebugP_log("==========================\r\n");
     DebugP_log("      ENET LWIP App       \r\n");
     DebugP_log("==========================\r\n");

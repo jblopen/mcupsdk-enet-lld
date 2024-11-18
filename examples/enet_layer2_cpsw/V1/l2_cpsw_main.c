@@ -77,9 +77,6 @@ void EnetApp_mainTask(void *args)
     Enet_MacPort macPortList[ENET_MAC_PORT_NUM];
     uint8_t numMacPorts;
 
-    Drivers_open();
-    Board_driversOpen();
-
     DebugP_log("==========================\r\n");
     DebugP_log("     Layer 2 CPSW Test    \r\n");
     DebugP_log("==========================\r\n");

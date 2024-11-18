@@ -273,9 +273,6 @@ int EnetApp_mainTask(void *args)
     int32_t status = ENET_SOK;
     EnetApp_GetMacAddrOutArgs outArgs;
 
-    Drivers_open();
-    Board_driversOpen();
-
     DebugP_log("==================================\r\n");
     DebugP_log("  CPSW GPTP LWIP TCP ECHO SERVER \r\n");
     DebugP_log("==================================\r\n");

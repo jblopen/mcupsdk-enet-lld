@@ -136,7 +136,7 @@ const readmeDoxygenPageTag = "EXAMPLES_ENET_LAYER2_CPSW_FAST_STARTUP";
 const templates_nortos_r5f =
 [
     {
-        input: ".project/templates/am243x/nortos/main_nortos.c.xdt",
+        input: "source/networking/enet/core/sysconfig/.project/templates/nortos/main_nortos.c.xdt",
         output: "../main.c",
         options: {
             entryFunction: "EnetApp_main",

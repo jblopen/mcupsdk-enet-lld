@@ -91,8 +91,6 @@ void mbedtls_test_aes_wrapper(void *args)
 
 int mbedtls_test_main()
 {
-    Drivers_open();
-    Board_driversOpen();
     UNITY_BEGIN();
     RUN_TEST(mbedtls_test_aes_wrapper, 8584, NULL);
     RUN_TEST(mbedtls_test_gcm_wrapper, 8584, NULL);

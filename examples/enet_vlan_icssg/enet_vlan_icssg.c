@@ -596,9 +596,6 @@ void EnetMp_mainTask(void *args)
     uint32_t i, j;
     int32_t status = ENET_SOK;
 
-    Drivers_open();
-    Board_driversOpen();
-
     DebugP_log("================================\r\n");
     DebugP_log("      ENET ICSSG UNIT TEST      \r\n");
     DebugP_log("================================\r\n");

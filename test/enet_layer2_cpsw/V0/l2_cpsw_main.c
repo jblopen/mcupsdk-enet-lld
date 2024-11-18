@@ -75,9 +75,6 @@ void EnetApp_mainTask(void *args)
     uint32_t i;
     int32_t status;
 
-    Drivers_open();
-    Board_driversOpen();
-
     ipc_rpmsg_echo_main(NULL);
     DebugP_log("==========================\r\n");
     DebugP_log("     Layer 2 CPSW Test    \r\n");

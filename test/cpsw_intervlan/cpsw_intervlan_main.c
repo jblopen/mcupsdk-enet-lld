@@ -75,9 +75,6 @@ void EnetCpswInterVlan_mainTask(void *args)
 {
     int32_t status;
 
-    Drivers_open();
-    Board_driversOpen();
-
     /* Initialize test config */
     memset(&gEnetCpswInterVlan, 0, sizeof(gEnetCpswInterVlan));
     gEnetCpswInterVlan.exitFlag = false;

@@ -154,7 +154,7 @@ const readmeDoxygenPageTag = "EXAMPLES_DOLBYEC3_TALKER_APP";
 const templates_freertos_r5f =
 [
     {
-        input: ".project/templates/am62dx/freertos/main_freertos.c.xdt",
+        input: "source/networking/enet/core/sysconfig/.project/templates/freertos/main_freertos.c.xdt",
         output: "../main.c",
         options: {
             entryFunction: "EnetApp_mainTask",

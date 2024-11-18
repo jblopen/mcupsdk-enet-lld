@@ -137,9 +137,6 @@ int appMain(void *args)
 
     ip4_addr_set_zero(ipAddr_s);
 
-    Drivers_open();
-    Board_driversOpen();
-
     ipc_rpmsg_echo_main(NULL);
     ipc_recvIPAddr (&ipAddr, &sizeIPAddr);
     ipAddr_s = ((ip4_addr_t *)(&ipAddr));

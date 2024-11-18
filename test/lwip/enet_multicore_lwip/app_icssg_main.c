@@ -131,9 +131,6 @@ int appMain(void *args)
     int32_t status = ENET_SOK;
     uint32_t netupCount = 0;
 
-    Drivers_open();
-    Board_driversOpen();
-
     DebugP_log("==========================\r\n");
     DebugP_log("ICSSG LWIP TCP ECHO SERVER\r\n");
     DebugP_log("==========================\r\n");

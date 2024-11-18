@@ -124,9 +124,6 @@ int appMain(void *args)
 {
     int32_t status = ENET_SOK;
 
-    Drivers_open();
-    Board_driversOpen();
-
     DebugP_log("==========================\r\n");
     DebugP_log("ICSSG LWIP TCP ECHO SERVER\r\n");
     DebugP_log("==========================\r\n");

@@ -63,10 +63,6 @@ static void App_printCpuLoad();
 
 void appMain(void *args)
 {
-
-    Drivers_open();
-    Board_driversOpen(); // remove it here only main core should do it.
-
     DebugP_log("=================================\r\n");
     DebugP_log("  ICSS LWIP TCP ECHO SERVER 0-1 \r\n");
     DebugP_log("=================================\r\n");

@@ -79,8 +79,6 @@ void mbedtls_test_entropy_wrapper(void *args)
 
 int mbedtls_test_main()
 {
-    Drivers_open();
-    Board_driversOpen();
     UNITY_BEGIN();
     RUN_TEST((mbedtls_test_sha_wrapper), 8584, NULL);
     RUN_TEST((mbedtls_test_hmac_wrapper), 8584, NULL);

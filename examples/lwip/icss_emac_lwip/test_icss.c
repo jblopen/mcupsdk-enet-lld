@@ -814,11 +814,7 @@ int32_t ICSS_EMAC_testLoadPRUFirmware(void)
     
 int icss_lwip_example(void *args)
 {
-    uint32_t                status = SystemP_FAILURE;
-
-    Drivers_open();
-    status = Board_driversOpen();
-    DebugP_assert(status==SystemP_SUCCESS);
+    int32_t status = SystemP_FAILURE;
 
     /* Perform the Pinmux config */
     ICSS_EMAC_testPinmuxConfig();

@@ -72,8 +72,6 @@ void mbedtls_test_rsa_wrapper(void *args)
 
 int mbedtls_test_main()
 {
-    Drivers_open();
-    Board_driversOpen();
     UNITY_BEGIN();
     RUN_TEST((mbedtls_test_rsa_wrapper), 8584, NULL);
     RUN_TEST((mbedtls_test_ecdsa_wrapper), 8584, NULL);

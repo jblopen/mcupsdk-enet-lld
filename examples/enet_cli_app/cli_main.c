@@ -140,8 +140,6 @@ CLI_Command_Definition_t commandList[] =
 
 void EnetCLI_mainTask(void *args)
 {
-    Drivers_open();
-    Board_driversOpen();
 
     /* Initialize UART transaction */
     UART_Transaction_init(&UART_trans);

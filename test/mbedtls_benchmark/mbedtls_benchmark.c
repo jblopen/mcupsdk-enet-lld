@@ -230,8 +230,6 @@ typedef struct {
 int benchmark_main( int argc, char *argv[] )
 {
     /* Open drivers to open the UART driver for console */
-    Drivers_open();
-    Board_driversOpen();
 
     DebugP_log("Benchmark Applicaiton BEGIN !!");
     int i;

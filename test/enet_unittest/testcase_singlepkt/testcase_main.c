@@ -114,9 +114,6 @@ void EnetLpbk_mainTask(void *args)
     int8_t option = -1;
     uint8_t exitTestcase = 0U;
 
-    Drivers_open();
-    Board_driversOpen();
-
     /* Initialize test app config */
     memset(&gTestApp, 0, sizeof(gTestApp));
     memset(&gTestCfg, 0, sizeof(gTestCfg));

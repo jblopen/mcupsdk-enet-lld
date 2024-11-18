@@ -127,7 +127,7 @@ const readmeDoxygenPageTag = "EXAMPLES_ENET_LWIP_CPSW";
 const templates_freertos_r5f =
 [
     {
-        input: ".project/templates/awr294x/freertos/main_freertos.c.xdt",
+        input: "source/networking/enet/core/sysconfig/.project/templates/freertos/main_freertos.c.xdt",
         output: "../main.c",
         options: {
             entryFunction: "enet_lwip_example",

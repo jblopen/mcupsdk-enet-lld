@@ -288,7 +288,7 @@ const readmeDoxygenPageTag = "EXAMPLES_ENET_CPSW_TSN_GPTP";
 const templates_freertos_r5f =
 [
     {
-        input: ".project/templates/am62px/freertos/main_freertos.c.xdt",
+        input: "source/networking/enet/core/sysconfig/.project/templates/freertos/main_freertos.c.xdt",
         output: "../main.c",
         options: {
             entryFunction: "EnetApp_mainTask",
@@ -322,7 +322,7 @@ const templates_freertos_a53 =
         }
     },
     {
-        input: ".project/templates/am62px/freertos/main_freertos.c.xdt",
+        input: "source/networking/enet/core/sysconfig/.project/templates/freertos/main_freertos.c.xdt",
         output: "../main.c",
         options: {
             entryFunction: "EnetApp_mainTask",

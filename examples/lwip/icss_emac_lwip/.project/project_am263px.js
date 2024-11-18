@@ -106,7 +106,7 @@ const syscfgfile = "../example.syscfg";
 const templates_freertos_r5f =
 [
     {
-        input: ".project/templates/am263px/freertos/main_freertos.c.xdt",
+        input: "source/networking/enet/core/sysconfig/.project/templates/freertos/main_freertos.c.xdt",
         output: "../main.c",
         options: {
             entryFunction: "icss_lwip_example",

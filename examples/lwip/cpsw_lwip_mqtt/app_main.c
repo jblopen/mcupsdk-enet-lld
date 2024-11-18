@@ -111,9 +111,6 @@ int appMain(void *args)
     Enet_Type enetType;
     uint32_t instId;
 
-    Drivers_open();
-    Board_driversOpen();
-
     DebugP_log("==========================\r\n");
     #if MQTT_HAVE_TLS
     DebugP_log("  CPSW LWIP MQTT + TLS    \r\n");
