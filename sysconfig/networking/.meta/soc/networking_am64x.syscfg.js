@@ -12,6 +12,9 @@ const topModules_mcu = [
 ];
 
 const topModules_a53 = [
+    "/networking/enet_icss/enet_icss",
+    "/networking/enet_cpsw/enet_cpsw",
+    "/networking/icss_emac/icss_emac",
 
 ];
 

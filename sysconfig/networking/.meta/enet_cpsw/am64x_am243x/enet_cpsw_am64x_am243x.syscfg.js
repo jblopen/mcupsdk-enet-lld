@@ -149,6 +149,7 @@ function enet_cpsw_getPhyaddress(platform, port)
     const cpswPhyAddrInfoMap = new Map(
                                            [
                                              ['am64x-evm',{phyAddr1: 0, phyAddr2: 3}],
+                                             ['am64x-sk',{phyAddr1: 0, phyAddr2: 3}],
                                              ['am243x-evm', {phyAddr1: 0, phyAddr2: 3}],
                                              ['am243x-lp',{phyAddr1: 3, phyAddr2: 15,}],
                                            ],
@@ -711,9 +712,37 @@ function getCpuInfo() {
                                   clusternum: "1", core: "0"}],
                                  ['CSL_CORE_ID_R5FSS1_1', {subsystem: "R5FSS",
                                   clusternum: "1", core: "1"}],
+                                 ['CSL_CORE_ID_A53SS0_0',{subsystem: "A53SS",
+                                  clusternum: "0", core: "0"}],
                                ],
                              );
 	return cpuInfo.get(getCpuID());
+}
+
+
+
+function getEnetCoreIntNumPrefix() {
+    const coreInfo = getCpuInfo();
+    if(common.getSelfSysCfgCoreName().includes("a53")) {
+        return  "CSLR_GICSS0_SPI_"
+    }
+
+    if ((coreInfo) && (common.getSelfSysCfgCoreName().includes("r5f"))) {
+        return `CSLR_${coreInfo.subsystem}${coreInfo.clusternum}_CORE${coreInfo.core}_INTR_`
+    }
+}
+
+function getEnetCoreIdPrefix() {
+    let coreInfo = getCpuInfo();
+
+    if(common.getSelfSysCfgCoreName().includes("a53")) {
+        return `TISCI_DEV_${coreInfo.subsystem}${coreInfo.clusternum}_CORE_${coreInfo.core}`;
+    }
+
+    
+    if((coreInfo) && (common.getSelfSysCfgCoreName().includes("r5f"))) {
+        return `TISCI_DEV_${coreInfo.subsystem}${coreInfo.clusternum}_CORE${coreInfo.core}`;
+	}
 }
 
 let enet_cpsw_module_name = "/networking/enet_cpsw/enet_cpsw";
@@ -808,6 +837,8 @@ let enet_cpsw_module = {
     getPhyMask,
     getCpuID,
     getCpuInfo,
+    getEnetCoreIntNumPrefix,
+    getEnetCoreIdPrefix,
     getSocConfigTemplateInfo,
     getTxPacketsCount,
     getRxPacketsCount,
