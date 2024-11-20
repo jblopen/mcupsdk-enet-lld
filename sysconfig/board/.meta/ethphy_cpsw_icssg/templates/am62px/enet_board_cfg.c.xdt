@@ -40,8 +40,8 @@
 #define IO_EXPANDER_PORT0_DIR_REG (0x0CU)
 #define IO_EXPANDER_I2C_ADDR (0x22U)
 #define ENET_BOARD_NUM_MACADDR_MAX (4U)
-#define I2C_EEPROM_MAC_CTRL_OFFSET (0x46)
-#define I2C_EEPROM_MAC_DATA_OFFSET (0x48)
+#define I2C_EEPROM_MAC_CTRL_OFFSET (0x40)
+#define I2C_EEPROM_MAC_DATA_OFFSET (0x42)
 
 static void EnetBoard_setMacPortIOExpanderCfg(void);
 
