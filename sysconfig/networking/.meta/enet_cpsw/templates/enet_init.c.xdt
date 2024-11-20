@@ -77,15 +77,17 @@ typedef struct EnetAppSysCfg_Obj_s
 {
 
     Enet_Handle hEnet;
+
     EnetAppDmaSysCfg_Obj dma;
-% if((instance.McmEnable == false) && (instance.ExternalPhyMgmtEnable == false)){
+
     ClockP_Object timerObj;
 
+    volatile bool timerTaskShutDownFlag;
+
+% if((instance.McmEnable == false) && (instance.ExternalPhyMgmtEnable == false)){
     TaskP_Object task_phyStateHandlerObj;
 
     SemaphoreP_Object timerSemObj;
-
-    volatile bool timerTaskShutDownFlag;
 
     volatile bool timerTaskShutDownDoneFlag;
 
