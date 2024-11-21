@@ -54,7 +54,6 @@ enet_cpsw1.$name                           = "CONFIG_ENET_CPSW0";
 enet_cpsw1.PktInfoOnlyEnable               = true;
 enet_cpsw1.LargePoolPktCount               = 32;
 enet_cpsw1.cptstsGenfClrEn                 = true;
-enet_cpsw1.phyAddr2                        = 1;
 enet_cpsw1.txDmaChannel[0].$name           = "ENET_DMA_TX_CH0";
 enet_cpsw1.rxDmaChannel[0].$name           = "ENET_DMA_RX_CH0";
 

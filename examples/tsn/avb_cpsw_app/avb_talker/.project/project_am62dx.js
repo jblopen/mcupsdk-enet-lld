@@ -66,6 +66,8 @@ const libdirs_freertos = {
 
 const includes_freertos_r5f = {
     common: [
+        "${MCU_PLUS_SDK_PATH}/source/board/ethphy/enet/rtos_drivers/include",
+        "${MCU_PLUS_SDK_PATH}/source/board/ethphy/port",
         "${MCU_PLUS_SDK_PATH}/source/kernel/freertos/FreeRTOS-Kernel/include",
         "${MCU_PLUS_SDK_PATH}/source/kernel/freertos/portable/TI_ARM_CLANG/ARM_CR5F",
         "${MCU_PLUS_SDK_PATH}/source/kernel/freertos/config/am62dx/r5f",
@@ -253,7 +255,7 @@ function getComponentProperty() {
 
 function getComponentBuildProperty(buildOption) {
     let build_property = {};
-    
+
     if(buildOption.cpu.match(/mcu-r5f*/))
     {
         build_property.files = main_files;
@@ -264,7 +266,7 @@ function getComponentBuildProperty(buildOption) {
         build_property.files = remote_files;
         build_property.filedirs = remote_filedirs;
     }
-    
+
     build_property.lnkfiles = lnkfiles;
     build_property.syscfgfile = syscfgfile;
     build_property.projecspecFileAction = "link";
