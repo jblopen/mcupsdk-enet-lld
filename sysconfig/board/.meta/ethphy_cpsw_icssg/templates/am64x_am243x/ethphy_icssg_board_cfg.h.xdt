@@ -1,7 +1,16 @@
 %%{
-    let module = system.modules["/networking/enet_icss/enet_icss"];
+	let module = system.modules["/networking/enet_icss/enet_icss"];
 %%}
-% let instance = module.$instances[0];
+
+%%{
+let customBoard = false;
+for (let inst of module.$instances) {
+    if(inst.customBoardEnable) {
+    customBoard = true;
+    break;
+    }
+}
+%%}
 /* ========================================================================== */
 /*                             Include Files                                  */
 /* ========================================================================== */
@@ -16,7 +25,7 @@
  *
  * Custom boards are board not supported by MCU+SDK out of the box
  */
-#define ENETBOARD_SYSCFG_CUSTOM_BOARD                   (`Number(instance.customBoardEnable)`)
+#define ENETBOARD_SYSCFG_CUSTOM_BOARD         (`Number(customBoard)`)
 
 
 /*!

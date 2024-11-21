@@ -109,26 +109,6 @@ const enet_icssg_system_config = {
     ],
 };
 
-function enet_icssg_getPhyaddress(platform, port)
-{
-    const icssgPhyAddrInfoMap = new Map(
-                                           [
-                                             ['am64x-evm',{phyAddr1: 15, phyAddr2: 3}],
-                                             ['am243x-evm', {phyAddr1: 15, phyAddr2: 3}],
-                                             ['am243x-lp',{phyAddr1: 3, phyAddr2: 15,}],
-                                           ],
-                                         );
-    let phyInfo =  icssgPhyAddrInfoMap.get(platform);
-    if (port == 1)
-    {
-        return phyInfo.phyAddr1;
-    }
-    else
-    {
-        return phyInfo.phyAddr2;
-    }
-}
-
 const enet_icssg_board_config = {
     name: "icssgBoardConfig",
     displayName: "Board Config",
@@ -141,34 +121,6 @@ const enet_icssg_board_config = {
             displayName: "Custom Board",
             longDescription: "Configuration for custom board that are not supported out of box in MCU+SDK",
             default: false,
-            onChange:function (inst, ui) {
-                if(inst.customBoardEnable == true) {
-                    ui.phyAddr1.hidden = true;
-                    ui.phyAddr2.hidden = true;
-                }
-                else {
-                    ui.phyAddr1.hidden = false;
-                    ui.phyAddr2.hidden = false;
-                }
-            },
-        },
-        {
-            name: "phyAddr1",
-            description: "Phy Address of the port in single/dual EMAC mode or Port 1 in Switch mode. Value MUST be between 0 .. 31",
-            displayName: "Phy Address 1",
-            default: enet_icssg_getPhyaddress(device, 1),
-            displayFormat: "dec",
-            isInteger:true,
-            range: [0, 31],
-        },
-        {
-            name: "phyAddr2",
-            description: "Phy Address of the port in single/dual EMAC mode or Port 2 in Switch mode. Value MUST be between 0 .. 31",
-            displayName: "Phy Address 2",
-            default: enet_icssg_getPhyaddress(device, 2),
-            displayFormat: "dec",
-            isInteger:true,
-            range: [0, 31],
         },
         {
             name: "useAddMacAddr",
@@ -193,6 +145,69 @@ const enet_icssg_board_config = {
             displayFormat: "dec",
             isInteger:true,
             range: [0, 3],
+        },
+    ],
+};
+
+const enet_icssg_macPort_config = {
+    name: "macPortConfig",
+    displayName: "MAC port config",
+	longDescription: "Board specific configuration",
+    collapsed:true,
+    config: [
+        {
+            name: "macportLoopbackMode",
+            description: "Loop-back operation mode to configure. ICSS support only PHY loopback. Set to NONE for normal operation",
+            displayName: "Loop-back Mode",
+            default: "LOOPBACK_MODE_NONE",
+            options: [
+                {
+                    name: "LOOPBACK_MODE_PHY",
+                },
+                {
+                    name: "LOOPBACK_MODE_NONE",
+                },
+            ],
+            hidden : false,
+        },
+        {
+            name: "macportLinkSpeed",
+            description: "Link Speed capability configuration to PHY during auto-negotiation. Check with PHY datasheet to see the capabilites. Set to AUTO if not-sure",
+            displayName: "Link Speed Capability",
+            default: "ENET_SPEED_AUTO",
+            options: [
+                {
+                    name: "ENET_SPEED_AUTO",
+                },
+                {
+                    name: "ENET_SPEED_10MBIT",
+                },
+                {
+                    name: "ENET_SPEED_100MBIT",
+                },
+                {
+                    name: "ENET_SPEED_1GBIT",
+                },
+            ],
+            hidden: false,
+        },
+        {
+            name: "macportLinkDuplexity",
+            description: "Link Duplexity capbility configuration to PHY during auto-negotiation. Check with PHY datasheet to see the capabilites. Set to AUTO if not-sure",
+            displayName: "Link Duplexity Capabilty",
+            default: "ENET_DUPLEX_AUTO",
+            options: [
+                {
+                    name: "ENET_DUPLEX_AUTO",
+                },
+                {
+                    name: "ENET_DUPLEX_HALF",
+                },
+                {
+                    name: "ENET_DUPLEX_FULL",
+                },
+            ],
+            hidden: false,
         },
     ],
 };
@@ -413,6 +428,15 @@ function getInstIdTable(instances) {
     return tbl;
 }
 
+function getMiiConfig(instance) {
+    const icssgMiiConfigMap = new Map(
+    [
+        ["RGMII",{layerType:"ENET_MAC_LAYER_GMII", variantType:"ENET_MAC_VARIANT_FORCED", sublayerType:"ENET_MAC_SUBLAYER_REDUCED"}],
+        ["MII",  {layerType:"ENET_MAC_LAYER_MII", variantType:"ENET_MAC_VARIANT_NONE", sublayerType:"ENET_MAC_SUBLAYER_STANDARD"}],
+    ],)
+    return icssgMiiConfigMap.get(instance.phyToMacInterfaceMode);
+}
+
 function getInstId(instance) {
 
     let matchInstId;
@@ -480,25 +504,6 @@ function getMacPortInfo(instance) {
         macPortInfo.macPortList.push('ENET_MAC_PORT_2');
     }
     return macPortInfo;
-}
-
-function getPhyMask(instance) {
-    let macPortInfo = getMacPortInfo(instance);
-    let phyMask = '(' + '0';
-
-    for (var i in macPortInfo.macPortList)
-    {
-        if (macPortInfo.macPortList[i] == 'ENET_MAC_PORT_1')
-        {
-            phyMask += ' | ' + '( 1 << ' + instance.phyAddr1 + ')';
-        }
-        if (macPortInfo.macPortList[i] == 'ENET_MAC_PORT_2')
-        {
-            phyMask += ' | ' + '( 1 << ' + instance.phyAddr2 + ')';
-        }
-    }
-    phyMask += ')';
-    return phyMask;
 }
 
 function getMacAddrCount(instance) {
@@ -949,6 +954,51 @@ function addSharedModuleInstances(inst) {
         },
     });
 
+    if(inst.customBoardEnable === false){
+        if(inst.mode == 'SWITCH'){
+            modInstances.push({
+                name:  (inst.instance=="ICSSG0")?"ethphy0":"ethphy2",
+                displayName: inst.instance+" Port 1 PHY Configuration",
+                moduleName: "/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg",
+                requiredArgs: {
+                    peripheral: inst.instance+"_MAC_PORT_1",
+                },
+                group: "macPortConfig",
+            });
+    
+            modInstances.push({
+                name: (inst.instance=="ICSSG0")?"ethphy1":"ethphy3",
+                displayName: inst.instance+" Port 2 PHY Configuration",
+                moduleName: "/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg",
+                requiredArgs: {
+                    peripheral: inst.instance+"_MAC_PORT_2",
+                },
+                group: "macPortConfig",
+            });
+        }
+        else if (inst.mode == "DUAL MAC" && inst.dualMacPortSelected == "ENET_MAC_PORT_1"){
+            modInstances.push({
+                name:  (inst.instance=="ICSSG0")?"ethphy0":"ethphy2",
+                displayName: inst.instance+" Port 1 PHY Configuration",
+                moduleName: "/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg",
+                requiredArgs: {
+                    peripheral: inst.instance+"_MAC_PORT_1",
+                },
+                group: "macPortConfig",
+            });
+        }
+        else if (inst.mode == "DUAL MAC" && inst.dualMacPortSelected == "ENET_MAC_PORT_2"){
+            modInstances.push({
+                name: (inst.instance=="ICSSG0")?"ethphy1":"ethphy3",
+                displayName: inst.instance+" Port 2 PHY Configuration",
+                moduleName: "/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg",
+                requiredArgs: {
+                    peripheral: inst.instance+"_MAC_PORT_2",
+                },
+                group: "macPortConfig",
+            });
+        }
+    }
     return (modInstances);
 }
 
@@ -968,6 +1018,25 @@ function getCpuInfo() {
 	return cpuInfo.get(getCpuID());
 }
 
+function getBoardConfigTemplateInfo(instance) {
+	const boardConfigTemplate = new Map(
+								[
+								  ['am64x',{Cfile: `/board/ethphy_cpsw_icssg/templates/am64x_am243x/ethphy_icssg_board_cfg.c.xdt`,
+								   Header: "/board/ethphy_cpsw_icssg/templates/am64x_am243x/ethphy_icssg_board_cfg.h.xdt",}],
+								  ['am243x',{Cfile: "/board/ethphy_cpsw_icssg/templates/am64x_am243x/ethphy_icssg_board_cfg.c.xdt",
+								   Header: "/board/ethphy_cpsw_icssg/templates/am64x_am243x/ethphy_icssg_board_cfg.h.xdt"}],
+								  ['awr294x',{Cfile: "/board/ethphy_cpsw_icssg/templates/awr294x/ethphy_icssg_board_cfg.c.xdt",
+								   Header: "/board/ethphy_cpsw_icssg/templates/awr294x/ethphy_icssg_board_cfg.h.xdt"}],
+								  ['am273x', {Cfile: "/board/ethphy_cpsw_icssg/templates/am273x/ethphy_icssg_board_cfg.c.xdt",
+								  Header: "/board/ethphy_cpsw_icssg/templates/am273x/ethphy_icssg_board_cfg.h.xdt"}],
+								  ['am263x',{Cfile: "/board/ethphy_cpsw_icssg/templates/am263x/ethphy_icssg_board_cfg.c.xdt",
+								  Header: "/board/ethphy_cpsw_icssg/templates/am263x/ethphy_icssg_board_cfg.h.xdt"}],
+								],
+							  );
+
+	return boardConfigTemplate.get(common.getSocName());
+}
+
 let enet_icss_module_name = "/networking/enet_icss/enet_icss";
 
 let enet_icss_module = {
@@ -983,11 +1052,11 @@ let enet_icss_module = {
             moduleName: enet_icss_module_name,
         },
         "/board/board/board_config.h.xdt": {
-            board_config: "/networking/enet_icss/templates/enet_board_cfg_am64x_am243x.h.xdt",
+            board_config: getBoardConfigTemplateInfo().Header,
             moduleName: enet_icss_module_name,
         },
         "/board/board/board_config.c.xdt": {
-            board_config: "/networking/enet_icss/templates/enet_board_cfg_am64x_am243x.c.xdt",
+            board_config: getBoardConfigTemplateInfo().Cfile,
             moduleName: enet_icss_module_name,
         },
         "/networking/common/enet_config.c.xdt": {
@@ -1132,66 +1201,13 @@ let enet_icss_module = {
             displayName: "Premption Enable",
             default: false,
         },
-        {
-            name: "macportLoopbackMode",
-            description: "Loop-back operation mode to configure. ICSS support only PHY loopback. Set to NONE for normal operation",
-            displayName: "Loop-back Mode",
-            default: "LOOPBACK_MODE_NONE",
-            options: [
-                {
-                    name: "LOOPBACK_MODE_PHY",
-                },
-                {
-                    name: "LOOPBACK_MODE_NONE",
-                },
-            ],
-            hidden : false,
-        },
-        {
-            name: "macportLinkSpeed",
-            description: "Link Speed capability configuration to PHY during auto-negotiation. Check with PHY datasheet to see the capabilites. Set to AUTO if not-sure",
-            displayName: "Link Speed Capability",
-            default: "ENET_SPEED_AUTO",
-            options: [
-                {
-                    name: "ENET_SPEED_AUTO",
-                },
-                {
-                    name: "ENET_SPEED_10MBIT",
-                },
-                {
-                    name: "ENET_SPEED_100MBIT",
-                },
-                {
-                    name: "ENET_SPEED_1GBIT",
-                },
-            ],
-            hidden: false,
-        },
-        {
-            name: "macportLinkDuplexity",
-            description: "Link Duplexity capbility configuration to PHY during auto-negotiation. Check with PHY datasheet to see the capabilites. Set to AUTO if not-sure",
-            displayName: "Link Duplexity Capabilty",
-            default: "ENET_DUPLEX_AUTO",
-            options: [
-                {
-                    name: "ENET_DUPLEX_AUTO",
-                },
-                {
-                    name: "ENET_DUPLEX_HALF",
-                },
-                {
-                    name: "ENET_DUPLEX_FULL",
-                },
-            ],
-            hidden: false,
-        },
         enet_icssg_system_config,
         enet_icssg_udma_channel_config,
         mdioScript.config,
         timesyncScript.config,
         pktPoolScript.config,
         enet_icssg_lwipIf_config,
+        enet_icssg_macPort_config,
         enet_icssg_board_config,
     ],
     moduleStatic: {
@@ -1211,7 +1227,6 @@ let enet_icss_module = {
     getInstId,
     isIcssgIfEnabled,
     getMacPortInfo,
-    getPhyMask,
     getCpuID,
     getCpuInfo,
     getTxPacketsCount,
@@ -1222,6 +1237,7 @@ let enet_icss_module = {
     getDefaultPacketCount,
     getNetifCount,
     getNetifConfig,
+    getMiiConfig,
     validate: validate,
 };
 

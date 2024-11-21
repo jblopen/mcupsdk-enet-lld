@@ -6,7 +6,7 @@
 /*                             Include Files                                  */
 /* ========================================================================== */
 
-#include <enet_board.h>
+#include <networking/enet/utils/include/enet_board.h>
 
 /* ========================================================================== */
 /*                                 Macros                                     */
@@ -16,24 +16,24 @@
  *
  * Custom boards are board not supported by MCU+SDK out of the box
  */
-#define ENETBOARD_SYSCFG_CUSTOM_BOARD                   (`Number(instance.customBoardEnable)`)
+#define ENETBOARD_SYSCFG_CUSTOM_BOARD                   (`Number(instance.enableCustomBoard)`)
+
 
 /*!
- * \brief AM263PX Common Processor Board (CPB) id.
+ * \brief AM64X Common Processor Board (CPB) id.
  */
 #define ENETBOARD_CPB_ID                      (ENETPHY_BIT(0U))
 
 /*!
- * \brief AM263PX dummy board, used for MAC loopback.
+ * \brief AWR294X dummy board, used for MAC loopback.
  */
 #define ENETBOARD_LOOPBACK_ID                 (ENETPHY_BIT(1U))
 
 /*!
- * \brief AM263PX EVM base configuration: CPB and loopback.
+ * \brief AWR294X EVM base configuration: CPB and loopback.
  */
-#define ENETBOARD_AM263PX_EVM                  (ENETBOARD_CPB_ID | \
+#define ENETBOARD_AWR294X_EVM                 (ENETBOARD_CPB_ID | \
                                                ENETBOARD_LOOPBACK_ID)
-
 /* ========================================================================== */
 /*                          Function Declarations                             */
 /* ========================================================================== */

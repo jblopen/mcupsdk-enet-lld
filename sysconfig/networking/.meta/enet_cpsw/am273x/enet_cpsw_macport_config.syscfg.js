@@ -159,6 +159,19 @@ const enet_cpsw_macport_config = {
             hidden: false,
         },
         {
+            name: "disableRgmiiIntDelay#",
+            description: "Set for disabling RGMII port internal delay mode",
+            displayName: "Disable RGMII Internal Delay",
+            default: true,
+        },
+        {
+            name: "isC45Phy#",
+            description: "Set if this PHY supports MDIO Clause 45 data format",
+            displayName: "Clause 45 Support",
+            default: false,
+            readOnly: true,
+        },
+        {
             name: "vlanCfg",
             description: "Port VLAN configuration",
             longDescription: "Port VLAN configuration. Configuration are taken from taken from 'ALE Config' -> 'Port Default Vlan Config')",

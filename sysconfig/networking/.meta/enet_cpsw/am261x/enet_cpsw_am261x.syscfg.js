@@ -142,102 +142,6 @@ const enet_cpsw_system_config = {
     ],
 };
 
-const enet_cpsw_phy1_config =
-{
-    name: "phy1Config",
-    displayName: "Port 1 PHY Configuration",
-    longDescription: "Configuration of PHY connected on Port 1",
-    config:
-    [
-        {
-            name: "phyAddr1",
-            description: "Phy Address of the port 1. Value MUST be between 0 .. 31",
-            displayName: "Address",
-            default: 0,
-            displayFormat: "dec",
-            isInteger:true,
-            range: [0, 31],
-            getValue:function (inst) {
-                const cpswPhyAddrInfoMap = new Map(
-                                           [
-                                             ['am261x-lp (dp83tg720 phy)',{phyAddr1: 8, phyAddr2: 12}],
-                                             ['am261x-lp (dp83826 phy)', {phyAddr1: 3, phyAddr2: 1}],
-                                           ],
-                                         );
-                let phyInfo =  cpswPhyAddrInfoMap.get(inst.BoardType);
-                return phyInfo.phyAddr1;
-            },
-        },
-        {
-            name: "isC45Phy1",
-            description: "Set if this PHY supports MDIO Clause 45 data format",
-            displayName: "Clause 45 Support",
-            default: false,
-            readOnly: true,
-        },
-        {
-            name: "isStrappedPhy1",
-            description: "Set if PHY SOC has auto-negotiation disabled strap setting (Strapped mode).",
-            displayName: "Strapped Mode",
-            default: false,
-        },
-        {
-            name: "disableRgmiiIntDelay1",
-            description: "Set for disabling RGMII port internal delay mode",
-            displayName: "Disable RGMII Internal Delay",
-            default: false,
-        },
-    ],
-};
-
-const enet_cpsw_phy2_config =
-{
-    name: "phy2Config",
-    displayName: "Port 2 PHY Configuration",
-    longDescription: "Configuration of PHY connected on Port 2",
-    config:
-    [
-        {
-            name: "phyAddr2",
-            description: "Phy Address of the port 2. Value MUST be between 0 .. 31",
-            displayName: "Address",
-            default: 3,
-            displayFormat: "dec",
-            isInteger:true,
-            range: [0, 31],
-            getValue:function (inst) {
-                const cpswPhyAddrInfoMap = new Map(
-                                           [
-                                             ['am261x-lp (dp83tg720 phy)',{phyAddr1: 8, phyAddr2: 12}],
-                                             ['am261x-lp (dp83826 phy)', {phyAddr1: 3, phyAddr2: 1}],
-                                           ],
-                                         );
-                let phyInfo =  cpswPhyAddrInfoMap.get(inst.BoardType);
-                return phyInfo.phyAddr2;
-            },
-        },
-        {
-            name: "isC45Phy2",
-            description: "Set if this PHY supports MDIO Clause 45 data format",
-            displayName: "Clause 45 Support",
-            default: false,
-            readOnly: true,
-        },
-        {
-            name: "isStrappedPhy2",
-            description: "Set if PHY SOC has auto-negotiation disabled strap setting (Strapped mode).",
-            displayName: "Strapped Mode",
-            default: false,
-        },
-        {
-            name: "disableRgmiiIntDelay2",
-            description: "Set for disabling RGMII port internal delay mode",
-            displayName: "Disable RGMII Internal Delay",
-            default: false,
-        },
-    ],
-};
-
 const enet_cpsw_board_config = {
     name: "cpswBoardConfig",
     displayName: "Board Config",
@@ -250,31 +154,7 @@ const enet_cpsw_board_config = {
             displayName: "Custom Board",
             longDescription: "Configuration for custom board that are not supported out of box in MCU+ SDK",
             default: false,
-            onChange:function (inst, ui) {
-                if(inst.customBoardEnable == true) {
-                    ui.phyAddr1.hidden = true;
-                    ui.isC45Phy1.hidden = true;
-                    ui.isStrappedPhy1.hidden = true;
-                    ui.disableRgmiiIntDelay1.hidden = true;
-                    ui.phyAddr2.hidden = true;
-                    ui.isC45Phy2.hidden = true;
-                    ui.isStrappedPhy2.hidden = true;
-                    ui.disableRgmiiIntDelay2.hidden = true;
-                }
-                else {
-                    ui.phyAddr1.hidden = false;
-                    ui.isC45Phy1.hidden = false;
-                    ui.isStrappedPhy1.hidden = false;
-                    ui.disableRgmiiIntDelay1.hidden = false;
-                    ui.phyAddr2.hidden = false;
-                    ui.isC45Phy2.hidden = false;
-                    ui.isStrappedPhy2.hidden = false;
-                    ui.disableRgmiiIntDelay2.hidden = false;
-                }
-            },
         },
-        enet_cpsw_phy1_config,
-        enet_cpsw_phy2_config,
     ],
 };
 
@@ -331,6 +211,15 @@ function getInstIdTable(instances) {
     return tbl;
 }
 
+function getMiiConfig(instance) {
+    const cpswMiiConfigMap = new Map(
+    [
+        ["RGMII",{layerType:"ENET_MAC_LAYER_GMII", variantType:"ENET_MAC_VARIANT_FORCED", sublayerType:"ENET_MAC_SUBLAYER_REDUCED"}],
+        ["RMII", {layerType:"ENET_MAC_LAYER_MII", variantType:"ENET_MAC_VARIANT_NONE", sublayerType:"ENET_MAC_SUBLAYER_REDUCED"}],
+    ],)
+    return cpswMiiConfigMap.get(instance.phyToMacInterfaceMode);
+}
+
 function getCpswInstInfo(instance) {
     const cpswInstInfoMap = new Map(
                                [
@@ -357,8 +246,9 @@ function getCpswInstInfo(instance) {
 function getBoardConfigTemplateInfo() {
     const boardConfigTemplate = new Map(
                                [
-                                 ['am261x',{Cfile: "/networking/enet_cpsw/templates/am261x/enet_board_cfg.c.xdt",
-                                 Header: "/networking/enet_cpsw/templates/am261x/enet_board_cfg.h.xdt"}],
+                                 ['am261x',{Cfile: "/board/ethphy_cpsw_icssg/templates/am261x/enet_board_cfg.c.xdt",
+                                 
+                                 Header: "/board/ethphy_cpsw_icssg/templates/am261x/enet_board_cfg.h.xdt"}],
                                ],
                              );
     return boardConfigTemplate.get(common.getSocName());
@@ -372,25 +262,6 @@ function getSocConfigTemplateInfo() {
                                ],
                              );
     return socConfigTemplate.get(common.getSocName());
-}
-
-function getPhyMask(instance) {
-    let cpswInstInfo = getCpswInstInfo(instance);
-    let phyMask = '(' + '0';
-
-    for (var i in cpswInstInfo.macPortList)
-    {
-        if (cpswInstInfo.macPortList[i] == 'ENET_MAC_PORT_1')
-        {
-            phyMask += ' | ' + '(1 << ' + instance.phyAddr1 + ' )';
-        }
-        if (cpswInstInfo.macPortList[i] == 'ENET_MAC_PORT_2')
-        {
-            phyMask += ' | ' + '(1 << ' + instance.phyAddr2 + ' )';
-        }
-    }
-    phyMask += ')';
-    return phyMask;
 }
 
 function getPacketsCount(instance, channelType) {
@@ -656,6 +527,39 @@ function moduleInstances(instance) {
     return (Instances);
 }
 
+function addSharedModuleInstances(inst) {
+    let modInstances = new Array();
+
+    if((inst.DisableMacPort1 === false) && (inst.customBoardEnable === false)){
+        modInstances.push({
+            name: "ethphy1",
+            displayName: "Port 1 PHY Configuration",
+            moduleName: "/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg",
+            requiredArgs: {
+                boardType: inst.BoardType,
+                peripheral: "CPSW_MAC_PORT_1",
+                enableCustomBoard: inst.customBoardEnable,
+            },
+            group: "macPort1Cfg",
+            });
+    }
+
+    if((inst.DisableMacPort2 == false) && (inst.customBoardEnable === false)){
+        modInstances.push({
+            name: "ethphy2",
+            displayName: "Port 2 PHY Configuration",
+            moduleName: "/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg",
+            requiredArgs: {
+                boardType: inst.BoardType,
+                peripheral: "CPSW_MAC_PORT_2",
+                enableCustomBoard: inst.customBoardEnable,
+            },
+            group: "macPort2Cfg",
+            });
+    }
+
+    return modInstances;
+}
 function getCpuInfo() {
 	const cpuInfo = new Map(
                                [
@@ -762,6 +666,7 @@ let enet_cpsw_module = {
     },
     moduleInstances: moduleInstances,
     utils: utilsScript,
+    sharedModuleInstances: addSharedModuleInstances,
     pinmuxRequirements,
     getInterfaceNameList,
     getPeripheralPinNames,
@@ -770,7 +675,6 @@ let enet_cpsw_module = {
     getDmaInterface,
     getInstIdTable,
     getCpswInstInfo,
-    getPhyMask,
     getBoardConfigTemplateInfo,
     getCpuID,
     getCpuInfo,
@@ -785,6 +689,7 @@ let enet_cpsw_module = {
     getNetifCount,
     getNetifConfig,
     getDefaultNetifIdx,
+    getMiiConfig,
     validate: validate,
 };
 

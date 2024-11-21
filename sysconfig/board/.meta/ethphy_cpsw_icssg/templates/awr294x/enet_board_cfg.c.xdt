@@ -1,33 +1,46 @@
 %%{
-    let module = system.modules["/networking/enet_cpsw/enet_cpsw"];
-    let instance = module.$instances[0];
-    let common = system.getScript("/common");
-    let device = common.getDeviceName();
+    let cpsw_instance = system.modules["/networking/enet_cpsw/enet_cpsw"].$instances[0];
+    let cpswScript = system.getScript("/networking/enet_cpsw/enet_cpsw");
+    let ethphyScript = system.getScript("/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg");
 %%}
+% let common = system.getScript("/common");
+% let device = common.getDeviceName();
 
-% if (instance.customBoardEnable === false) {
+% if (cpsw_instance.customBoardEnable === false) {
+
+% let module = system.modules["/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg"];
+% let instances = module.$instances;
+% let uniqueDevices = ethphyScript.getUniqueLinkedEthphy(module);
+% let linkedInstances = ethphyScript.getLinkedInstances(module);
+
+% if(linkedInstances.length > 0) {
+/* ========================================================================== */
+/*                             Include Files                                  */
+/* ========================================================================== */
 
 #include <stdint.h>
 #include <enet.h>
-#include <networking/enet/core/include/phy/enetphy.h>
-#include <networking/enet/core/include/phy/dp83867.h>
+% for (let phyDevice of uniqueDevices) {
+#include "`phyDevice.toLowerCase()`.h"
+% }
+
 #include <enet_apputils.h>
 #include <drivers/hw_include/cslr_soc.h>
 #include <networking/enet/core/src/phy/enetphy_priv.h>
-
-#define `instance.$name.toUpperCase()`_PHY0_ADDR (`instance.phyAddr1`U)
+#include <networking/enet/core/src/phy/generic_phy.h>
 
 /* PHY drivers */
-extern EnetPhy_Drv gEnetPhyDrvGeneric;
-extern EnetPhy_Drv gEnetPhyDrvDp83822;
-extern EnetPhy_Drv gEnetPhyDrvDp83867;
-extern EnetPhy_Drv gEnetPhyDrvDp83869;
-extern EnetPhy_Drv gEnetPhyDrvVsc8514;
+% for (let phyDevice of uniqueDevices){
+extern Phy_DrvObj_t gEnetPhyDrv`common.camelSentence(phyDevice)`;
+%}
+extern Phy_DrvObj_t gEnetPhyDrvGeneric;
 
 /*! \brief All the registered PHY specific drivers. */
-static const EnetPhyDrv_Handle gEnetPhyDrvs[] =
+static const EthPhyDrv_If gEnetPhyDrvs[] =
 {
-    &gEnetPhyDrvDp83867,   /* DP83867 */
+% for (let phyDevice of uniqueDevices){
+    &gEnetPhyDrv`common.camelSentence(phyDevice)`,    /* `phyDevice` */
+%}
     &gEnetPhyDrvGeneric,   /* Generic PHY - must be last */
 };
 
@@ -79,80 +92,43 @@ static const EnetBoard_PortCfg *EnetBoard_findPortCfg(const EnetBoard_EthPort *e
 /*                            Global Variables                                */
 /* ========================================================================== */
 
+% for (let idx of linkedInstances) {
 /*!
- * \brief Common Processor Board (CPB) board's DP83867 PHY configuration.
+ * \brief Common Processor Board (CPB) board's `instances[idx].phySelect` PHY configuration.
  */
-static const Dp83867_Cfg gEnetCpbBoard_dp83867PhyCfg =
+% let phyName = (instances[idx].phySelect == "CUSTOM")? (instances[idx].customDeviceName) : (instances[idx].phySelect);
+static const `common.camelSentence(phyName)`_Cfg gEnetCpbBoard_`common.camelSentence(instances[idx].$name)`PhyCfg =
 {
-    .txClkShiftEn         = false,
-    .rxClkShiftEn         = true,
-    .txDelayInPs          = 250U,  /* 2.00 ns */
-    .rxDelayInPs          = 2000U,  /* 2.00 ns */
-    .txFifoDepth          = 4U,
-    .idleCntThresh        = 4U,     /* Improves short cable performance */
-    .impedanceInMilliOhms = 35000,  /* 35 ohms */
-    .gpio0Mode            = DP83867_GPIO0_LED3,
-    .gpio1Mode            = DP83867_GPIO1_COL, /* Unused */
-    .ledMode              =
-    {
-        DP83867_LED_LINKED,         /* Unused */
-        DP83867_LED_LINKED_100BTX,
-        DP83867_LED_RXTXACT,
-        DP83867_LED_LINKED_1000BT,
-    },
+    % if(instances[idx].skipExtendedConfig == false) {
+	`instances[idx].extendedConfig`
+    % }
 };
+%}
 
 /*
- * AM64x board configuration.
+ * `device` board configuration.
  *
- * 1 x RGMII PHY connected to AM64x CPSW_2G MAC port.
+ * RMII/RGMII PHY connected to `device` CPSW_2G MAC port.
  */
-static const EnetBoard_PortCfg gEnetCpbBoard_awr294xEthPort[] =
+static const EnetBoard_PortCfg gEnetCpbBoard_`device.replace('-','_')`_EthPort[] =
 {
-    {    /* "CPSW3G" */
+% for (let idx of linkedInstances) {
+    {   
         .enetType = ENET_CPSW_2G,
         .instId   = 0U,
-        .macPort  = ENET_MAC_PORT_1,
-        .mii      = { ENET_MAC_LAYER_GMII, ENET_MAC_SUBLAYER_REDUCED },
+        .macPort  = `instances[idx].peripheral.replace("CPSW", "ENET")`,
+        .mii      = {`cpswScript.getMiiConfig(cpsw_instance).layerType`, `cpswScript.getMiiConfig(cpsw_instance).sublayerType`},
         .phyCfg   =
         {
-            .phyAddr         = `instance.phyAddr1`,
-            .isStrapped      = false,
-            .skipExtendedCfg = false,
-            .extendedCfg     = &gEnetCpbBoard_dp83867PhyCfg,
-            .extendedCfgSize = sizeof(gEnetCpbBoard_dp83867PhyCfg),
+            .phyAddr         = `instances[idx].phyAddr`,
+            .isStrapped      = `instances[idx].isStrappedPhy`,
+            .skipExtendedCfg = `instances[idx].skipExtendedConfig`,
+			.extendedCfg     = &gEnetCpbBoard_`common.camelSentence(instances[idx].$name)`PhyCfg,
+			.extendedCfgSize = sizeof(gEnetCpbBoard_`common.camelSentence(instances[idx].$name)`PhyCfg)
         },
         .flags    = 0U,
     },
-};
-
-/*
- * J721E virtual board used for MAC loopback setup.
- */
-static const EnetBoard_PortCfg gEnetLpbkBoard_awr294xEthPort[] =
-{
-    {    /* RGMII MAC loopback */
-        .enetType = ENET_CPSW_2G,
-        .instId   = 0U,
-        .macPort  = ENET_MAC_PORT_1,
-        .mii      = { ENET_MAC_LAYER_GMII, ENET_MAC_SUBLAYER_REDUCED },
-        .phyCfg   =
-        {
-            .phyAddr = ENETPHY_INVALID_PHYADDR,
-        },
-        .flags    = 0U,
-    },
-    {    /* RMII MAC loopback */
-        .enetType = ENET_CPSW_2G,
-        .instId   = 0U,
-        .macPort  = ENET_MAC_PORT_1,
-        .mii      = { ENET_MAC_LAYER_MII, ENET_MAC_SUBLAYER_REDUCED },
-        .phyCfg   =
-        {
-            .phyAddr = ENETPHY_INVALID_PHYADDR,
-        },
-        .flags    = 0U,
-    },
+%}
 };
 
 /* ========================================================================== */
@@ -172,19 +148,14 @@ static const EnetBoard_PortCfg *EnetBoard_getPortCfg(const EnetBoard_EthPort *et
 {
     const EnetBoard_PortCfg *portCfg = NULL;
 
-    if (ENET_NOT_ZERO(ethPort->boardId & ENETBOARD_CPB_ID))
+    if (ENET_NOT_ZERO(ethPort->boardId & ENETBOARD_CPB_ID) ||
+   	((portCfg == NULL) &&  ENET_NOT_ZERO(ethPort->boardId & ENETBOARD_LOOPBACK_ID)))
     {
         portCfg = EnetBoard_findPortCfg(ethPort,
-                                        gEnetCpbBoard_awr294xEthPort,
-                                        ENETPHY_ARRAYSIZE(gEnetCpbBoard_awr294xEthPort));
+                                        gEnetCpbBoard_`device.replace('-','_')`_EthPort,
+                                        ENETPHY_ARRAYSIZE(gEnetCpbBoard_`device.replace('-','_')`_EthPort));
     }
-    if ((portCfg == NULL) &&
-        ENET_NOT_ZERO(ethPort->boardId & ENETBOARD_LOOPBACK_ID))
-    {
-        portCfg = EnetBoard_findPortCfg(ethPort,
-                                        gEnetLpbkBoard_awr294xEthPort,
-                                        ENETPHY_ARRAYSIZE(gEnetLpbkBoard_awr294xEthPort));
-    }
+
 
     return portCfg;
 }
@@ -217,7 +188,7 @@ static const EnetBoard_PortCfg *EnetBoard_findPortCfg(const EnetBoard_EthPort *e
 
 void EnetBoard_getMiiConfig(EnetMacPort_Interface *mii)
 {
-%if (instance.phyToMacInterfaceMode == "RGMII") {
+%if (cpsw_instance.phyToMacInterfaceMode == "RGMII") {
     mii->layerType      = ENET_MAC_LAYER_GMII;
     mii->variantType    = ENET_MAC_VARIANT_FORCED;
 % } else {
@@ -238,7 +209,7 @@ int32_t EnetBoard_setupPorts(EnetBoard_EthPort *ethPorts,
     switch(ethPorts->macPort)
     {
         case ENET_MAC_PORT_1:
-%if (instance.phyToMacInterfaceMode == "RGMII") {
+%if (cpsw_instance.phyToMacInterfaceMode == "RGMII") {
             CSL_FINS( mssCtrlRegs->CPSW_CONTROL,MSS_CTRL_CPSW_CONTROL_CPSW_CONTROL_PORT1_MODE_SEL, MSS_CPSW_CONTROL_PORT_MODE_RGMII);
 % } else {
             CSL_FINS( mssCtrlRegs->CPSW_CONTROL,MSS_CTRL_CPSW_CONTROL_CPSW_CONTROL_PORT1_MODE_SEL, MSS_CPSW_CONTROL_PORT_MODE_RMII);
@@ -267,4 +238,5 @@ uint32_t EnetBoard_getId(void)
     return ENETBOARD_AWR294X_EVM;
 }
 
+% }
 % }

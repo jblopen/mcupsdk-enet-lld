@@ -138,41 +138,6 @@ const enet_cpsw_system_config = {
     ],
 };
 
-const enet_cpsw_phy1_config =
-{
-    name: "phy1Config",
-    displayName: "Port 1 PHY Configuration",
-    longDescription: "Configuration of PHY connected on Port 1",
-    config:
-    [
-        {
-            name: "phyAddr1",
-            description: "Phy Address of the port 1. Value MUST be between 0 .. 31",
-            displayName: "Address",
-            default: 0,
-            displayFormat: "dec",
-            isInteger:true,
-            range: [0, 31],
-            readOnly: true,
-            getValue:function (inst) {
-                const cpswPhyAddrInfoMap = new Map(
-                                           [
-                                             ['awr294x-evm',{phyAddr1: 0}],
-                                           ],
-                                         );
-                let phyInfo =  cpswPhyAddrInfoMap.get(device);
-                return phyInfo.phyAddr1;
-            },
-        },
-        {
-            name: "isC45Phy1",
-            description: "Set if this PHY supports MDIO Clause 45 data format",
-            displayName: "Clause 45 Support",
-            default: false,
-            readOnly: true,
-        },
-    ],
-};
 
 const enet_cpsw_board_config = {
     name: "cpswBoardConfig",
@@ -186,18 +151,7 @@ const enet_cpsw_board_config = {
             displayName: "Custom Board",
             longDescription: "Configuration for custom board that are not supported out of box in MCU+ SDK",
             default: false,
-            onChange:function (inst, ui) {
-                if(inst.customBoardEnable == true) {
-                    ui.phyAddr1.hidden = true;
-                    ui.isC45Phy1.hidden = true;
-                }
-                else {
-                    ui.phyAddr1.hidden = false;
-                    ui.isC45Phy1.hidden = false;
-                }
-            },
         },
-        enet_cpsw_phy1_config,
     ],
 };
 
@@ -287,16 +241,16 @@ function getCpswInstInfo(instance) {
 function getBoardConfigTemplateInfo() {
     const boardConfigTemplate = new Map(
                                [
-                                 ['am64x',{Cfile: "/networking/enet_cpsw/templates/am64x_am243x/enet_board_cfg.c.xdt",
-                                  Header: "/networking/enet_cpsw/templates/am64x_am243x/enet_board_cfg.h.xdt"}],
-                                 ['am243x',{Cfile: "/networking/enet_cpsw/templates/am64x_am243x/enet_board_cfg.c.xdt",
-                                  Header: "/networking/enet_cpsw/templates/am64x_am243x/enet_board_cfg.h.xdt"}],
-                                 ['awr294x',{Cfile: "/networking/enet_cpsw/templates/awr294x/enet_board_cfg.c.xdt",
-                                  Header: "/networking/enet_cpsw/templates/awr294x/enet_board_cfg.h.xdt"}],
-                                 ['am273x', {Cfile: "/networking/enet_cpsw/templates/am273x/enet_board_cfg.c.xdt",
-                                 Header: "/networking/enet_cpsw/templates/am273x/enet_board_cfg.h.xdt"}],
-                                 ['am263x',{Cfile: "/networking/enet_cpsw/templates/am263x/enet_board_cfg.c.xdt",
-                                 Header: "/networking/enet_cpsw/templates/am263x/enet_board_cfg.h.xdt"}],
+                                 ['am64x',{Cfile: "/board/ethphy_cpsw_icssg/templates/am64x_am243x/enet_board_cfg.c.xdt",
+                                  Header: "/board/ethphy_cpsw_icssg/templates/am64x_am243x/enet_board_cfg.h.xdt"}],
+                                 ['am243x',{Cfile: "/board/ethphy_cpsw_icssg/templates/am64x_am243x/enet_board_cfg.c.xdt",
+                                  Header: "/board/ethphy_cpsw_icssg/templates/am64x_am243x/enet_board_cfg.h.xdt"}],
+                                 ['awr294x',{Cfile: "/board/ethphy_cpsw_icssg/templates/awr294x/enet_board_cfg.c.xdt",
+                                  Header: "/board/ethphy_cpsw_icssg/templates/awr294x/enet_board_cfg.h.xdt"}],
+                                 ['am273x', {Cfile: "/board/ethphy_cpsw_icssg/templates/am273x/enet_board_cfg.c.xdt",
+                                 Header: "/board/ethphy_cpsw_icssg/templates/am273x/enet_board_cfg.h.xdt"}],
+                                 ['am263x',{Cfile: "/board/ethphy_cpsw_icssg/templates/am263x/enet_board_cfg.c.xdt",
+                                 Header: "/board/ethphy_cpsw_icssg/templates/am263x/enet_board_cfg.h.xdt"}],
                                ],
                              );
     return boardConfigTemplate.get(common.getSocName());
@@ -314,21 +268,6 @@ function getSocConfigTemplateInfo() {
                                ],
                              );
     return socConfigTemplate.get(common.getSocName());
-}
-
-function getPhyMask(instance) {
-    let cpswInstInfo = getCpswInstInfo(instance);
-    let phyMask = '(' + '0';
-
-    for (var i in cpswInstInfo.macPortList)
-    {
-        if (cpswInstInfo.macPortList[i] == 'ENET_MAC_PORT_1')
-        {
-            phyMask += ' | ' + '(1 << ' + instance.phyAddr1 + ' )';
-        }
-    }
-    phyMask += ')';
-    return phyMask;
 }
 
 function getPacketsCount(instance, channelType) {
@@ -515,6 +454,16 @@ function getCpuID() {
     return system.getScript(`/drivers/soc/drivers_${common.getSocName()}`).getCpuID();
 }
 
+function getMiiConfig(instance) {
+    const cpswMiiConfigMap = new Map(
+    [
+        ["RGMII",{layerType:"ENET_MAC_LAYER_GMII", variantType:"ENET_MAC_VARIANT_FORCED", sublayerType:"ENET_MAC_SUBLAYER_REDUCED"}],
+        ["RMII", {layerType:"ENET_MAC_LAYER_MII", variantType:"ENET_MAC_VARIANT_NONE", sublayerType:"ENET_MAC_SUBLAYER_REDUCED"}],
+    ],)
+    
+    return cpswMiiConfigMap.get(instance.phyToMacInterfaceMode);
+}
+
 function validate(instance, report) {
     pktPoolScript.validate(instance, report);
     aleScript.validate(instance, report);
@@ -586,6 +535,25 @@ function moduleInstances(instance) {
     });
 
     return (Instances);
+}
+
+function addSharedModuleInstances(instance) {
+    let Instances = new Array();
+
+    if(instance.DisableMacPort1 === false && instance.customBoardEnable === false){
+        Instances.push({
+            name: "ethphy1",
+            displayName: "Port 1 PHY Configuration",
+            moduleName: "/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg",
+            requiredArgs: {
+                peripheral: "CPSW_MAC_PORT_1",
+                enableCustomBoard: instance.customBoardEnable,
+            },
+            group: "macPort1Cfg",
+            });
+    }
+
+    return Instances;
 }
 
 function getCpuInfo() {
@@ -689,6 +657,7 @@ let enet_cpsw_module = {
         },
     },
     moduleInstances: moduleInstances,
+    sharedModuleInstances: addSharedModuleInstances,
     utils: utilsScript,
     pinmuxRequirements,
     getInterfaceNameList,
@@ -698,7 +667,6 @@ let enet_cpsw_module = {
     getDmaInterface,
     getInstIdTable,
     getCpswInstInfo,
-    getPhyMask,
     getBoardConfigTemplateInfo,
     getCpuID,
     getTxPacketsCount,
@@ -711,6 +679,7 @@ let enet_cpsw_module = {
     getNetifCount,
     getNetifConfig,
     getDefaultNetifIdx,
+    getMiiConfig,
     validate: validate,
     getCpuInfo,
     getSocConfigTemplateInfo,
