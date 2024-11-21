@@ -1,8 +1,9 @@
 /**
  * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
  * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
- * @cliArgs --device "AM64x" --package "ALV" --part "Default" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
- * @versions {"tool":"1.20.0+3587"}
+ * @cliArgs --device "AM64x" --part "Default" --package "ALV" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
+ * @v2CliArgs --device "AM6442" --package "FCBGA (ALV)" --variant "AM6442-D" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
+ * @versions {"tool":"1.21.2+3837"}
  */
 
 /**
@@ -22,7 +23,7 @@ const pruicss    = scripting.addModule("/drivers/pruicss/pruicss", {}, false);
 const pruicss1   = pruicss.addInstance();
 const pruicss2   = pruicss.addInstance();
 const debug_log  = scripting.addModule("/kernel/dpl/debug_log");
-const dpl_cfg = scripting.addModule("/kernel/dpl/dpl_cfg");
+const dpl_cfg    = scripting.addModule("/kernel/dpl/dpl_cfg");
 const mpu_armv7  = scripting.addModule("/kernel/dpl/mpu_armv7", {}, false);
 const mpu_armv71 = mpu_armv7.addInstance();
 const mpu_armv72 = mpu_armv7.addInstance();
@@ -142,6 +143,11 @@ enet_icss1.netifInstance[0].$name       = "NETIF_INST_ID0";
 enet_icss1.rxDmaChannel[0].$name        = "ENET_DMA_RX_CH0";
 enet_icss1.rxDmaChannel[0].PacketsCount = 16;
 
+const ethphy_cpsw_icssg  = scripting.addModule("/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg", {}, false);
+const ethphy_cpsw_icssg1 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg1.$name = "CONFIG_ENET_ETHPHY0";
+enet_icss1.ethphy2       = ethphy_cpsw_icssg1;
+
 enet_icss2.$name                        = "CONFIG_ENET_ICSS1";
 enet_icss2.LargePoolPktCount            = 16;
 enet_icss2.PktInfoOnlyEnable            = true;
@@ -157,9 +163,12 @@ enet_icss2.netifInstance[0].$name       = "NETIF_INST_ID1";
 enet_icss2.rxDmaChannel[0].$name        = "ENET_DMA_RX_CH1";
 enet_icss2.rxDmaChannel[0].PacketsCount = 16;
 
+const ethphy_cpsw_icssg2 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg2.$name = "CONFIG_ENET_ETHPHY1";
+enet_icss2.ethphy3       = ethphy_cpsw_icssg2;
+
 pruicss2.$name                           = "CONFIG_PRU_ICSS1";
 pruicss2.instance                        = "ICSSG1";
-pruicss2.coreClk                         = 250000000;
 enet_icss1.icss                          = pruicss2;
 enet_icss2.icss                          = pruicss2;
 pruicss2.AdditionalICSSSettings[0].$name = "CONFIG_PRU_ICSS_IO2";
@@ -178,7 +187,6 @@ enet_icss3.LargePoolPktCount                  = 16;
 enet_icss3.instance                           = "ICSSG0";
 enet_icss3.mdioPollEnMask                     = [];
 enet_icss3.mdioMode                           = "MDIO_MODE_NORMAL";
-enet_icss3.phyAddr1                           = 1;
 enet_icss3.GigabitSupportEnable               = false;
 enet_icss3.txDmaChannel[0].$name              = "ENET_DMA_TX_CH2";
 enet_icss3.netifInstance.create(1);
@@ -190,6 +198,10 @@ enet_icss3.PRU_ICSSG0_MII_G_RT.MII0_CRS.$used = false;
 enet_icss3.PRU_ICSSG0_MII_G_RT.MII1_COL.$used = false;
 enet_icss3.PRU_ICSSG0_MII_G_RT.MII1_CRS.$used = false;
 
+const ethphy_cpsw_icssg3 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg3.$name = "CONFIG_ENET_ETHPHY2";
+enet_icss3.ethphy0       = ethphy_cpsw_icssg3;
+
 enet_icss4.$name                        = "CONFIG_ENET_ICSS3";
 enet_icss4.mode                         = "DUAL MAC";
 enet_icss4.mdioMdcEnable                = false;
@@ -199,7 +211,6 @@ enet_icss4.PktInfoOnlyEnable            = true;
 enet_icss4.instance                     = "ICSSG0";
 enet_icss4.mdioPollEnMask               = [];
 enet_icss4.mdioMode                     = "MDIO_MODE_NORMAL";
-enet_icss4.phyAddr1                     = 1;
 enet_icss4.GigabitSupportEnable         = false;
 enet_icss4.txDmaChannel[0].$name        = "ENET_DMA_TX_CH3";
 enet_icss4.netifInstance.create(1);
@@ -207,8 +218,11 @@ enet_icss4.netifInstance[0].$name       = "NETIF_INST_ID3";
 enet_icss4.rxDmaChannel[0].$name        = "ENET_DMA_RX_CH5";
 enet_icss4.rxDmaChannel[0].PacketsCount = 16;
 
+const ethphy_cpsw_icssg4 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg4.$name = "CONFIG_ENET_ETHPHY3";
+enet_icss4.ethphy1       = ethphy_cpsw_icssg4;
+
 pruicss1.$name                           = "CONFIG_PRU_ICSS0";
-pruicss1.coreClk                         = 250000000;
 enet_icss3.icss                          = pruicss1;
 enet_icss4.icss                          = pruicss1;
 pruicss1.AdditionalICSSSettings[0].$name = "CONFIG_PRU_ICSS_IO1";

@@ -3,7 +3,7 @@
  * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
  * @cliArgs --device "AM243x_ALV_beta" --part "ALV" --package "ALV" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
  * @v2CliArgs --device "AM2434" --package "FCBGA (ALV)" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
- * @versions {"tool":"1.21.0+3721"}
+ * @versions {"tool":"1.21.2+3837"}
  */
 
 /**
@@ -122,6 +122,11 @@ enet_icss1.netifInstance.create(1);
 enet_icss1.netifInstance[0].$name = "NETIF_INST_ID0";
 enet_icss1.rxDmaChannel[0].$name  = "ENET_DMA_RX_CH0";
 
+const ethphy_cpsw_icssg  = scripting.addModule("/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg", {}, false);
+const ethphy_cpsw_icssg1 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg1.$name = "CONFIG_ENET_ETHPHY0";
+enet_icss1.ethphy2       = ethphy_cpsw_icssg1;
+
 enet_icss2.$name                  = "CONFIG_ENET_ICSS1";
 enet_icss2.mode                   = "DUAL MAC";
 enet_icss2.phyToMacInterfaceMode  = "RGMII";
@@ -133,6 +138,10 @@ enet_icss2.txDmaChannel[0].$name  = "ENET_DMA_TX_CH1";
 enet_icss2.netifInstance.create(1);
 enet_icss2.netifInstance[0].$name = "NETIF_INST_ID1";
 enet_icss2.rxDmaChannel[0].$name  = "ENET_DMA_RX_CH1";
+
+const ethphy_cpsw_icssg2 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg2.$name = "CONFIG_ENET_ETHPHY1";
+enet_icss2.ethphy3       = ethphy_cpsw_icssg2;
 
 const pruicss                            = scripting.addModule("/drivers/pruicss/pruicss", {}, false);
 const pruicss1                           = pruicss.addInstance({}, false);

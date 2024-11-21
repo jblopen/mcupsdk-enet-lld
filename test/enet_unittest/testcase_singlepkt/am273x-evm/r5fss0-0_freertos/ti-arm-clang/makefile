@@ -67,6 +67,8 @@ FILES_PATH_common = \
 INCLUDES_common := \
 	-I${CG_TOOL_ROOT}/include/c \
 	-I${MCU_PLUS_SDK_PATH}/source \
+	-I${MCU_PLUS_SDK_PATH}/source/board/ethphy/enet/rtos_drivers/include \
+	-I${MCU_PLUS_SDK_PATH}/source/board/ethphy/port \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/FreeRTOS-Kernel/include \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/portable/TI_ARM_CLANG/ARM_CR5F \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/config/am273x/r5f \
@@ -130,6 +132,7 @@ LIBS_PATH_common = \
 
 LIBS_common = \
 	-lfreertos.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
+	-lboard.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
 	-ldrivers.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
 	-lenet-cpsw.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
 	-llibc.a \
@@ -154,6 +157,7 @@ LNKOPTFLAGS_release = \
 
 LIBS_NAME = \
 	freertos.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
+	board.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
 	drivers.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
 	enet-cpsw.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
 	libc.a \

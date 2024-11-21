@@ -1,8 +1,9 @@
 /**
  * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
  * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
- * @cliArgs --device "AM64x" --package "ALV" --part "Default" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
- * @versions {"tool":"1.18.0+3266"}
+ * @cliArgs --device "AM64x" --part "Default" --package "ALV" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
+ * @v2CliArgs --device "AM6442" --package "FCBGA (ALV)" --variant "AM6442-D" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
+ * @versions {"tool":"1.21.2+3837"}
  */
 
 /**
@@ -21,7 +22,7 @@ const pruicss    = scripting.addModule("/drivers/pruicss/pruicss", {}, false);
 const pruicss1   = pruicss.addInstance();
 const pruicss2   = pruicss.addInstance();
 const debug_log  = scripting.addModule("/kernel/dpl/debug_log");
-const dpl_cfg = scripting.addModule("/kernel/dpl/dpl_cfg");
+const dpl_cfg    = scripting.addModule("/kernel/dpl/dpl_cfg");
 const mpu_armv7  = scripting.addModule("/kernel/dpl/mpu_armv7", {}, false);
 const mpu_armv71 = mpu_armv7.addInstance();
 const mpu_armv72 = mpu_armv7.addInstance();
@@ -65,15 +66,22 @@ eeprom1.peripheralDriver = i2c1;
 i2c1.I2C.$assign         = "I2C0";
 i2c1.I2C.SCL.$assign     = "I2C0_SCL";
 i2c1.I2C.SDA.$assign     = "I2C0_SDA";
+i2c1.I2C_child.$name     = "drivers_i2c_v0_i2c_v0_template1";
 
 i2c2.$name           = "CONFIG_I2C1";
 i2c2.I2C.$assign     = "I2C1";
 i2c2.I2C.SCL.$assign = "I2C1_SCL";
 i2c2.I2C.SDA.$assign = "I2C1_SDA";
+i2c2.I2C_child.$name = "drivers_i2c_v0_i2c_v0_template2";
 
 debug_log.enableCssLog  = false;
 debug_log.enableUartLog = true;
 debug_log.uartLog.$name = "CONFIG_UART0";
+
+const uart_v0_template  = scripting.addModule("/drivers/uart/v0/uart_v0_template", {}, false);
+const uart_v0_template1 = uart_v0_template.addInstance({}, false);
+uart_v0_template1.$name = "drivers_uart_v0_uart_v0_template0";
+debug_log.uartLog.child = uart_v0_template1;
 
 mpu_armv71.$name             = "CONFIG_MPU_REGION0";
 mpu_armv71.size              = 31;
@@ -116,37 +124,45 @@ mpu_armv78.attributes = "NonCached";
 mpu_armv78.size       = 16;
 mpu_armv78.baseAddr   = 0x701D0000;
 
-enet_icss1.$name                          = "CONFIG_ENET_ICSS0";
-enet_icss1.LargePoolPktCount              = 16;
-enet_icss1.PktInfoOnlyEnable              = true;
-enet_icss1.mdioPollEnMask                 = [];
-enet_icss1.mdioMode                       = "MDIO_MODE_NORMAL";
-enet_icss1.mode                           = "DUAL MAC";
-enet_icss1.phyToMacInterfaceMode          = "RGMII";
-enet_icss1.txDmaChannel[0].$name          = "ENET_DMA_TX_CH1";
+enet_icss1.$name                        = "CONFIG_ENET_ICSS0";
+enet_icss1.LargePoolPktCount            = 16;
+enet_icss1.PktInfoOnlyEnable            = true;
+enet_icss1.mdioPollEnMask               = [];
+enet_icss1.mdioMode                     = "MDIO_MODE_NORMAL";
+enet_icss1.mode                         = "DUAL MAC";
+enet_icss1.phyToMacInterfaceMode        = "RGMII";
+enet_icss1.txDmaChannel[0].$name        = "ENET_DMA_TX_CH1";
 enet_icss1.netifInstance.create(1);
-enet_icss1.netifInstance[0].$name         = "NETIF_INST_ID0";
-enet_icss1.rxDmaChannel[0].$name          = "ENET_DMA_RX_CH0";
-enet_icss1.rxDmaChannel[0].PacketsCount   = 16;
+enet_icss1.netifInstance[0].$name       = "NETIF_INST_ID0";
+enet_icss1.rxDmaChannel[0].$name        = "ENET_DMA_RX_CH0";
+enet_icss1.rxDmaChannel[0].PacketsCount = 16;
 
-enet_icss2.$name                          = "CONFIG_ENET_ICSS1";
-enet_icss2.LargePoolPktCount              = 16;
-enet_icss2.PktInfoOnlyEnable              = true;
-enet_icss2.mode                           = "DUAL MAC";
-enet_icss2.mdioMdcEnable                  = false;
-enet_icss2.dualMacPortSelected            = "ENET_MAC_PORT_2";
-enet_icss2.phyToMacInterfaceMode          = "RGMII";
-enet_icss2.mdioPollEnMask                 = [];
-enet_icss2.mdioMode                       = "MDIO_MODE_NORMAL";
-enet_icss2.txDmaChannel[0].$name          = "ENET_DMA_TX_CH0";
+const ethphy_cpsw_icssg  = scripting.addModule("/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg", {}, false);
+const ethphy_cpsw_icssg1 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg1.$name = "CONFIG_ENET_ETHPHY0";
+enet_icss1.ethphy2       = ethphy_cpsw_icssg1;
+
+enet_icss2.$name                        = "CONFIG_ENET_ICSS1";
+enet_icss2.LargePoolPktCount            = 16;
+enet_icss2.PktInfoOnlyEnable            = true;
+enet_icss2.mode                         = "DUAL MAC";
+enet_icss2.mdioMdcEnable                = false;
+enet_icss2.dualMacPortSelected          = "ENET_MAC_PORT_2";
+enet_icss2.phyToMacInterfaceMode        = "RGMII";
+enet_icss2.mdioPollEnMask               = [];
+enet_icss2.mdioMode                     = "MDIO_MODE_NORMAL";
+enet_icss2.txDmaChannel[0].$name        = "ENET_DMA_TX_CH0";
 enet_icss2.netifInstance.create(1);
-enet_icss2.netifInstance[0].$name         = "NETIF_INST_ID1";
-enet_icss2.rxDmaChannel[0].$name          = "ENET_DMA_RX_CH1";
-enet_icss2.rxDmaChannel[0].PacketsCount   = 16;
+enet_icss2.netifInstance[0].$name       = "NETIF_INST_ID1";
+enet_icss2.rxDmaChannel[0].$name        = "ENET_DMA_RX_CH1";
+enet_icss2.rxDmaChannel[0].PacketsCount = 16;
+
+const ethphy_cpsw_icssg2 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg2.$name = "CONFIG_ENET_ETHPHY1";
+enet_icss2.ethphy3       = ethphy_cpsw_icssg2;
 
 pruicss2.$name                           = "CONFIG_PRU_ICSS1";
 pruicss2.instance                        = "ICSSG1";
-pruicss2.coreClk                         = 250000000;
 enet_icss1.icss                          = pruicss2;
 enet_icss2.icss                          = pruicss2;
 pruicss2.AdditionalICSSSettings[0].$name = "CONFIG_PRU_ICSS_IO2";
@@ -158,38 +174,43 @@ pruicss2.intcMapping[1].$name            = "CONFIG_ICSS1_INTC_MAPPING1";
 pruicss2.intcMapping[1].event            = "53";
 pruicss2.intcMapping[1].channel          = "7";
 
-enet_icss3.$name                          = "CONFIG_ENET_ICSS2";
-enet_icss3.mode                           = "DUAL MAC";
-enet_icss3.PktInfoOnlyEnable              = true;
-enet_icss3.LargePoolPktCount              = 16;
-enet_icss3.instance                       = "ICSSG0";
-enet_icss3.mdioPollEnMask                 = [];
-enet_icss3.mdioMode                       = "MDIO_MODE_NORMAL";
-enet_icss3.phyAddr1                       = 1;
-enet_icss3.txDmaChannel[0].$name          = "ENET_DMA_TX_CH2";
+enet_icss3.$name                        = "CONFIG_ENET_ICSS2";
+enet_icss3.mode                         = "DUAL MAC";
+enet_icss3.PktInfoOnlyEnable            = true;
+enet_icss3.LargePoolPktCount            = 16;
+enet_icss3.instance                     = "ICSSG0";
+enet_icss3.mdioPollEnMask               = [];
+enet_icss3.mdioMode                     = "MDIO_MODE_NORMAL";
+enet_icss3.txDmaChannel[0].$name        = "ENET_DMA_TX_CH2";
 enet_icss3.netifInstance.create(1);
-enet_icss3.netifInstance[0].$name         = "NETIF_INST_ID2";
-enet_icss3.rxDmaChannel[0].$name          = "ENET_DMA_RX_CH4";
-enet_icss3.rxDmaChannel[0].PacketsCount   = 16;
+enet_icss3.netifInstance[0].$name       = "NETIF_INST_ID2";
+enet_icss3.rxDmaChannel[0].$name        = "ENET_DMA_RX_CH4";
+enet_icss3.rxDmaChannel[0].PacketsCount = 16;
 
-enet_icss4.$name                          = "CONFIG_ENET_ICSS3";
-enet_icss4.mode                           = "DUAL MAC";
-enet_icss4.mdioMdcEnable                  = false;
-enet_icss4.dualMacPortSelected            = "ENET_MAC_PORT_2";
-enet_icss4.LargePoolPktCount              = 16;
-enet_icss4.PktInfoOnlyEnable              = true;
-enet_icss4.instance                       = "ICSSG0";
-enet_icss4.mdioPollEnMask                 = [];
-enet_icss4.mdioMode                       = "MDIO_MODE_NORMAL";
-enet_icss4.phyAddr1                       = 1;
-enet_icss4.txDmaChannel[0].$name          = "ENET_DMA_TX_CH3";
+const ethphy_cpsw_icssg3 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg3.$name = "CONFIG_ENET_ETHPHY2";
+enet_icss3.ethphy0       = ethphy_cpsw_icssg3;
+
+enet_icss4.$name                        = "CONFIG_ENET_ICSS3";
+enet_icss4.mode                         = "DUAL MAC";
+enet_icss4.mdioMdcEnable                = false;
+enet_icss4.dualMacPortSelected          = "ENET_MAC_PORT_2";
+enet_icss4.LargePoolPktCount            = 16;
+enet_icss4.PktInfoOnlyEnable            = true;
+enet_icss4.instance                     = "ICSSG0";
+enet_icss4.mdioPollEnMask               = [];
+enet_icss4.mdioMode                     = "MDIO_MODE_NORMAL";
+enet_icss4.txDmaChannel[0].$name        = "ENET_DMA_TX_CH3";
 enet_icss4.netifInstance.create(1);
-enet_icss4.netifInstance[0].$name         = "NETIF_INST_ID3";
-enet_icss4.rxDmaChannel[0].$name          = "ENET_DMA_RX_CH5";
-enet_icss4.rxDmaChannel[0].PacketsCount   = 16;
+enet_icss4.netifInstance[0].$name       = "NETIF_INST_ID3";
+enet_icss4.rxDmaChannel[0].$name        = "ENET_DMA_RX_CH5";
+enet_icss4.rxDmaChannel[0].PacketsCount = 16;
+
+const ethphy_cpsw_icssg4 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg4.$name = "CONFIG_ENET_ETHPHY3";
+enet_icss4.ethphy1       = ethphy_cpsw_icssg4;
 
 pruicss1.$name                           = "CONFIG_PRU_ICSS0";
-pruicss1.coreClk                         = 250000000;
 enet_icss3.icss                          = pruicss1;
 enet_icss4.icss                          = pruicss1;
 pruicss1.AdditionalICSSSettings[0].$name = "CONFIG_PRU_ICSS_IO1";
