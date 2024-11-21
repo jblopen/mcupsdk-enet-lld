@@ -1,17 +1,22 @@
 %%{
-    let module = system.modules["/networking/enet_cpsw/enet_cpsw"];
-    let instance = module.$instances[0];
-    let common = system.getScript("/common");
-    let device = common.getDeviceName();
+    let cpsw_instance = system.modules["/networking/enet_cpsw/enet_cpsw"].$instances[0];
+    let cpswScript = system.getScript("/networking/enet_cpsw/enet_cpsw");
+    let ethphyScript = system.getScript("/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg");
 %%}
+% let common = system.getScript("/common");
+% let device = common.getDeviceName();
 
-% if (instance.customBoardEnable === false) {
-
+% if (cpsw_instance.customBoardEnable === false) {
+% let module = system.modules["/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg"];
+% let instances = module.$instances;
+% let uniqueDevices = ethphyScript.getUniqueLinkedEthphy(module);
+% let linkedInstances = ethphyScript.getLinkedInstances(module);
+% if(linkedInstances.length > 0) {
 #include <stdint.h>
 #include <enet.h>
-#include <networking/enet/core/include/phy/enetphy.h>
-#include <networking/enet/core/include/phy/dp83867.h>
-#include <networking/enet/core/include/phy/dp83869.h>
+% for (let phyDevice of uniqueDevices) {
+#include <`phyDevice.toLowerCase()`.h>
+% }
 #include <enet_apputils.h>
 #include <kernel/dpl/SystemP.h>
 #include <kernel/dpl/AddrTranslateP.h>
@@ -22,9 +27,8 @@
 #include "ti_drivers_config.h"
 #include <board/ioexp/ioexp_tca6424.h>
 
-#define `instance.$name.toUpperCase()`_PHY0_ADDR (`instance.phyAddr1`U)
-#define `instance.$name.toUpperCase()`_PHY1_ADDR (`instance.phyAddr2`U)
-#define ENET_GET_NUM_MAC_ADDR(num) ((num>>3)+1)
+#define ENET_CTRL_MAC_ADDR_MASK     (0xF8U)
+#define ENET_GET_NUM_MAC_ADDR(num)  (((ENET_CTRL_MAC_ADDR_MASK & num)>>3)+1)
 #define ENET_MAC_ADDR_VALIDATE_MASK (0x01U)
 
 #define MSS_CPSW_CONTROL_PORT_MODE_RMII                                   (0x1U)
@@ -36,20 +40,24 @@
 #define IO_EXPANDER_PORT0_DIR_REG (0x0CU)
 #define IO_EXPANDER_I2C_ADDR (0x22U)
 #define ENET_BOARD_NUM_MACADDR_MAX (4U)
-#define I2C_EEPROM_MAC_CTRL_OFFSET (0x40)
-#define I2C_EEPROM_MAC_DATA_OFFSET (0x42)
+#define I2C_EEPROM_MAC_CTRL_OFFSET (0x46)
+#define I2C_EEPROM_MAC_DATA_OFFSET (0x48)
 
 static void EnetBoard_setMacPortIOExpanderCfg(void);
 
 /* PHY drivers */
-extern EnetPhy_Drv gEnetPhyDrvGeneric;
-extern EnetPhy_Drv gEnetPhyDrvDp83867;
+% for (let phyDevice of uniqueDevices){
+extern Phy_DrvObj_t gEnetPhyDrv`common.camelSentence(phyDevice)`;
+%}
+extern Phy_DrvObj_t gEnetPhyDrvGeneric;
 
 /*! \brief All the registered PHY specific drivers. */
-static const EnetPhyDrv_Handle gEnetPhyDrvs[] =
+static const EthPhyDrv_If gEnetPhyDrvs[] =
 {
-    &gEnetPhyDrvDp83867,   /* DP83867 */
-    &gEnetPhyDrvGeneric,   /* Generic PHY - must be last */
+% for (let phyDevice of uniqueDevices){
+    &gEnetPhyDrv`common.camelSentence(phyDevice)`,    /* `phyDevice` */
+%}
+    &gEnetPhyDrvGeneric,    /* Generic PHY - must be last */
 };
 
 const EnetPhy_DrvInfoTbl gEnetPhyDrvTbl =
@@ -78,121 +86,44 @@ static void EnetBoard_enableExternalMux();
 /* ========================================================================== */
 /*                            Global Variables                                */
 /* ========================================================================== */
-
+% for (let idx of linkedInstances) {
 /*!
- * \brief Common Processor Board (CPB) board's DP83867 PHY configuration.
+ * \brief Common Processor Board (CPB) board's `instances[idx].phySelect` PHY configuration.
  */
- 
-static const Dp83867_Cfg gEnetCpbBoard_dp83867PhyCfg =
+% let phyName = (instances[idx].phySelect == "CUSTOM")? (instances[idx].customDeviceName) : (instances[idx].phySelect);
+static const `common.camelSentence(phyName)`_Cfg gEnetCpbBoard_`common.camelSentence(instances[idx].$name)`PhyCfg =
 {
+    % if(instances[idx].skipExtendedConfig == false) {
 /* The delay values are set based on trial and error and not tuned per port of the evm */
-    .txClkShiftEn         = true,
-    .rxClkShiftEn         = true,
-    .txDelayInPs          = 250U,   /* 0.25 ns */
-    .rxDelayInPs          = 2000U,  /* 2.00 ns */
-    .txFifoDepth          = 4U,
-    .impedanceInMilliOhms = 35000,  /* 35 ohms */
-    .idleCntThresh        = 4U,     /* Improves short cable performance */
-    .gpio0Mode            = DP83867_GPIO0_LED3,
-    .gpio1Mode            = DP83867_GPIO1_COL, /* Unused */
-    .ledMode              =
-    {
-        DP83867_LED_LINKED,         /* Unused */
-        DP83867_LED_LINKED_100BTX,
-        DP83867_LED_RXTXACT,
-        DP83867_LED_LINKED_1000BT,
-    },
+	`instances[idx].extendedConfig`
+    % }
 };
+%}
 
-%if (instance.phyToMacInterfaceMode == "RGMII") {
 /*
- * SK AM62Ax LP board configuration.
+ * SK AM62Px LP board configuration.
  *
- * 1 x RGMII PHY connected to `device`
+ * RMII/RGMII PHY connected to `device`
  */
 static const EnetBoard_PortCfg gEnetCpbBoard_`device.replace('-','_')`_EthPort[] =
 {
+% for (let idx of linkedInstances) {
     {    /* "CPSW3G" */
         .enetType = ENET_CPSW_3G,
         .instId   = 0U,
-        .macPort  = ENET_MAC_PORT_1,
-        .mii      = { ENET_MAC_LAYER_GMII, ENET_MAC_SUBLAYER_REDUCED },
+        .macPort  = `instances[idx].peripheral.replace("CPSW", "ENET")`,
+        .mii      = {`cpswScript.getMiiConfig(cpsw_instance).layerType`, `cpswScript.getMiiConfig(cpsw_instance).sublayerType`},
         .phyCfg   =
         {
-            .phyAddr         = `instance.phyAddr1`,
-            .isStrapped      = `instance.isStrappedPhy1`,
-            .skipExtendedCfg = false,
-            .extendedCfg     = &gEnetCpbBoard_dp83867PhyCfg,
-            .extendedCfgSize = sizeof(gEnetCpbBoard_dp83867PhyCfg),
+            .phyAddr         = `instances[idx].phyAddr`,
+            .isStrapped      = `instances[idx].isStrappedPhy`,
+            .skipExtendedCfg = `instances[idx].skipExtendedConfig`,
+			.extendedCfg     = &gEnetCpbBoard_`common.camelSentence(instances[idx].$name)`PhyCfg,
+			.extendedCfgSize = sizeof(gEnetCpbBoard_`common.camelSentence(instances[idx].$name)`PhyCfg)
         },
         .flags    = 0U,
     },
-    {    /* "CPSW3G" */
-        .enetType = ENET_CPSW_3G,
-        .instId   = 0U,
-        .macPort  = ENET_MAC_PORT_2,
-        .mii      = { ENET_MAC_LAYER_GMII, ENET_MAC_SUBLAYER_REDUCED },
-        .phyCfg   =
-        {
-            .phyAddr         = `instance.phyAddr2`,
-            .isStrapped      = `instance.isStrappedPhy2`,
-            .skipExtendedCfg = false,
-            .extendedCfg     = &gEnetCpbBoard_dp83867PhyCfg,
-            .extendedCfgSize = sizeof(gEnetCpbBoard_dp83867PhyCfg),
-        },
-        .flags    = 0U,
-    },
-};
-% }
-/*
- * `device` virtual board used for MAC loopback setup.
- */
-static const EnetBoard_PortCfg gEnetVirtBoard_`device.replace('-','_')`_EthPort[] =
-{
-    {    /* RGMII MAC loopback */
-        .enetType = ENET_CPSW_3G,
-        .instId   = 0U,
-        .macPort  = ENET_MAC_PORT_1,
-        .mii      = { ENET_MAC_LAYER_GMII, ENET_MAC_SUBLAYER_REDUCED },
-        .phyCfg   =
-        {
-            .phyAddr = ENETPHY_INVALID_PHYADDR,
-        },
-        .flags    = 0U,
-    },
-    {    /* RGMII MAC loopback */
-        .enetType = ENET_CPSW_3G,
-        .instId   = 0U,
-        .macPort  = ENET_MAC_PORT_2,
-        .mii      = { ENET_MAC_LAYER_GMII, ENET_MAC_SUBLAYER_REDUCED },
-        .phyCfg   =
-        {
-            .phyAddr = ENETPHY_INVALID_PHYADDR,
-        },
-        .flags    = 0U,
-    },
-    {    /* RMII MAC loopback */
-        .enetType = ENET_CPSW_3G,
-        .instId   = 0U,
-        .macPort  = ENET_MAC_PORT_1,
-        .mii      = { ENET_MAC_LAYER_MII, ENET_MAC_SUBLAYER_REDUCED },
-        .phyCfg   =
-        {
-            .phyAddr = ENETPHY_INVALID_PHYADDR,
-        },
-        .flags    = 0U,
-    },
-    {    /* RMII MAC loopback */
-        .enetType = ENET_CPSW_3G,
-        .instId   = 0U,
-        .macPort  = ENET_MAC_PORT_2,
-        .mii      = { ENET_MAC_LAYER_MII, ENET_MAC_SUBLAYER_REDUCED },
-        .phyCfg   =
-        {
-            .phyAddr = ENETPHY_INVALID_PHYADDR,
-        },
-        .flags    = 0U,
-    },
+%}
 };
 
 /* ========================================================================== */
@@ -217,18 +148,12 @@ static const EnetBoard_PortCfg *EnetBoard_getPortCfg(const EnetBoard_EthPort *et
 {
     const EnetBoard_PortCfg *portCfg = NULL;
 
-    if (ENET_NOT_ZERO(ethPort->boardId & ENETBOARD_CPB_ID))
+    if (ENET_NOT_ZERO(ethPort->boardId & ENETBOARD_CPB_ID) ||
+        ((portCfg == NULL) && ENET_NOT_ZERO(ethPort->boardId & ENETBOARD_LOOPBACK_ID)))
     {
         portCfg = EnetBoard_findPortCfg(ethPort,
                                         gEnetCpbBoard_`device.replace('-','_')`_EthPort,
                                         ENETPHY_ARRAYSIZE(gEnetCpbBoard_`device.replace('-','_')`_EthPort));
-    }
-    if ((portCfg == NULL) &&
-        ENET_NOT_ZERO(ethPort->boardId & ENETBOARD_LOOPBACK_ID))
-    {
-        portCfg = EnetBoard_findPortCfg(ethPort,
-                                        gEnetVirtBoard_`device.replace('-','_')`_EthPort,
-                                        ENETPHY_ARRAYSIZE(gEnetVirtBoard_`device.replace('-','_')`_EthPort));
     }
     return portCfg;
 }
@@ -261,7 +186,7 @@ static const EnetBoard_PortCfg *EnetBoard_findPortCfg(const EnetBoard_EthPort *e
 
 void EnetBoard_getMiiConfig(EnetMacPort_Interface *mii)
 {
-%if (instance.phyToMacInterfaceMode == "RGMII") {
+%if (cpsw_instance.phyToMacInterfaceMode == "RGMII") {
     mii->layerType      = ENET_MAC_LAYER_GMII;
     mii->variantType    = ENET_MAC_VARIANT_FORCED;
 % } else {
@@ -279,26 +204,26 @@ int32_t EnetBoard_setupPorts(EnetBoard_EthPort *ethPorts,
 
     DebugP_assert(numEthPorts == 1);
     DebugP_assert(ethPorts->mii.sublayerType == ENET_MAC_SUBLAYER_REDUCED);
-    
+
     EnetBoard_enableExternalMux();
     /* Override the ENET control set by board lib */
     EnetBoard_setEnetControl(ethPorts->enetType, ethPorts->macPort, &ethPorts->mii);
-    
+
     EnetBoard_setMacPortIOExpanderCfg();
-    
+
     prevLockState = EnetAppUtils_mainMmrCtrl(ENETAPPUTILS_MMR_LOCK1, ENETAPPUTILS_UNLOCK_MMR);
 
     switch(ethPorts->macPort)
     {
         case ENET_MAC_PORT_1:
-%if (instance.phyToMacInterfaceMode == "RGMII") {
+%if (cpsw_instance.phyToMacInterfaceMode == "RGMII") {
             CSL_FINS (regs->ENET1_CTRL, MAIN_CTRL_MMR_CFG0_ENET1_CTRL_PORT_MODE_SEL, MSS_CPSW_CONTROL_PORT_MODE_RGMII);
 % } else {
             CSL_FINS (regs->ENET1_CTRL, MAIN_CTRL_MMR_CFG0_ENET1_CTRL_PORT_MODE_SEL, MSS_CPSW_CONTROL_PORT_MODE_RMII);
-%}           
+%}
             break;
         case ENET_MAC_PORT_2:
-%if (instance.phyToMacInterfaceMode == "RGMII") {       
+%if (cpsw_instance.phyToMacInterfaceMode == "RGMII") {
             CSL_FINS (regs->ENET2_CTRL, MAIN_CTRL_MMR_CFG0_ENET2_CTRL_PORT_MODE_SEL, MSS_CPSW_CONTROL_PORT_MODE_RGMII);
 % } else {
             CSL_FINS (regs->ENET2_CTRL, MAIN_CTRL_MMR_CFG0_ENET2_CTRL_PORT_MODE_SEL, MSS_CPSW_CONTROL_PORT_MODE_RMII);
@@ -372,11 +297,11 @@ static void EnetBoard_setMacPortIOExpanderCfg(void)
     TCA6424_Config  TCA6424_Config;
     TCA6424_Params  TCA6424Params;
     int32_t status  = SystemP_SUCCESS;
-    
+
     TCA6424Params.i2cInstance = 0U;
     TCA6424Params.i2cAddress  = IO_EXP1_ADDR;
     status = TCA6424_open(&TCA6424_Config, &TCA6424Params);
-    
+
     /* !TODO: Change this to a TCA6424 driver API */
     const uint32_t rgmii1RstPin = 8*0 + 1; // PORT 0, PIN 1
 
@@ -392,7 +317,7 @@ static void EnetBoard_setMacPortIOExpanderCfg(void)
     }
     /* Wait for PHY to reset */
     ClockP_usleep(10);
-    
+
     if(status == SystemP_SUCCESS)
     {
         status = TCA6424_setOutput(&TCA6424_Config, rgmii1RstPin,
@@ -402,14 +327,14 @@ static void EnetBoard_setMacPortIOExpanderCfg(void)
     {
         DebugP_logInfo("Unable to reset RGMII1 PHY \r\n");
     }
-    
-    
+
+
     TCA6424Params.i2cInstance = 0U;
     TCA6424Params.i2cAddress  = IO_EXP2_ADDR;
     status = TCA6424_open(&TCA6424_Config, &TCA6424Params);
-    
+
     /* !TODO: Change this to a TCA6424 driver API */
-    const uint32_t rgmii2RstPin = 8*2 + 2; // PORT 2, PIN 2 
+    const uint32_t rgmii2RstPin = 8*2 + 2; // PORT 2, PIN 2
 
     if(status == SystemP_SUCCESS)
     {
@@ -439,7 +364,8 @@ static void EnetBoard_setMacPortIOExpanderCfg(void)
  */
 uint32_t EnetBoard_getId(void)
 {
-    return ENETBOARD_AM62AX_EVM;
+    return ENETBOARD_AM62PX_EVM;
 }
 
+% }
 % }

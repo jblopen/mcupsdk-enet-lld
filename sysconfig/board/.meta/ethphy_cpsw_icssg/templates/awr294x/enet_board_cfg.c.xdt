@@ -113,7 +113,7 @@ static const `common.camelSentence(phyName)`_Cfg gEnetCpbBoard_`common.camelSent
 static const EnetBoard_PortCfg gEnetCpbBoard_`device.replace('-','_')`_EthPort[] =
 {
 % for (let idx of linkedInstances) {
-    {   
+    {
         .enetType = ENET_CPSW_2G,
         .instId   = 0U,
         .macPort  = `instances[idx].peripheral.replace("CPSW", "ENET")`,
