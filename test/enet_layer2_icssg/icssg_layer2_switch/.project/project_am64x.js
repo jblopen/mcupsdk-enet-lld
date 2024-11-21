@@ -4,10 +4,8 @@ let device = "am64x";
 
 const files = {
     common: [
-            "app_extphyconfig.c",
             "enet_layer2_icssg.c",
             "main.c",
-            "enet_custom_board_config.c",
     ],
 };
 

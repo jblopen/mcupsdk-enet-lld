@@ -349,7 +349,6 @@ void EnetMp_mainTask(void *args)
     for(loopCount = 0; loopCount < 5; loopCount++)
     {
         iteration++;
-        Dp83826_resetPHYs();
 
         DebugP_log("==========================\r\n");
         DebugP_log("      MULTIPORT TEST      \r\n");
@@ -463,10 +462,6 @@ static void EnetMp_uartTask()
             else if (option == 'd')
             {
                 EnetMp_enableDscpPriority(gEnetMp.perCtxt, gEnetMp.numPerCtxts);
-            }
-            else if (option == 'R')
-            {
-                Dp83826_resetPHYs();
             }
             else if (option == 'c')
             {

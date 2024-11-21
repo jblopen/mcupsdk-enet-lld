@@ -39,7 +39,6 @@ TARGETS := $(BOOTIMAGE_NAME)
 FILES_common := \
 	app_icssgconfighandler.c \
 	ipc_rpmsg_echo.c \
-	app_extphyconfig.c \
 	app_tcpserver.c \
 	app_main.c \
 	main.c \

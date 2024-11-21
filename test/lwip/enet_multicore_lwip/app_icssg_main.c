@@ -135,8 +135,6 @@ int appMain(void *args)
     DebugP_log("ICSSG LWIP TCP ECHO SERVER\r\n");
     DebugP_log("==========================\r\n");
 
-    Dp83826_resetPHYs();
-
     /* Read MAC Port details and enable clock for each ENET instance */
     for (uint32_t enetInstIdx = 0; enetInstIdx < ENET_SYSCFG_MAX_ENET_INSTANCES; enetInstIdx++)
     {
