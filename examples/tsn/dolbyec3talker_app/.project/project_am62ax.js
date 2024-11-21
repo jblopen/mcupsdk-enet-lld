@@ -109,7 +109,8 @@ const defines_r5f = {
         'GPTP_ENABLED=1',
         'DOLBY_EC3_ENABLED=1',
         'DOLBYEC3_TALKER_ENABLE=1',
-        'AVTP_DIRECT_MODE=1'
+        'AVTP_DIRECT_MODE=1',
+        'DOLBY_SAMPLE_6CHANNELS=1'
     ],
 };
 

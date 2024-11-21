@@ -25,12 +25,14 @@ typedef struct {
 	int read_size;
 	int sent_bytes;
 	uint32_t sent_packets;
+    aes3helper_talkerprocessor_t aes3talker_helper;
 } audio_talker_t;
 
 typedef struct {
 	void (*avtpc_close)(void *avtpc_listener);
 	void *avtpc_listener; /* aaf or iec61883_6 */
     shm_handle shmHandle;
+	aes3helper_listenerprocessor_t aes3listener_helper;
 } audio_listener_t;
 
 audio_talker_t audio_talker;
@@ -43,6 +45,39 @@ typedef struct {
 	int audio_samples; //number of audio samples per AVTP packet
 	char* netdev;
 } conl2_data_t;
+
+// AES3 dummy header
+// Application layer should self-prepare 12 bytes smpte337 preamble
+// Only Pd is input from file size
+static uint8_t smpte_337_preamble[12] =
+{
+    0x96, 0xF8, 0x72, // Pa. (bit from 27 -> 4)
+    0xA5, 0x4E, 0x1F, // Pb. (bit from 27 -> 4)
+    
+    // Pc. First 0x00 data stream = 0, data_type_dependent = 0
+    // Pc. Second byte 0x50 = 01010000b (mode = 2, 24 bit) and 10000b is 16 for Dolby EC3
+    // Pc. Third 0x00 unused
+    0x00, 0x50, 0x00, // Pc. (bit from 27 -> 4)
+    // Pd length code = EC3_SYNC_FRMSIZE * 2 * 8 = 0x001800 (will be set from outside)
+    0x00, 0x00, 0x00, // Pd. (bit from 27 -> 4)
+};
+
+// Application layer should self-prepare 192 bits channel status
+// This is just dummy data
+static uint8_t aes3_channel_status[24] =
+{
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+    0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 
+    0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02 
+};
+
+void set_smpte_preamble_word_length(uint32_t frmsiz)
+{
+    uint32_t w_length = frmsiz * 2 * 8;
+    smpte_337_preamble[9] = (uint8_t)(w_length >> 16);
+    smpte_337_preamble[10] = (uint8_t)(w_length >> 8);
+    smpte_337_preamble[11] = (uint8_t)(w_length >> 0);
+}
 
 static int audio_aaf_avtp_push_packet(uint8_t *payload, int plsize, avbtp_rcv_cb_info_t *cbinfo, void *cbdata);
 
@@ -74,6 +109,11 @@ static int audio_aaf_talker_init(conl2_basic_conparas_t* basic_param, aaf_avtpc_
     audio_talker.avtpc_close = audio_aaf_avtpc_talker_close;
 	audio_talker.avtpc_send = audio_aaf_avtpc_talker_send;
 
+    init_aes3talkerprocessor(&audio_talker.aes3talker_helper);
+    set_smpte_preamble_word_length(EC3_SYNC_FRMSIZE);
+    set_tx_smpte_preamle(&audio_talker.aes3talker_helper, &smpte_337_preamble[0]);
+    set_tx_channelstatus(&audio_talker.aes3talker_helper, &aes3_channel_status[0]);
+
 	return 0;
 }
 
@@ -85,6 +125,7 @@ static int audio_aaf_listener_init(conl2_basic_conparas_t* basic_param, aaf_avtp
 		return -1;
 	}
     audio_listener.avtpc_close=audio_aaf_avtpc_listener_close;
+    init_aes3listenerprocessor(&audio_listener.aes3listener_helper);
     return 0;
 }
 
@@ -142,7 +183,6 @@ int start_aaf_dolby_ec3_talker(char* netdev)
     // |                6 |  48 ms | approx. 34.8 ms |           32 ms |
     // +------------------+--------+-----------------+-----------------+
     period_packet = 32 * UB_MSEC_NS; // ns
-    set_smpte_preamble_word_length(EC3_SYNC_FRMSIZE);
 
     if (audio_aaf_talker_init(&basic_param, &aes3_org_info) == -1) return -1;
 
@@ -154,26 +194,54 @@ int start_aaf_dolby_ec3_talker(char* netdev)
     {
         for (int sync_frame=0; sync_frame<total_dolby_sync_frame; sync_frame++)
         {
-            uint8_t* audio_buf = &payload_sample[sync_frame * dolby_sync_frame_size_byte];
-            syncframe_to_aes3aaf(audio_buf, dolby_sync_frame_size_byte);
-
-            uint8_t* send_data = get_frameaaf();
-            int datasize = AES3_CARRY_SMPTE_DATA_SIZE;
-
-            // DPRINT("%s:\n", __func__);
-            // ub_hexdump(true, true, &send_data[0], 32, 0x00); // first 16 bytes
-            // DPRINT("\n");
-
             pts = gptpmasterclock_getts64();
-            if (audio_talker.avtpc_send( audio_talker.avtpc_talker,
-                                    pts + basic_param.send_ahead_ts,
-                                    &send_data[0],
-                                    datasize) < 0)
-            {
-                return -1;
+            uint8_t* audio_buf = &payload_sample[sync_frame * dolby_sync_frame_size_byte];
+            uint8_t* send_data = dolbysyncframe_to_aes3aaf(&audio_talker.aes3talker_helper, audio_buf, dolby_sync_frame_size_byte);
+
+            int datasize = AES3_CARRY_SMPTE_DATA_SIZE;
+            if (datasize < 1500) // no need fragments
+			{
+
+                // DPRINT("%s:\n", __func__);
+                // ub_hexdump(true, true, &send_data[0], 32, 0x00); // first 16 bytes 
+                // DPRINT("\n");
+
+                if (audio_talker.avtpc_send( audio_talker.avtpc_talker, 
+                                        pts + basic_param.send_ahead_ts,
+                                        &send_data[0], 
+                                        datasize) < 0) 
+                {
+                    return -1;
+                }
+                audio_talker.sent_packets++;
+                audio_talker.sent_bytes += datasize;
             }
-            audio_talker.sent_packets++;
-            audio_talker.sent_bytes += datasize;
+            else // fragmented needed
+            {
+                int send_data_index = 0;
+				int fragment_no =0;
+                // currently fragment size is 1000/8=125 frames
+                // In case of 6 channels aes3, data size = 1792+12=1804bytes audio+preamble
+                // Convert to AES3 actual data size = ( 1804 / 6 ) * 8 = 2405.3333 bytes
+                // => below loop will run 2405.3333/1000=3 times
+				static const int aes3_fragment_data_size = 1000; // bytes
+                while(send_data_index<datasize)
+				{
+					if (audio_talker.avtpc_send(
+						                audio_talker.avtpc_talker, 
+                                        pts + basic_param.send_ahead_ts,
+						                &send_data[send_data_index], 
+                                        aes3_fragment_data_size) < 0) {
+						return -1;
+					}
+					send_data_index+=aes3_fragment_data_size;
+					fragment_no++;
+				}
+				(void)fragment_no;
+                audio_talker.sent_packets+=fragment_no;
+                audio_talker.sent_bytes += datasize;
+                // DPRINT("Data size: %d. Send %d fragments\n", datasize, fragment_no);
+            }
 
             ets = ub_mt_gettime64();
             tsdiff = ets - sts;
@@ -189,6 +257,7 @@ int start_aaf_dolby_ec3_talker(char* netdev)
 
             pts += period_packet;
             gptpmasterclock_wait_until_ts64(pts, 0, period_packet);
+            
         }
     }
 
@@ -214,11 +283,11 @@ static int audio_aaf_avtp_push_packet(uint8_t *payload, int plsize,
 
     // if (!aaf_avtpc_listener_checkts(rsdinfo, NULL)){pts = rsdinfo->timestamp;}
 
-    handle_aes3_rx(payload, plsize);
-    smpte337_frame_t* fram337 = get_frame337();
-    if (fram337->word_length > 0) // meant we extracted frame337 done
+    AES3_RX_RET depayRet = fill_aes3aaf_rx(&audio_listener->aes3listener_helper, payload, plsize);
+    if (depayRet==RX_DONE)
     {
-        shm_write(audio_listener->shmHandle, fram337->buffer, SMPTE_FRAME_SIZE);
+        smpte337_frame_t* fram337 = get_frame337rx(&audio_listener->aes3listener_helper);
+		shm_write(audio_listener->shmHandle, fram337->buffer, SMPTE_FRAME_SIZE);
         // UB_LOG(UBL_INFO,"%s: pts:%" PRId64 ", frate: %d\n", __func__, pts, aesinfo.frate);
         UB_LOG(UBL_INFO,"[RX] frame337 wlen=%d bits\n", fram337->word_length);
         // ub_hexdump(true, false, &fram337->buffer[0], 12, 0);

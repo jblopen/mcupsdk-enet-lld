@@ -15,6 +15,7 @@ const files = {
         "main.c",
         "sample_audio.c",
         "aaf_dolby_ec3_app.c",
+        "shm_cirbuf.c",
     ],
 };
 

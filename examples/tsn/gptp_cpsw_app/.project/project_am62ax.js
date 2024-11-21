@@ -60,11 +60,11 @@ const includes_freertos_r5f = {
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_unibase",
-        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stacktsn_gptp/tilld",
+        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp/tilld",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_combase/tilld/sitara",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_gptp/gptpconf",
         "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_uniconf",
-        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stacktsn_uniconf/yangs",
+        "${MCU_PLUS_SDK_PATH}/source/networking/tsn/tsn-stack/tsn_uniconf/yangs",
     ],
 };
 
