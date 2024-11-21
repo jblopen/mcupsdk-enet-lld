@@ -35,6 +35,8 @@ const libdirs_nortos = {
 
 const includes_nortos_r5f = {
     common: [
+        "${MCU_PLUS_SDK_PATH}/source/board/ethphy/enet/rtos_drivers/include",
+        "${MCU_PLUS_SDK_PATH}/source/board/ethphy/port",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils/include",
         "${MCU_PLUS_SDK_PATH}/source/networking/enet/core",
@@ -56,6 +58,7 @@ const includes_nortos_r5f = {
 const libs_nortos_r5f = {
     common: [
         "nortos.am273x.r5f.ti-arm-clang.${ConfigName}.lib",
+        "board.am273x.r5f.ti-arm-clang.${ConfigName}.lib",
         "drivers.am273x.r5f.ti-arm-clang.${ConfigName}.lib",
         "enet-cpsw.am273x.r5f.ti-arm-clang.${ConfigName}.lib",
         "lwipif-cpsw-nortos.am273x.r5f.ti-arm-clang.${ConfigName}.lib",

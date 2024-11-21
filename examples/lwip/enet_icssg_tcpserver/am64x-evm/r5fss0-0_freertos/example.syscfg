@@ -1,8 +1,9 @@
 /**
  * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
  * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
- * @cliArgs --device "AM64x" --package "ALV" --part "Default" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
- * @versions {"tool":"1.20.0+3587"}
+ * @cliArgs --device "AM64x" --part "Default" --package "ALV" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
+ * @v2CliArgs --device "AM6442" --package "FCBGA (ALV)" --variant "AM6442-D" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
+ * @versions {"tool":"1.21.2+3837"}
  */
 
 /**
@@ -111,6 +112,11 @@ enet_icss1.netifInstance[0].$name    = "NETIF_INST_ID0";
 enet_icss1.PRU_ICSSG1_RGMII1.$assign = "PRU_ICSSG1_RGMII1";
 enet_icss1.rxDmaChannel[0].$name     = "ENET_DMA_RX_CH0";
 
+const ethphy_cpsw_icssg  = scripting.addModule("/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg", {}, false);
+const ethphy_cpsw_icssg1 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg1.$name = "CONFIG_ENET_ETHPHY0";
+enet_icss1.ethphy2       = ethphy_cpsw_icssg1;
+
 enet_icss2.$name                  = "CONFIG_ENET_ICSS1";
 enet_icss2.mode                   = "DUAL MAC";
 enet_icss2.phyToMacInterfaceMode  = "RGMII";
@@ -121,6 +127,10 @@ enet_icss2.txDmaChannel[0].$name  = "ENET_DMA_TX_CH1";
 enet_icss2.netifInstance.create(1);
 enet_icss2.netifInstance[0].$name = "NETIF_INST_ID1";
 enet_icss2.rxDmaChannel[0].$name  = "ENET_DMA_RX_CH1";
+
+const ethphy_cpsw_icssg2 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg2.$name = "CONFIG_ENET_ETHPHY1";
+enet_icss2.ethphy3       = ethphy_cpsw_icssg2;
 
 enet_icss2.icss                          = pruicss1;
 enet_icss1.icss                          = pruicss1;

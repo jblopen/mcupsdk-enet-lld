@@ -34,6 +34,8 @@ const libdirs_freertos = {
 
 const includes_freertos_r5f = {
     common: [
+        "${MCU_PLUS_SDK_PATH}/source/board/ethphy/enet/rtos_drivers/include",
+        "${MCU_PLUS_SDK_PATH}/source/board/ethphy/port",
         "${MCU_PLUS_SDK_PATH}/source/kernel/freertos/FreeRTOS-Kernel/include",
         "${MCU_PLUS_SDK_PATH}/source/kernel/freertos/portable/TI_ARM_CLANG/ARM_CR5F",
         "${MCU_PLUS_SDK_PATH}/source/kernel/freertos/config/awr294x/r5f",
@@ -56,6 +58,7 @@ const libs_freertos_r5f = {
         "freertos.awr294x.r5f.ti-arm-clang.${ConfigName}.lib",
         "drivers.awr294x.r5f.ti-arm-clang.${ConfigName}.lib",
         "enet-cpsw.awr294x.r5f.ti-arm-clang.${ConfigName}.lib",
+        "board.awr294x.r5f.ti-arm-clang.${ConfigName}.lib",
     ],
 };
 

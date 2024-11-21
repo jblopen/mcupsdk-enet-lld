@@ -1,8 +1,9 @@
 /**
  * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
  * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
- * @cliArgs --device "AM64x" --package "ALV" --part "Default" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
- * @versions {"tool":"1.20.0+3587"}
+ * @cliArgs --device "AM64x" --part "Default" --package "ALV" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
+ * @v2CliArgs --device "AM6442" --package "FCBGA (ALV)" --variant "AM6442-D" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
+ * @versions {"tool":"1.21.2+3837"}
  */
 
 /**
@@ -18,7 +19,7 @@ const i2c2       = i2c.addInstance();
 const pruicss    = scripting.addModule("/drivers/pruicss/pruicss", {}, false);
 const pruicss1   = pruicss.addInstance();
 const debug_log  = scripting.addModule("/kernel/dpl/debug_log");
-const dpl_cfg = scripting.addModule("/kernel/dpl/dpl_cfg");
+const dpl_cfg    = scripting.addModule("/kernel/dpl/dpl_cfg");
 const mpu_armv7  = scripting.addModule("/kernel/dpl/mpu_armv7", {}, false);
 const mpu_armv71 = mpu_armv7.addInstance();
 const mpu_armv72 = mpu_armv7.addInstance();
@@ -133,6 +134,15 @@ enet_icss1.netifInstance.create(1);
 enet_icss1.netifInstance[0].$name       = "NETIF_INST_ID0";
 enet_icss1.netifInstance[0].rxDmaChNum  = ["0","2"];
 enet_icss1.PRU_ICSSG1_RGMII1.$assign    = "PRU_ICSSG1_RGMII1";
+
+const ethphy_cpsw_icssg  = scripting.addModule("/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg", {}, false);
+const ethphy_cpsw_icssg1 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg1.$name = "CONFIG_ENET_ETHPHY0";
+enet_icss1.ethphy2       = ethphy_cpsw_icssg1;
+
+const ethphy_cpsw_icssg2 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg2.$name = "CONFIG_ENET_ETHPHY1";
+enet_icss1.ethphy3       = ethphy_cpsw_icssg2;
 
 enet_icss1.icss                          = pruicss1;
 pruicss1.$name                           = "CONFIG_PRU_ICSS1";

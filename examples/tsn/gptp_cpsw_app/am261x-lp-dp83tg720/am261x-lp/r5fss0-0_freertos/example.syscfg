@@ -3,7 +3,7 @@
  * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
  * @cliArgs --device "AM261x_ZFG" --part "AM2612" --package "ZFG" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
  * @v2CliArgs --device "AM2612" --package "NFBGA (ZFG)" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
- * @versions {"tool":"1.21.999+161"}
+ * @versions {"tool":"1.21.2+3837"}
  */
 
 /**
@@ -252,6 +252,11 @@ enet_cpsw1.rxDmaChannel[0].PacketsCount = 16;
 enet_cpsw1.rxDmaChannel[1].$name        = "ENET_DMA_RX_CH_PTP";
 enet_cpsw1.rxDmaChannel[1].PacketsCount = 16;
 enet_cpsw1.rxDmaChannel[1].macAddrCount = 0;
+
+const ethphy_cpsw_icssg  = scripting.addModule("/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg", {}, false);
+const ethphy_cpsw_icssg1 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg1.$name = "CONFIG_ENET_ETHPHY0";
+enet_cpsw1.ethphy1       = ethphy_cpsw_icssg1;
 
 /**
  * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future

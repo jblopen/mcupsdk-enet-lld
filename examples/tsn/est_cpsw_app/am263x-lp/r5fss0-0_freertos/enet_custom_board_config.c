@@ -39,7 +39,7 @@
 #include <stdint.h>
 #include <enet.h>
 #include <networking/enet/core/include/phy/enetphy.h>
-#include <networking/enet/core/include/phy/dp83869.h>
+#include <dp83869.h>
 #include <enet_apputils.h>
 #include <enet_appboardutils.h>
 #include <drivers/hw_include/cslr_soc.h>
@@ -55,11 +55,11 @@
 
 
 /* PHY drivers */
-extern EnetPhy_Drv gEnetPhyDrvGeneric;
-extern EnetPhy_Drv gEnetPhyDrvDp83869;
+extern Phy_DrvObj_t gEnetPhyDrvGeneric;
+extern Phy_DrvObj_t gEnetPhyDrvDp83869;
 
 /*! \brief All the registered PHY specific drivers. */
-static const EnetPhyDrv_Handle gEnetPhyDrvs[] =
+static const EthPhyDrv_If gEnetPhyDrvs[] =
 {
     &gEnetPhyDrvDp83869,   /* DP83869 */
     &gEnetPhyDrvGeneric,   /* Generic PHY - must be last */

@@ -39,7 +39,7 @@
 #include <stdint.h>
 #include <enet.h>
 #include <networking/enet/core/include/phy/enetphy.h>
-#include <networking/enet/core/include/phy/dp83867.h>
+#include <board/ethphy/enet/dp83867.h>
 #include <enet_apputils.h>
 #include <drivers/hw_include/cslr_soc.h>
 #include <networking/enet/core/src/phy/enetphy_priv.h>

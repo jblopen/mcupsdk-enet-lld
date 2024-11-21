@@ -39,7 +39,7 @@
 #include <stdint.h>
 #include <enet.h>
 #include <networking/enet/core/include/phy/enetphy.h>
-#include <networking/enet/core/include/phy/dp83867.h>
+#include <dp83867.h>
 #include <enet_apputils.h>
 #include <drivers/hw_include/cslr_soc.h>
 #include <networking/enet/core/src/phy/enetphy_priv.h>
@@ -48,11 +48,11 @@
 #if (ENETBOARD_SYSCFG_CUSTOM_BOARD == 1)
 
 /* PHY drivers */
-extern EnetPhy_Drv gEnetPhyDrvGeneric;
-extern EnetPhy_Drv gEnetPhyDrvDp83867;
+extern Phy_DrvObj_t gEnetPhyDrvGeneric;
+extern Phy_DrvObj_t gEnetPhyDrvDp83867;
 
 /*! \brief All the registered PHY specific drivers. */
-static const EnetPhyDrv_Handle gEnetPhyDrvs[] =
+static const EthPhyDrv_If gEnetPhyDrvs[] =
 {
     &gEnetPhyDrvDp83867,   /* DP83867 */
     &gEnetPhyDrvGeneric,   /* Generic PHY - must be last */

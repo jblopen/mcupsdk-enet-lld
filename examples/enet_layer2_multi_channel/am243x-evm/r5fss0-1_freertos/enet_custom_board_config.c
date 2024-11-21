@@ -33,8 +33,8 @@
 #include <stdint.h>
 #include <enet.h>
 #include <networking/enet/core/include/phy/enetphy.h>
-#include <networking/enet/core/include/phy/dp83867.h>
-#include <networking/enet/core/include/phy/dp83869.h>
+#include <dp83867.h>
+#include <dp83869.h>
 #include <enet_apputils.h>
 #include <kernel/dpl/SystemP.h>
 #include <kernel/dpl/AddrTranslateP.h>
@@ -58,14 +58,14 @@
 static void EnetBoard_setMacPort2IOExpanderCfg(void);
 
 /* PHY drivers */
-extern EnetPhy_Drv gEnetPhyDrvGeneric;
-extern EnetPhy_Drv gEnetPhyDrvDp83822;
-extern EnetPhy_Drv gEnetPhyDrvDp83867;
-extern EnetPhy_Drv gEnetPhyDrvDp83869;
-extern EnetPhy_Drv gEnetPhyDrvVsc8514;
+extern Phy_DrvObj_t gEnetPhyDrvGeneric;
+extern Phy_DrvObj_t gEnetPhyDrvDp83822;
+extern Phy_DrvObj_t gEnetPhyDrvDp83867;
+extern Phy_DrvObj_t gEnetPhyDrvDp83869;
+extern Phy_DrvObj_t gEnetPhyDrvVsc8514;
 
 /*! \brief All the registered PHY specific drivers. */
-static const EnetPhyDrv_Handle gEnetPhyDrvs[] =
+static const EthPhyDrv_If gEnetPhyDrvs[] =
 {
     &gEnetPhyDrvDp83867,   /* DP83867 */
     &gEnetPhyDrvDp83869,   /* DP83869 */

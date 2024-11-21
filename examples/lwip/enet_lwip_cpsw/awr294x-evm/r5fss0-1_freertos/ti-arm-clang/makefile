@@ -74,6 +74,8 @@ FILES_PATH_common = \
 INCLUDES_common := \
 	-I${CG_TOOL_ROOT}/include/c \
 	-I${MCU_PLUS_SDK_PATH}/source \
+	-I${MCU_PLUS_SDK_PATH}/source/board/ethphy/enet/rtos_drivers/include \
+	-I${MCU_PLUS_SDK_PATH}/source/board/ethphy/port \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/FreeRTOS-Kernel/include \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/portable/TI_ARM_CLANG/ARM_CR5F \
 	-I${MCU_PLUS_SDK_PATH}/source/kernel/freertos/config/awr294x/r5f \
@@ -145,6 +147,7 @@ LIBS_PATH_common = \
 LIBS_common = \
 	-lfreertos.awr294x.r5f.ti-arm-clang.${ConfigName}.lib \
 	-ldrivers.awr294x.r5f.ti-arm-clang.${ConfigName}.lib \
+	-lboard.awr294x.r5f.ti-arm-clang.${ConfigName}.lib \
 	-lenet-cpsw.awr294x.r5f.ti-arm-clang.${ConfigName}.lib \
 	-llwipif-cpsw-freertos.awr294x.r5f.ti-arm-clang.${ConfigName}.lib \
 	-llwip-freertos.awr294x.r5f.ti-arm-clang.${ConfigName}.lib \
@@ -172,6 +175,7 @@ LNKOPTFLAGS_release = \
 LIBS_NAME = \
 	freertos.awr294x.r5f.ti-arm-clang.${ConfigName}.lib \
 	drivers.awr294x.r5f.ti-arm-clang.${ConfigName}.lib \
+	board.awr294x.r5f.ti-arm-clang.${ConfigName}.lib \
 	enet-cpsw.awr294x.r5f.ti-arm-clang.${ConfigName}.lib \
 	lwipif-cpsw-freertos.awr294x.r5f.ti-arm-clang.${ConfigName}.lib \
 	lwip-freertos.awr294x.r5f.ti-arm-clang.${ConfigName}.lib \

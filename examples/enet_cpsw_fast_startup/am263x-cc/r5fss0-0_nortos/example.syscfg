@@ -1,44 +1,48 @@
 /**
  * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
  * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
- * @cliArgs --device "AM263x_beta" --package "ZCZ" --part "AM263x" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
- * @versions {"tool":"1.20.0+3587"}
+ * @cliArgs --device "AM263x_beta" --part "AM263x" --package "ZCZ" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
+ * @v2CliArgs --device "AM2631-Q1" --package "NFBGA (ZCZ)" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
+ * @versions {"tool":"1.21.2+3837"}
  */
 
 /**
  * Import the modules used in this configuration.
  */
-const eeprom          = scripting.addModule("/board/eeprom/eeprom", {}, false);
-const eeprom1         = eeprom.addInstance();
-const i2c             = scripting.addModule("/drivers/i2c/i2c", {}, false);
-const i2c1            = i2c.addInstance();
-const i2c2            = i2c.addInstance();
-const debug_log       = scripting.addModule("/kernel/dpl/debug_log");
-const dpl_cfg = scripting.addModule("/kernel/dpl/dpl_cfg");
-const mpu_armv7       = scripting.addModule("/kernel/dpl/mpu_armv7", {}, false);
-const mpu_armv71      = mpu_armv7.addInstance();
-const mpu_armv72      = mpu_armv7.addInstance();
-const mpu_armv73      = mpu_armv7.addInstance();
-const mpu_armv74      = mpu_armv7.addInstance();
-const mpu_armv75      = mpu_armv7.addInstance();
-const default_linker  = scripting.addModule("/memory_configurator/default_linker", {}, false);
-const default_linker1 = default_linker.addInstance();
-const general         = scripting.addModule("/memory_configurator/general", {}, false);
-const general1        = general.addInstance();
-const region          = scripting.addModule("/memory_configurator/region", {}, false);
-const region1         = region.addInstance();
-const section         = scripting.addModule("/memory_configurator/section", {}, false);
-const section1        = section.addInstance();
-const section2        = section.addInstance();
-const section3        = section.addInstance();
-const section4        = section.addInstance();
-const section5        = section.addInstance();
-const section6        = section.addInstance();
-const section7        = section.addInstance();
-const section8        = section.addInstance();
-const section9        = section.addInstance();
-const enet_cpsw       = scripting.addModule("/networking/enet_cpsw/enet_cpsw", {}, false);
-const enet_cpsw1      = enet_cpsw.addInstance();
+const eeprom             = scripting.addModule("/board/eeprom/eeprom", {}, false);
+const eeprom1            = eeprom.addInstance();
+const ethphy_cpsw_icssg  = scripting.addModule("/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg", {}, false);
+const ethphy_cpsw_icssg1 = ethphy_cpsw_icssg.addInstance();
+const ethphy_cpsw_icssg2 = ethphy_cpsw_icssg.addInstance();
+const i2c                = scripting.addModule("/drivers/i2c/i2c", {}, false);
+const i2c1               = i2c.addInstance();
+const i2c2               = i2c.addInstance();
+const debug_log          = scripting.addModule("/kernel/dpl/debug_log");
+const dpl_cfg            = scripting.addModule("/kernel/dpl/dpl_cfg");
+const mpu_armv7          = scripting.addModule("/kernel/dpl/mpu_armv7", {}, false);
+const mpu_armv71         = mpu_armv7.addInstance();
+const mpu_armv72         = mpu_armv7.addInstance();
+const mpu_armv73         = mpu_armv7.addInstance();
+const mpu_armv74         = mpu_armv7.addInstance();
+const mpu_armv75         = mpu_armv7.addInstance();
+const default_linker     = scripting.addModule("/memory_configurator/default_linker", {}, false);
+const default_linker1    = default_linker.addInstance();
+const general            = scripting.addModule("/memory_configurator/general", {}, false);
+const general1           = general.addInstance();
+const region             = scripting.addModule("/memory_configurator/region", {}, false);
+const region1            = region.addInstance();
+const section            = scripting.addModule("/memory_configurator/section", {}, false);
+const section1           = section.addInstance();
+const section2           = section.addInstance();
+const section3           = section.addInstance();
+const section4           = section.addInstance();
+const section5           = section.addInstance();
+const section6           = section.addInstance();
+const section7           = section.addInstance();
+const section8           = section.addInstance();
+const section9           = section.addInstance();
+const enet_cpsw          = scripting.addModule("/networking/enet_cpsw/enet_cpsw", {}, false);
+const enet_cpsw1         = enet_cpsw.addInstance();
 
 /**
  * Write custom configuration values to the imported modules.
@@ -234,21 +238,26 @@ enet_cpsw1.RtosVariant                  = "NoRTOS";
 enet_cpsw1.macOnlyEn_hostPort           = true;
 enet_cpsw1.macOnlyEn_macPort1           = true;
 enet_cpsw1.macOnlyEn_macPort2           = true;
-enet_cpsw1.isStrappedPhy1               = true;
-enet_cpsw1.isStrappedPhy2               = true;
 enet_cpsw1.hostportRxCsumOffloadEn      = false;
 enet_cpsw1.cptsHostRxTsEn               = false;
 enet_cpsw1.macport1LinkSpeed            = "ENET_SPEED_100MBIT";
 enet_cpsw1.macport1LinkDuplexity        = "ENET_DUPLEX_FULL";
 enet_cpsw1.macport2LinkDuplexity        = "ENET_DUPLEX_FULL";
 enet_cpsw1.macport2LinkSpeed            = "ENET_SPEED_100MBIT";
+enet_cpsw1.RGMII1.$assign               = "RGMII1";
+enet_cpsw1.RGMII2.$assign               = "RGMII2";
 enet_cpsw1.txDmaChannel[0].$name        = "ENET_DMA_TX_CH0";
 enet_cpsw1.txDmaChannel[0].PacketsCount = 5;
 enet_cpsw1.rxDmaChannel[0].$name        = "ENET_DMA_RX_CH0";
 enet_cpsw1.rxDmaChannel[0].PacketsCount = 5;
-enet_cpsw1.$name              = "CONFIG_ENET_CPSW0";
-enet_cpsw1.RGMII1.$assign     = "RGMII1";
-enet_cpsw1.RGMII2.$assign     = "RGMII2";
+
+ethphy_cpsw_icssg1.$name         = "CONFIG_ENET_ETHPHY0";
+enet_cpsw1.ethphy1               = ethphy_cpsw_icssg1;
+ethphy_cpsw_icssg1.isStrappedPhy = true;
+
+ethphy_cpsw_icssg2.$name         = "CONFIG_ENET_ETHPHY1";
+enet_cpsw1.ethphy2               = ethphy_cpsw_icssg2;
+ethphy_cpsw_icssg2.isStrappedPhy = true;
 
 /**
  * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future

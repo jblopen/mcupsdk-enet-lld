@@ -3,7 +3,7 @@
  * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
  * @cliArgs --device "AM261x_ZFG" --part "AM2612" --package "ZFG" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
  * @v2CliArgs --device "AM2612" --package "NFBGA (ZFG)" --context "r5fss0-0" --product "MCU_PLUS_SDK@07.03.01"
- * @versions {"tool":"1.21.999+161"}
+ * @versions {"tool":"1.21.2+3837"}
  */
 
 /**
@@ -237,10 +237,6 @@ enet_cpsw1.LargePoolPktCount            = 128;
 enet_cpsw1.macport1LinkDuplexity        = "ENET_DUPLEX_FULL";
 enet_cpsw1.macport1LinkSpeed            = "ENET_SPEED_1GBIT";
 enet_cpsw1.DisableMacPort2              = true;
-enet_cpsw1.txDmaChannel[0].$name        = "ENET_DMA_TX_CH0";
-enet_cpsw1.txDmaChannel[0].PacketsCount = 64;
-enet_cpsw1.rxDmaChannel[0].$name        = "ENET_DMA_RX_CH0";
-enet_cpsw1.rxDmaChannel[0].PacketsCount = 64;
 enet_cpsw1.RGMII1.$assign               = "RGMII1";
 enet_cpsw1.RGMII2.RD0.$used             = false;
 enet_cpsw1.RGMII2.RD1.$used             = false;
@@ -254,6 +250,15 @@ enet_cpsw1.RGMII2.TD2.$used             = false;
 enet_cpsw1.RGMII2.TD3.$used             = false;
 enet_cpsw1.RGMII2.TX_CTL.$used          = false;
 enet_cpsw1.RGMII2.TXC.$used             = false;
+enet_cpsw1.txDmaChannel[0].$name        = "ENET_DMA_TX_CH0";
+enet_cpsw1.txDmaChannel[0].PacketsCount = 64;
+enet_cpsw1.rxDmaChannel[0].$name        = "ENET_DMA_RX_CH0";
+enet_cpsw1.rxDmaChannel[0].PacketsCount = 64;
+
+const ethphy_cpsw_icssg  = scripting.addModule("/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg", {}, false);
+const ethphy_cpsw_icssg1 = ethphy_cpsw_icssg.addInstance({}, false);
+ethphy_cpsw_icssg1.$name = "CONFIG_ENET_ETHPHY0";
+enet_cpsw1.ethphy1       = ethphy_cpsw_icssg1;
 
 /**
  * Pinmux solution for unlocked pins/peripherals. This ensures that minor changes to the automatic solver in a future

@@ -64,6 +64,8 @@ FILES_PATH_common = \
 INCLUDES_common := \
 	-I${CG_TOOL_ROOT}/include/c \
 	-I${MCU_PLUS_SDK_PATH}/source \
+	-I${MCU_PLUS_SDK_PATH}/source/board/ethphy/enet/rtos_drivers/include \
+	-I${MCU_PLUS_SDK_PATH}/source/board/ethphy/port \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core/utils/include \
 	-I${MCU_PLUS_SDK_PATH}/source/networking/enet/core \
@@ -129,6 +131,7 @@ LIBS_PATH_common = \
 
 LIBS_common = \
 	-lnortos.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
+	-lboard.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
 	-ldrivers.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
 	-lenet-cpsw.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
 	-llwipif-cpsw-nortos.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
@@ -149,6 +152,7 @@ LFLAGS_common = \
 
 LIBS_NAME = \
 	nortos.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
+	board.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
 	drivers.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
 	enet-cpsw.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
 	lwipif-cpsw-nortos.am273x.r5f.ti-arm-clang.${ConfigName}.lib \
