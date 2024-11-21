@@ -67,6 +67,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "phy_common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -214,22 +215,22 @@ typedef enum EnetPhy_Magic_e
 typedef enum EnetPhy_Mii_e
 {
     /*! \brief MII interface */
-    ENETPHY_MAC_MII_MII = 0U,
+    ENETPHY_MAC_MII_MII = PHY_MAC_MII_MII,
 
     /*! \brief RMII interface */
-    ENETPHY_MAC_MII_RMII,
+    ENETPHY_MAC_MII_RMII = PHY_MAC_MII_RMII,
 
     /*! \brief GMII interface */
-    ENETPHY_MAC_MII_GMII,
+    ENETPHY_MAC_MII_GMII = PHY_MAC_MII_GMII,
 
     /*! \brief RGMII interface */
-    ENETPHY_MAC_MII_RGMII,
+    ENETPHY_MAC_MII_RGMII = PHY_MAC_MII_RGMII,
 
     /*! \brief SGMII interface */
-    ENETPHY_MAC_MII_SGMII,
+    ENETPHY_MAC_MII_SGMII = PHY_MAC_MII_SGMII,
 
     /*! \brief QSGMII interface */
-    ENETPHY_MAC_MII_QSGMII,
+    ENETPHY_MAC_MII_QSGMII = PHY_MAC_MII_QSGMII,
 } EnetPhy_Mii;
 
 /*!
@@ -524,11 +525,6 @@ typedef struct EnetPhy_Mdio_s
 typedef EnetPhy_Mdio *EnetPhy_MdioHandle;
 
 /*!
- * \brief PHY specific driver handle.
- */
-typedef struct EnetPhy_Drv_s *EnetPhyDrv_Handle;
-
-/*!
  * \brief PHY driver state-machine states.
  */
 typedef enum EnetPhy_FsmState_e
@@ -654,7 +650,7 @@ typedef struct EnetPhy_Obj_s
     uint32_t reqLinkCaps;
 
     /*! PHY driver */
-    EnetPhyDrv_Handle hDrv;
+    EthPhyDrv_If hDrvIf;
 
     /*! Magic number indicating that this object is in use */
     EnetPhy_Magic magic;
@@ -807,13 +803,13 @@ int32_t EnetPhy_getLinkCfg(EnetPhy_Handle hPhy,
  *
  * Reads a PHY register. It's not meant for extended registers.
  *
- * \param hPhy     PHY device handle
+ * \param pArgs     PHY device handle
  * \param reg      Register number
  * \param val      Pointer to the read value
  *
  * \return \ref EnetPhy_ErrorCodes
  */
-int32_t EnetPhy_readReg(EnetPhy_Handle hPhy,
+int32_t EnetPhy_readReg(void *pArgs,
                         uint32_t reg,
                         uint16_t *val);
 
@@ -822,13 +818,13 @@ int32_t EnetPhy_readReg(EnetPhy_Handle hPhy,
  *
  * Writes a PHY register. It's not meant for extended registers.
  *
- * \param hPhy     PHY device handle
+ * \param pArgs     PHY device handle
  * \param reg      Register number
  * \param val      Value to be written
  *
  * \return \ref EnetPhy_ErrorCodes
  */
-int32_t EnetPhy_writeReg(EnetPhy_Handle hPhy,
+int32_t EnetPhy_writeReg(void *pArgs,
                          uint32_t reg,
                          uint16_t val);
 
@@ -837,14 +833,14 @@ int32_t EnetPhy_writeReg(EnetPhy_Handle hPhy,
  *
  * Read-modify-write a PHY register. It's not meant for extended registers.
  *
- * \param hPhy     PHY device handle
+ * \param pArgs     PHY device handle
  * \param reg      Register number
  * \param mask     Bitmask to be applied on read value and value to be written
  * \param val      Value to be written
  *
  * \return \ref EnetPhy_ErrorCodes
  */
-int32_t EnetPhy_rmwReg(EnetPhy_Handle hPhy,
+int32_t EnetPhy_rmwReg(void *pArgs,
                        uint32_t reg,
                        uint16_t mask,
                        uint16_t val);
@@ -854,13 +850,13 @@ int32_t EnetPhy_rmwReg(EnetPhy_Handle hPhy,
  *
  * Reads a PHY extended register.
  *
- * \param hPhy     PHY device handle
+ * \param pArgs     PHY device handle
  * \param reg      Register number
  * \param val      Pointer to the read value
  *
  * \return \ref EnetPhy_ErrorCodes
  */
-int32_t EnetPhy_readExtReg(EnetPhy_Handle hPhy,
+int32_t EnetPhy_readExtReg(void *pArgs,
                            uint32_t reg,
                            uint16_t *val);
 
@@ -869,13 +865,13 @@ int32_t EnetPhy_readExtReg(EnetPhy_Handle hPhy,
  *
  * Writes a PHY extended register.
  *
- * \param hPhy     PHY device handle
+ * \param pArgs     PHY device handle
  * \param reg      Register number
  * \param val      Value to be written
  *
  * \return \ref EnetPhy_ErrorCodes
  */
-int32_t EnetPhy_writeExtReg(EnetPhy_Handle hPhy,
+int32_t EnetPhy_writeExtReg(void *pArgs,
                             uint32_t reg,
                             uint16_t val);
 
@@ -892,9 +888,9 @@ int32_t EnetPhy_writeExtReg(EnetPhy_Handle hPhy,
  * \return \ref EnetPhy_ErrorCodes
  */
 int32_t EnetPhy_rmwExtReg(EnetPhy_Handle hPhy,
-                          uint32_t reg,
-                          uint16_t mask,
-                          uint16_t val);
+                    uint32_t reg,
+                    uint16_t mask,
+                    uint16_t val);
 
 /*!
  * \brief Read PHY register using Clause-45 frame.

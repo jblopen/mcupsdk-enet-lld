@@ -192,19 +192,19 @@ extern "C" {
 /*                          Function Declarations                             */
 /* ========================================================================== */
 
-void GenericPhy_reset(EnetPhy_Handle hPhy);
+void GenericPhy_reset(EthPhyDrv_Handle hPhy);
 
-bool GenericPhy_isResetComplete(EnetPhy_Handle hPhy);
+bool GenericPhy_isResetComplete(EthPhyDrv_Handle hPhy);
 
-int32_t GenericPhy_readExtReg(EnetPhy_Handle hPhy,
-                              uint32_t reg,
-                              uint16_t *val);
+int32_t GenericPhy_readExtReg(EthPhyDrv_Handle hPhy,
+                                uint32_t reg,
+                                uint16_t* val);
 
-int32_t GenericPhy_writeExtReg(EnetPhy_Handle hPhy,
-                               uint32_t reg,
-                               uint16_t val);
+int32_t GenericPhy_writeExtReg(EthPhyDrv_Handle hPhy,
+                                uint32_t reg,
+                                uint16_t val);
 
-void GenericPhy_printRegs(EnetPhy_Handle hPhy);
+void GenericPhy_printRegs(EthPhyDrv_Handle hPhy);
 
 /* ========================================================================== */
 /*                        Deprecated Function Declarations                    */

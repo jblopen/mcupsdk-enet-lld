@@ -66,144 +66,162 @@
 /*                          Function Declarations                             */
 /* ========================================================================== */
 
-static bool GenericPhy_isPhyDevSupported(EnetPhy_Handle hPhy,
-                                         const EnetPhy_Version *version);
+void GenericPhy_bind(EthPhyDrv_Handle* hPhy, uint8_t phyAddr, Phy_RegAccessCb_t* pRegAccessCb);
 
-static bool GenericPhy_isMacModeSupported(EnetPhy_Handle hPhy,
-                                          EnetPhy_Mii mii);
+static bool GenericPhy_isPhyDevSupported(EthPhyDrv_Handle hPhy,
+                                            const void *pVersion);
+
+static bool GenericPhy_isMacModeSupported(EthPhyDrv_Handle hPhy, Phy_Mii mii);
 
 /* ========================================================================== */
 /*                            Global Variables                                */
 /* ========================================================================== */
 
-EnetPhy_Drv gEnetPhyDrvGeneric =
+Phy_DrvObj_t gEnetPhyDrvGeneric =
 {
-    .name               = "generic",
-    .isPhyDevSupported  = GenericPhy_isPhyDevSupported,
-    .isMacModeSupported = GenericPhy_isMacModeSupported,
-    .config             = NULL,
-    .reset              = GenericPhy_reset,
-    .isResetComplete    = GenericPhy_isResetComplete,
-    .readExtReg         = GenericPhy_readExtReg,
-    .writeExtReg        = GenericPhy_writeExtReg,
-    .printRegs          = GenericPhy_printRegs,
+     .fxn =
+     {
+        .name               = "generic",
+        .bind               = GenericPhy_bind,
+        .isPhyDevSupported  = GenericPhy_isPhyDevSupported,
+        .isMacModeSupported = GenericPhy_isMacModeSupported,
+        .config             = NULL,
+        .reset              = GenericPhy_reset,
+        .isResetComplete    = GenericPhy_isResetComplete,
+        .readExtReg         = GenericPhy_readExtReg,
+        .writeExtReg        = GenericPhy_writeExtReg,
+        .printRegs          = GenericPhy_printRegs,
+     },
 };
 
 /* ========================================================================== */
 /*                          Function Definitions                              */
 /* ========================================================================== */
 
-static bool GenericPhy_isPhyDevSupported(EnetPhy_Handle hPhy,
-                                         const EnetPhy_Version *version)
+void GenericPhy_bind(EthPhyDrv_Handle* hPhy, uint8_t phyAddr, Phy_RegAccessCb_t* pRegAccessCb)
+{
+    Phy_Obj_t* pObj = (Phy_Obj_t*) hPhy;
+    pObj->phyAddr = phyAddr;
+    pObj->regAccessApi = *pRegAccessCb;
+}
+
+static bool GenericPhy_isPhyDevSupported(EthPhyDrv_Handle hPhy,
+                                            const void *pVersion)
 {
     /* All IEEE-standard PHY models are supported */
     return true;
 }
 
-static bool GenericPhy_isMacModeSupported(EnetPhy_Handle hPhy,
-                                          EnetPhy_Mii mii)
+static bool GenericPhy_isMacModeSupported(EthPhyDrv_Handle hPhy, Phy_Mii mii)
 {
     /* All MAC modes are supported */
     return true;
 }
 
-void GenericPhy_reset(EnetPhy_Handle hPhy)
+void GenericPhy_reset(EthPhyDrv_Handle hPhy)
 {
-    ENETTRACE_DBG("PHY %u: reset\n", hPhy->addr);
+    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+
+    ENETTRACE_DBG("PHY %u: reset\n", ((Phy_Obj_t*) hPhy)->phyAddr);
 
     /* Reset the PHY */
-    EnetPhy_rmwReg(hPhy, PHY_BMCR, BMCR_RESET, BMCR_RESET);
+    pRegAccessApi->EnetPhy_rmwReg(pRegAccessApi->pArgs, PHY_BMCR, BMCR_RESET, BMCR_RESET);
 }
 
-bool GenericPhy_isResetComplete(EnetPhy_Handle hPhy)
+bool GenericPhy_isResetComplete(EthPhyDrv_Handle hPhy)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
     int32_t status;
     uint16_t val;
     bool complete = false;
 
     /* Reset is complete when RESET bit has self-cleared */
-    status = EnetPhy_readReg(hPhy, PHY_BMCR, &val);
+    status = pRegAccessApi->EnetPhy_readReg(pRegAccessApi->pArgs, PHY_BMCR, &val);
     if (status == ENETPHY_SOK)
     {
         complete = ((val & BMCR_RESET) == 0U);
     }
 
-    ENETTRACE_DBG("PHY %u: reset is %scomplete\n", hPhy->addr, complete ? "" : "not");
+    ENETTRACE_DBG("PHY %u: reset is %scomplete\n", ((Phy_Obj_t*) hPhy)->phyAddr, complete ? "" : "not");
 
     return complete;
 }
 
-int32_t GenericPhy_readExtReg(EnetPhy_Handle hPhy,
-                              uint32_t reg,
-                              uint16_t *val)
+int32_t GenericPhy_readExtReg(EthPhyDrv_Handle hPhy,
+                                uint32_t reg,
+                                uint16_t* val)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
     uint16_t devad = MMD_CR_DEVADDR;
     int32_t status;
 
-    status = EnetPhy_writeReg(hPhy, PHY_MMD_CR, devad | MMD_CR_ADDR);
+    status = pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_ADDR);
 
     if (status == ENETPHY_SOK)
     {
-        status = EnetPhy_writeReg(hPhy, PHY_MMD_DR, reg);
+        status = pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_DR, reg);
     }
 
     if (status == ENETPHY_SOK)
     {
-        EnetPhy_writeReg(hPhy, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
+        pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
     }
 
     if (status == ENETPHY_SOK)
     {
-        status = EnetPhy_readReg(hPhy, PHY_MMD_DR, val);
+        status = pRegAccessApi->EnetPhy_readReg(pRegAccessApi->pArgs, PHY_MMD_DR, val);
     }
 
     ENETTRACE_VERBOSE_IF(status == ENETPHY_SOK,
-                         "PHY %u: failed to read reg %u\n", hPhy->addr, reg);
+                         "PHY %u: failed to read reg %u\n", ((Phy_Obj_t*) hPhy)->phyAddr, reg);
     ENETTRACE_ERR_IF(status != ENETPHY_SOK,
-                     "PHY %u: read reg %u val 0x%04x\n", hPhy->addr, reg, *val);
+                     "PHY %u: read reg %u val 0x%04x\n", ((Phy_Obj_t*) hPhy)->phyAddr, reg, *val);
 
     return status;
 }
 
-int32_t GenericPhy_writeExtReg(EnetPhy_Handle hPhy,
-                               uint32_t reg,
-                               uint16_t val)
+int32_t GenericPhy_writeExtReg(EthPhyDrv_Handle hPhy,
+                                uint32_t reg,
+                                uint16_t val)
 {
-    uint16_t devad = MMD_CR_DEVADDR;
+    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+	uint16_t devad = MMD_CR_DEVADDR;
     int32_t status;
 
-    ENETTRACE_VERBOSE("PHY %u: write %u val 0x%04x\n", hPhy->addr, reg, val);
+    ENETTRACE_VERBOSE("PHY %u: write %u val 0x%04x\n", ((Phy_Obj_t*) hPhy)->phyAddr;, reg, val);
 
-    status = EnetPhy_writeReg(hPhy, PHY_MMD_CR, devad | MMD_CR_ADDR);
+    status = pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_ADDR);
     if (status == ENETPHY_SOK)
     {
-        EnetPhy_writeReg(hPhy, PHY_MMD_DR, reg);
+        pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_DR, reg);
     }
 
     if (status == ENETPHY_SOK)
     {
-        EnetPhy_writeReg(hPhy, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
+        pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
     }
 
     if (status == ENETPHY_SOK)
     {
-        EnetPhy_writeReg(hPhy, PHY_MMD_DR, val);
+        pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_DR, val);
     }
 
     ENETTRACE_ERR_IF(status != ENETPHY_SOK,
-                     "PHY %u: failed to write reg %u val 0x%04x\n", hPhy->addr, reg, val);
+                     "PHY %u: failed to write reg %u val 0x%04x\n", ((Phy_Obj_t*) hPhy)->phyAddr, reg, val);
 
     return status;
 }
 
-void GenericPhy_printRegs(EnetPhy_Handle hPhy)
+void GenericPhy_printRegs(EthPhyDrv_Handle hPhy)
 {
     uint32_t i;
     uint16_t val;
+    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    const uint8_t phyAddr = ((Phy_Obj_t*) hPhy)->phyAddr;
 
     for (i = PHY_BMCR; i <= PHY_GIGESR; i++)
     {
-        EnetPhy_readReg(hPhy, i, &val);
-        EnetUtils_printf("PHY %u: reg 0x%02x = 0x%04x\n", hPhy->addr, i, val);
+        pRegAccessApi->EnetPhy_readReg(pRegAccessApi->pArgs, i, &val);
+        EnetUtils_printf("PHY %u: reg 0x%02x = 0x%04x\n", phyAddr, i, val);
     }
 }

@@ -94,8 +94,9 @@ typedef struct EnetPhy_Drv_s
      * \return Whether PHY model is supported or not
      */
 
-    bool (*isPhyDevSupported)(EnetPhy_Handle hPhy,
-                              const EnetPhy_Version *version);
+    bool (*isPhyDevSupported)(void *pArgs,
+                            const void *pVersion,
+                            const void *pCfg);
 
     /*!
      * \brief Check if driver supports a MII interface type.
@@ -108,8 +109,8 @@ typedef struct EnetPhy_Drv_s
      *
      * \return Whether MII interface type is supported or not
      */
-    bool (*isMacModeSupported)(EnetPhy_Handle hPhy,
-                               EnetPhy_Mii mii);
+    bool (*isMacModeSupported)(void *pArgs,
+                               void *pMii);
 
     /*!
      * \brief PHY specific configuration.
@@ -124,9 +125,9 @@ typedef struct EnetPhy_Drv_s
      *
      * \return \ref EnetPhy_ErrorCodes
      */
-    int32_t (*config)(EnetPhy_Handle hPhy,
-                      const EnetPhy_Cfg *cfg,
-                      EnetPhy_Mii mii);
+    int32_t (*config)(void *pArgs,
+                      const void *pCfg,
+                      void *pMii);
 
     /*!
      * \brief PHY specific soft reset.
@@ -136,7 +137,7 @@ typedef struct EnetPhy_Drv_s
      *
      * \param hPhy     PHY device handle
      */
-    void (*reset)(EnetPhy_Handle hPhy);
+    void (*reset)(void *pArgs);
 
     /*!
      * \brief PHY specific soft reset status.
@@ -148,7 +149,7 @@ typedef struct EnetPhy_Drv_s
      *
      * \return Whether soft-reset is complete or not.
      */
-    bool (*isResetComplete)(EnetPhy_Handle hPhy);
+    bool (*isResetComplete)(void *pArgs);
 
     /*!
      * \brief Read PHY extended register.
@@ -162,7 +163,7 @@ typedef struct EnetPhy_Drv_s
      *
      * \return \ref EnetPhy_ErrorCodes
      */
-    int32_t (*readExtReg)(EnetPhy_Handle hPhy,
+    int32_t (*readExtReg)(void *pArgs,
                           uint32_t reg,
                           uint16_t *val);
 
@@ -178,7 +179,7 @@ typedef struct EnetPhy_Drv_s
      *
      * \return \ref EnetPhy_ErrorCodes
      */
-    int32_t (*writeExtReg)(EnetPhy_Handle hPhy,
+    int32_t (*writeExtReg)(void *pArgs,
                            uint32_t reg,
                            uint16_t val);
 
@@ -193,14 +194,14 @@ typedef struct EnetPhy_Drv_s
      * \param reg        Register address
      * \param val        Value read from register
      */
-    int32_t (*rmwExtReg)(EnetPhy_Handle hPhy,
+    int32_t (*rmwExtReg)(void *pArgs,
                          uint32_t group,
                          uint32_t reg,
                          uint16_t mask,
                          uint16_t val);
 
     /*! Print PHY registers */
-    void (*printRegs)(EnetPhy_Handle hPhy);
+    void (*printRegs)(void *pArgs, uint32_t addr);
 
     /*!
      * \brief Adjust PHY PTP clock frequency.
@@ -433,7 +434,7 @@ typedef struct EnetPhy_Drv_s
 typedef struct EnetPhy_DrvInfoTbl_s
 {
     uint32_t numHandles;
-    const EnetPhyDrv_Handle *hPhyDrvList;
+    const EthPhyDrv_If *hPhyDrvList;
 } EnetPhy_DrvInfoTbl;
 
 /* ========================================================================== */
