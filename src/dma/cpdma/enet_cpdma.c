@@ -80,10 +80,11 @@
  * Csum info is at end of packet and no cpdma desc is used */
 #define ENET_CPDMA_NUM_DESC_PER_RXPKT         (1U)
 
+#define ENET_RX_HOST_TIMESTAMP_SIZE           (8U)
+
 /* ========================================================================== */
 /*                         Structure Declarations                             */
 /* ========================================================================== */
-
 /* None */
 
 /* ========================================================================== */
@@ -1259,12 +1260,12 @@ void EnetCpdma_enqueueRx(EnetCpdma_DescCh *pDescCh)
             pDescCh->descFreeCount--;
             pDescCh->descSubmittedCount++;
 
-            pDescThis->pBuffer   = ENET_CPDMA_VIRT2SOCADDR(pPkt->sgList.list[scatterSegmentIndex].bufPtr);
+            pDescThis->pBuffer   = ENET_CPDMA_VIRT2SOCADDR(pPkt->sgList.list[scatterSegmentIndex].origBufPtr);
             pDescThis->bufOffLen = pPkt->sgList.list[scatterSegmentIndex].segmentAllocLen;
             pDescThis->orgBufLen = pPkt->sgList.list[scatterSegmentIndex].segmentAllocLen;
             pDescThis->pktFlgLen = ENET_CPDMA_DESC_PKT_FLAG_OWNER;
 
-            EnetOsal_cacheInv((void*)pPkt->sgList.list[scatterSegmentIndex].bufPtr, pPkt->sgList.list[scatterSegmentIndex].segmentAllocLen);
+            EnetOsal_cacheInv((void*)pPkt->sgList.list[scatterSegmentIndex].origBufPtr, pPkt->sgList.list[scatterSegmentIndex].segmentAllocLen);
 
             if (scatterSegmentIndex == pPkt->sgList.numScatterSegments - 1)
             {
@@ -1382,6 +1383,9 @@ bool EnetCpdma_dequeueRx(EnetCpdma_DescCh *pDescCh, EnetCpdma_cppiDesc *pDescCp)
     bool matchFound = false;
     uint32_t pktFlgLen, totalLenReceived, totalPktLen;
     uint32_t numScatterSegments = 0U;
+    uint32_t firstWordTs = 0;
+    uint32_t secondWordTs = 0;
+    bool hasTimeStamp = false;
 
     key = EnetOsal_disableAllIntr();
     /*
@@ -1403,6 +1407,8 @@ bool EnetCpdma_dequeueRx(EnetCpdma_DescCh *pDescCh, EnetCpdma_cppiDesc *pDescCp)
         /* This should be a SOP descriptor */
         const uint32_t sopPktFlgLen = (pDesc->pktFlgLen) & ((uint32_t)~ENET_CPDMA_DESC_PSINFO_PASSCRC_FLAG);
         void *appPriv = NULL;
+
+        hasTimeStamp = sopPktFlgLen & ENET_CPDMA_DESC_PSINFO_RX_TS_ENCAP_MASK;
 
         /* Check the ownership of the packet. Ownership is only valid for SOP descs */
         if ( ((sopPktFlgLen & ENET_CPDMA_DESC_PKT_FLAG_OWNER) == 0U)
@@ -1458,8 +1464,41 @@ bool EnetCpdma_dequeueRx(EnetCpdma_DescCh *pDescCh, EnetCpdma_cppiDesc *pDescCp)
 
                 /* Fill the sglist of dmapktinfo */
                 list = &pPkt->sgList.list[numScatterSegments];
-                list->bufPtr = pDesc->pBuffer;
-                list->segmentFilledLen = (pDesc->bufOffLen & ENET_CPDMA_DESC_PSINFO_RX_PACKET_LEN_MASK);
+
+                if (numScatterSegments == 0)
+                {
+                    if (hasTimeStamp)
+                    {
+                        /* Storing the original buffer pointer given by descriptor for submitting it back in enqueueRx */
+                        list->origBufPtr = pDesc->pBuffer;
+                        list->segmentFilledLen = (pDesc->bufOffLen & ENET_CPDMA_DESC_PSINFO_RX_PACKET_LEN_MASK)
+                                                    - ENET_RX_HOST_TIMESTAMP_SIZE;
+
+                        /* Shifting the bufptr to point the packet header by incrementing the size of timeStamp */
+                        list->bufPtr = (uint8_t*)list->origBufPtr + ENET_RX_HOST_TIMESTAMP_SIZE;
+
+                        /* Storing the timeStamp(first 8 bytes prepended to the packet) and updating the total packet length  */
+                        firstWordTs = *((uint32_t*)list->origBufPtr);
+                        secondWordTs = *((uint32_t*)(list->origBufPtr + (ENET_RX_HOST_TIMESTAMP_SIZE >> 1)));
+                        pPkt->tsInfo.rxPktTs = (uint64_t)(secondWordTs | ((uint64_t)firstWordTs << 32));
+
+                        totalPktLen = totalPktLen - ENET_RX_HOST_TIMESTAMP_SIZE;
+                    }
+                    else
+                    {
+                        list->bufPtr = pDesc->pBuffer;
+                        list->origBufPtr = pDesc->pBuffer;
+                        list->segmentFilledLen = (pDesc->bufOffLen & ENET_CPDMA_DESC_PSINFO_RX_PACKET_LEN_MASK);
+                        pPkt->tsInfo.rxPktTs = 0;
+                    }
+                }
+                else
+                {
+                    list->bufPtr = pDesc->pBuffer;
+                    list->origBufPtr = pDesc->pBuffer;
+                    list->segmentFilledLen = (pDesc->bufOffLen & ENET_CPDMA_DESC_PSINFO_RX_PACKET_LEN_MASK);
+                }
+
                 list->segmentAllocLen = pDesc->orgBufLen;
                 Enet_assert(list->segmentAllocLen >= list->segmentFilledLen);
                 totalLenReceived += list->segmentFilledLen;
@@ -3011,6 +3050,7 @@ void EnetDma_initPktInfo(EnetDma_Pkt *pktInfo)
     for (i = 0; i < ENET_CPDMA_CPSW_MAX_SG_LIST; i++)
     {
         pktInfo->sgList.list[i].bufPtr = NULL;
+        pktInfo->sgList.list[i].origBufPtr = NULL;
         pktInfo->sgList.list[i].segmentFilledLen = 0U;
         pktInfo->sgList.list[i].segmentAllocLen = 0U;
         pktInfo->sgList.list[i].disableCacheOps = false;

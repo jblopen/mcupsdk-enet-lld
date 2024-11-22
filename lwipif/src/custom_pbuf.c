@@ -126,6 +126,7 @@ void custom_pbuf_free(struct pbuf *p)
         do {
             list = &pDmaPacket->sgList.list[scatterSegmentIndex];
             list->bufPtr = cPbuf->orgBufPtr;
+            list->origBufPtr = cPbuf->orgBufPtr;
             list->segmentFilledLen = 0;
             Lwip2Enet_assert(cPbuf->orgBufLen != 0);
             list->segmentAllocLen  = cPbuf->orgBufLen;

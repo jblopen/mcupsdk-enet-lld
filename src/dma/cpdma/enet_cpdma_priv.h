@@ -130,6 +130,7 @@ typedef struct EnetCpdma_cppiDesc_s
 #define ENET_CPDMA_DESC_PKT_FLAG_CHKSUM_ENCAP         (0x00004000U)
 #define ENET_CPDMA_DESC_PSINFO_RX_CHECKSUM_INFO_MASK  (0x00001000U)
 #define ENET_CPDMA_DESC_PSINFO_RX_PACKET_LEN_MASK     (0x00000FFFU)
+#define ENET_CPDMA_DESC_PSINFO_RX_TS_ENCAP_MASK       (0x00008000U)
 
 /* Macros to get from port field from packet descriptor */
 #define ENET_CPDMA_DESC_PSINFO_FROM_PORT_MASK         (0x00070000U)

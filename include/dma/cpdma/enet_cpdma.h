@@ -191,8 +191,16 @@ typedef struct EnetCpdma_PktTsInfo_s
  */
 typedef struct EnetCpdma_SGListEntry_s
 {
-    /*! Pointer to scatter fragment */
+    /*! Pointer to scatter fragment which might be updated by the CPDMA Driver(Software)
+     *  In CPDMA Devices when ts_encap or vlan_encap are enabled the TimeStamp
+     *  info and other packet encapsulated data will be prepended to the packet.
+     *  As the buf ptr provided by CPDMA only points to the start of the buffer, CPDMA
+     *  driver(Software) moves the bufPtr to point to the start of actual ethernet packet.
+     */
     uint8_t *bufPtr;
+
+    /*! Pointer to scatter fragment given by Hardware(CPDMA) */
+    uint8_t *origBufPtr;
 
     /*! Length of valid data in the scatter fragment */
     uint32_t segmentFilledLen;

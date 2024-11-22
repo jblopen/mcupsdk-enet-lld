@@ -1205,7 +1205,7 @@ static uint32_t Lwip2Enet_prepRxPktQ(Lwip2Enet_RxObj *rx,
                     Lwip2Enet_assert(false);
                 }
                 cPbuf->orgBufLen = list->segmentAllocLen;
-                cPbuf->orgBufPtr = list->bufPtr;
+                cPbuf->orgBufPtr = list->origBufPtr;
                 cPbuf->alivePbufCount = pCurrDmaPacket->sgList.numScatterSegments;
                 if (scatterSegmentIndex > 0)
                 {
