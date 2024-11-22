@@ -42,6 +42,7 @@
 #include "l2_cpsw_common.h"
 #include "l2_cpsw_cfg.h"
 #include "l2_cpsw_dataflow.h"
+#include <ti_enet_config.h>
 
 /* ========================================================================== */
 /*                           Macros & Typedefs                                */
@@ -59,12 +60,6 @@
 /*                            Global Variables                                */
 /* ========================================================================== */
 
-/* Use this array to select the ports that will be used in the test */
-static EnetApp_TestParams testParams[] =
-{
-    { ENET_CPSW_3G,       0U, ENET_MAC_PORT_1, "cpsw-3g", },
-};
-
 /* ========================================================================== */
 /*                          Function Definitions                              */
 /* ========================================================================== */
@@ -72,25 +67,28 @@ static EnetApp_TestParams testParams[] =
 void EnetApp_mainTask(void *args)
 {
     char option;
-    uint32_t i;
     int32_t status;
+    Enet_MacPort macPortList[ENET_MAC_PORT_NUM];
+    uint8_t numMacPorts;
     DebugP_log("==========================\r\n");
     DebugP_log("     Layer 2 CPSW Test    \r\n");
     DebugP_log("==========================\r\n");
 
-	/* Initialize test config */
+    /* Initialize test config */
     memset(&gEnetApp, 0, sizeof(gEnetApp));
     gEnetApp.run = true;
 
-    gEnetApp.numPerCtxts = ENET_ARRAYSIZE(testParams);
+    EnetApp_getEnetInstInfo(CONFIG_ENET_CPSW0, &(gEnetApp.perCtxt.enetType),
+                            &(gEnetApp.perCtxt.instId));
 
-    for (i = 0U; i < gEnetApp.numPerCtxts; i++)
-    {
-        gEnetApp.perCtxt[i].enetType = testParams[i].enetType;
-        gEnetApp.perCtxt[i].instId   = testParams[i].instId;
-        gEnetApp.perCtxt[i].name     = testParams[i].name; /* shallow copy */
-        gEnetApp.perCtxt[i].macPort  = testParams[i].macPort;
-    }
+    EnetApp_getEnetInstMacInfo((gEnetApp.perCtxt.enetType),
+                               (gEnetApp.perCtxt.instId),
+                               macPortList,
+                               &numMacPorts);
+    EnetAppUtils_assert(numMacPorts == 1);
+    gEnetApp.perCtxt.macPort = macPortList[0];
+
+    EnetAppUtils_print("Port %u is currently active...\r\n", ENET_MACPORT_ID(gEnetApp.perCtxt.macPort));
 
     /* Init driver */
     status = EnetApp_init();
@@ -102,7 +100,7 @@ void EnetApp_mainTask(void *args)
     /* Open all peripherals */
     if (status == ENET_SOK)
     {
-        status = EnetApp_open(gEnetApp.perCtxt, gEnetApp.numPerCtxts);
+        status = EnetApp_open(&(gEnetApp.perCtxt));
         if (status != ENET_SOK)
         {
             EnetAppUtils_print("Failed to open peripherals: %d\r\n", status);
@@ -125,15 +123,15 @@ void EnetApp_mainTask(void *args)
             }
             else if (option == 's')
             {
-                EnetApp_printStats(gEnetApp.perCtxt, gEnetApp.numPerCtxts);
+                EnetApp_printStats(&gEnetApp.perCtxt);
             }
             else if (option == 'r')
             {
-                EnetApp_resetStats(gEnetApp.perCtxt, gEnetApp.numPerCtxts);
+                EnetApp_resetStats(&gEnetApp.perCtxt);
             }
             else if (option == 'm')
             {
-                EnetApp_showMacAddrs(gEnetApp.perCtxt, gEnetApp.numPerCtxts);
+                EnetApp_showMacAddrs(&gEnetApp.perCtxt);
             }
             else
             {
@@ -144,21 +142,19 @@ void EnetApp_mainTask(void *args)
         }
 
         /* Print statistics */
-        EnetApp_printStats(gEnetApp.perCtxt, gEnetApp.numPerCtxts);
+        EnetApp_printStats(&gEnetApp.perCtxt);
 
         /* Wait until RX tasks have exited */
-        for (i = 0U; i < gEnetApp.numPerCtxts; i++)
-        {
-            EnetAppUtils_print("Waiting for RX task %u to exit\r\n", i+1);
-            SemaphoreP_post(&gEnetApp.perCtxt[i].rxSemObj);
-            SemaphoreP_pend(&gEnetApp.perCtxt[i].rxDoneSemObj, SystemP_WAIT_FOREVER);
-        }
+
+        EnetAppUtils_print("Waiting for RX task to exit\r\n");
+        SemaphoreP_post(&gEnetApp.perCtxt.rxSemObj);
+        SemaphoreP_pend(&gEnetApp.perCtxt.rxDoneSemObj, SystemP_WAIT_FOREVER);
 
         EnetAppUtils_print("All RX tasks have exited\r\n");
     }
 
     /* Close all peripherals */
-    EnetApp_close(gEnetApp.perCtxt, gEnetApp.numPerCtxts);
+    EnetApp_close(&gEnetApp.perCtxt);
 
     /* Deinit driver */
     EnetApp_deinit();

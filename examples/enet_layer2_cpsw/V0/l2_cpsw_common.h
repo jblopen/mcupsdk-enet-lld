@@ -57,7 +57,8 @@
 #include "ti_board_open_close.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 /* ========================================================================== */
@@ -74,7 +75,7 @@ extern "C" {
 #define ENETAPP_PERIODIC_TICK_MS                  (100U)
 
 /*Counting Semaphore count*/
-#define COUNTING_SEM_COUNT                       (10U)
+#define COUNTING_SEM_COUNT                        (10U)
 
 /* ========================================================================== */
 /*                         Structures and Enums                               */
@@ -107,9 +108,6 @@ typedef struct EnetApp_PerCtxt_s
 
     /* Peripheral's MAC ports to use */
     Enet_MacPort macPort;
-
-    /* Name of this port to be used for logging */
-    char *name;
 
     /* Enet driver handle for this peripheral type/instance */
     Enet_Handle hEnet;
@@ -162,11 +160,9 @@ typedef struct EnetApp_Obj_s
     /* Queue of free TX packets */
     EnetDma_PktQ txFreePktInfoQ;
 
-    /* Array of all peripheral/port contexts used in the test */
-    EnetApp_PerCtxt perCtxt[ENETAPP_PER_MAX];
+    /*peripheral/port contexts used in the test */
+    EnetApp_PerCtxt perCtxt;
 
-    /* Number of active contexts being used */
-    uint32_t numPerCtxts;
 } EnetApp_Obj;
 
 /* ========================================================================== */
@@ -186,8 +182,8 @@ EnetApp_Obj gEnetApp;
 CpswStats_PortStats gEnetApp_cpswStats;
 
 /* Test application stack */
-uint8_t gEnetAppTaskStackTick[ENETAPP_TASK_STACK_SZ] __attribute__ ((aligned(32)));
-uint8_t gEnetAppTaskStackRx[ENETAPP_TASK_STACK_SZ] __attribute__ ((aligned(32)));
+uint8_t gEnetAppTaskStackTick[ENETAPP_TASK_STACK_SZ] __attribute__((aligned(32)));
+uint8_t gEnetAppTaskStackRx[ENETAPP_TASK_STACK_SZ] __attribute__((aligned(32)));
 
 #ifdef __cplusplus
 }

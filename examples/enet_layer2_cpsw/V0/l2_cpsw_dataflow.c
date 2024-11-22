@@ -47,7 +47,6 @@
 /*                           Macros & Typedefs                                */
 /* ========================================================================== */
 
-
 /* ========================================================================== */
 /*                         Structure Declarations                             */
 /* ========================================================================== */
@@ -64,9 +63,6 @@
 /*                          Function Definitions                              */
 /* ========================================================================== */
 
-
-
-
 void EnetApp_rxIsrFxn(void *appData)
 {
     EnetApp_PerCtxt *perCtxt = (EnetApp_PerCtxt *)appData;
@@ -74,22 +70,22 @@ void EnetApp_rxIsrFxn(void *appData)
     SemaphoreP_post(&perCtxt->rxSemObj);
 }
 
-int32_t EnetApp_openDma(EnetApp_PerCtxt *perCtxt, uint32_t perCtxtIndex)
+int32_t EnetApp_openDma(EnetApp_PerCtxt *perCtxt)
 {
     int32_t status = ENET_SOK;
-    EnetApp_GetDmaHandleInArgs     txInArgs;
-    EnetApp_GetTxDmaHandleOutArgs  txChInfo; 
+    EnetApp_GetDmaHandleInArgs txInArgs;
+    EnetApp_GetTxDmaHandleOutArgs txChInfo;
 
     /* Open the TX channel */
-    txInArgs.cbArg   = NULL;
+    txInArgs.cbArg = NULL;
     txInArgs.notifyCb = NULL;
 
-    EnetApp_getTxDmaHandle((ENET_DMA_TX_CH0 + perCtxtIndex),
+    EnetApp_getTxDmaHandle((ENET_DMA_TX_CH0),
                            &txInArgs,
                            &txChInfo);
 
     perCtxt->txChNum = txChInfo.txChNum;
-    perCtxt->hTxCh   = txChInfo.hTxCh;
+    perCtxt->hTxCh = txChInfo.hTxCh;
     if (perCtxt->hTxCh == NULL)
     {
 #if FIX_RM
@@ -113,19 +109,19 @@ int32_t EnetApp_openDma(EnetApp_PerCtxt *perCtxt, uint32_t perCtxtIndex)
     /* Open the RX flow for Regular frames */
     if (status == ENET_SOK)
     {
-        EnetApp_GetDmaHandleInArgs     rxInArgs;
-        EnetApp_GetRxDmaHandleOutArgs  rxChInfo; 
+        EnetApp_GetDmaHandleInArgs rxInArgs;
+        EnetApp_GetRxDmaHandleOutArgs rxChInfo;
 
         rxInArgs.notifyCb = EnetApp_rxIsrFxn;
-        rxInArgs.cbArg   = perCtxt;
+        rxInArgs.cbArg = perCtxt;
 
-        EnetApp_getRxDmaHandle((ENET_DMA_RX_CH0  + perCtxtIndex),
+        EnetApp_getRxDmaHandle((ENET_DMA_RX_CH0),
                                &rxInArgs,
                                &rxChInfo);
 
         perCtxt->rxStartFlowIdx = rxChInfo.rxFlowStartIdx;
         perCtxt->rxFlowIdx = rxChInfo.rxFlowIdx;
-        perCtxt->hRxCh  = rxChInfo.hRxCh;
+        perCtxt->hRxCh = rxChInfo.hRxCh;
         EnetAppUtils_assert(rxChInfo.numValidMacAddress == 1);
         EnetUtils_copyMacAddr(perCtxt->macAddr, rxChInfo.macAddr[rxChInfo.numValidMacAddress - 1]);
 
@@ -144,10 +140,10 @@ int32_t EnetApp_openDma(EnetApp_PerCtxt *perCtxt, uint32_t perCtxtIndex)
         EnetApp_initRxReadyPktQ(perCtxt->hRxCh);
     }
 
-     return status;
+    return status;
 }
 
-void EnetApp_closeDma(EnetApp_PerCtxt *perCtxt, uint32_t perCtxtIndex)
+void EnetApp_closeDma(EnetApp_PerCtxt *perCtxt)
 {
     EnetDma_PktQ fqPktInfoQ;
     EnetDma_PktQ cqPktInfoQ;
@@ -157,7 +153,7 @@ void EnetApp_closeDma(EnetApp_PerCtxt *perCtxt, uint32_t perCtxtIndex)
 
     /* Close Regular RX channel */
     /* Close Regular RX channel */
-    EnetApp_closeRxDma((ENET_DMA_RX_CH0 + perCtxtIndex),
+    EnetApp_closeRxDma((ENET_DMA_RX_CH0),
                        perCtxt->hEnet,
                        perCtxt->coreKey,
                        gEnetApp.coreId,
@@ -174,7 +170,7 @@ void EnetApp_closeDma(EnetApp_PerCtxt *perCtxt, uint32_t perCtxtIndex)
     /* Retrieve any pending TX packets from driver */
     EnetApp_retrieveFreeTxPkts(perCtxt);
 
-    EnetApp_closeTxDma((ENET_DMA_TX_CH0 + perCtxtIndex),
+    EnetApp_closeTxDma((ENET_DMA_TX_CH0),
                        perCtxt->hEnet,
                        perCtxt->coreKey,
                        gEnetApp.coreId,
@@ -191,7 +187,7 @@ void EnetApp_initTxFreePktQ(void)
 {
     EnetDma_Pkt *pPktInfo;
     uint32_t i;
-    uint32_t scatterSegments[] = { ENET_MEM_LARGE_POOL_PKT_SIZE };
+    uint32_t scatterSegments[] = {ENET_MEM_LARGE_POOL_PKT_SIZE};
 
     /* Initialize TX EthPkts and queue them to txFreePktInfoQ */
     for (i = 0U; i < ENET_SYSCFG_TOTAL_NUM_TX_PKT; i++)
@@ -217,11 +213,10 @@ void EnetApp_initRxReadyPktQ(EnetDma_RxChHandle hRxCh)
     EnetDma_Pkt *pPktInfo;
     uint32_t i;
     int32_t status;
-    uint32_t scatterSegments[] = { ENET_MEM_LARGE_POOL_PKT_SIZE/4,
-                                   ENET_MEM_LARGE_POOL_PKT_SIZE/4,
-                                   ENET_MEM_LARGE_POOL_PKT_SIZE/4,
-                                   ENET_MEM_LARGE_POOL_PKT_SIZE/4
-                                    };
+    uint32_t scatterSegments[] = {ENET_MEM_LARGE_POOL_PKT_SIZE/4,
+                                  ENET_MEM_LARGE_POOL_PKT_SIZE/4,
+                                  ENET_MEM_LARGE_POOL_PKT_SIZE/4,
+                                  ENET_MEM_LARGE_POOL_PKT_SIZE/4};
 
     EnetQueue_initQ(&rxFreeQ);
 
@@ -276,9 +271,9 @@ uint32_t EnetApp_retrieveFreeTxPkts(EnetApp_PerCtxt *perCtxt)
         while (NULL != pktInfo)
         {
             EnetDma_checkPktState(&pktInfo->pktState,
-                                    ENET_PKTSTATE_MODULE_APP,
-                                    ENET_PKTSTATE_APP_WITH_DRIVER,
-                                    ENET_PKTSTATE_APP_WITH_FREEQ);
+                                  ENET_PKTSTATE_MODULE_APP,
+                                  ENET_PKTSTATE_APP_WITH_DRIVER,
+                                  ENET_PKTSTATE_APP_WITH_FREEQ);
 
             EnetQueue_enq(&gEnetApp.txFreePktInfoQ, &pktInfo->node);
             pktInfo = (EnetDma_Pkt *)EnetQueue_deq(&txFreeQ);
@@ -303,16 +298,15 @@ void EnetApp_createRxTask(EnetApp_PerCtxt *perCtxt)
     DebugP_assert(SystemP_SUCCESS == status);
 
     TaskP_Params_init(&taskParams);
-    taskParams.priority       = 5U;
-    taskParams.stack          = gEnetAppTaskStackRx;
-    taskParams.stackSize      = sizeof(gEnetAppTaskStackRx);
-    taskParams.args           = (void*)perCtxt;
-    taskParams.name           = "Rx Task";
-    taskParams.taskMain           = &EnetApp_rxTask;
+    taskParams.priority = 5U;
+    taskParams.stack = gEnetAppTaskStackRx;
+    taskParams.stackSize = sizeof(gEnetAppTaskStackRx);
+    taskParams.args = (void *)perCtxt;
+    taskParams.name = "Rx Task";
+    taskParams.taskMain = &EnetApp_rxTask;
 
     status = TaskP_construct(&perCtxt->rxTaskObj, &taskParams);
     DebugP_assert(SystemP_SUCCESS == status);
-
 }
 
 void EnetApp_destroyRxTask(EnetApp_PerCtxt *perCtxt)
@@ -333,7 +327,7 @@ void EnetApp_rxTask(void *args)
     EthFrame *rxFrame;
     EthFrame *txFrame;
     uint32_t totalLenReceived = 0U;
-    uint32_t index = 0U,i = 0U;
+    uint32_t index = 0U, i = 0U;
     uint32_t totalRxCnt = 0U;
     int32_t status = ENET_SOK;
 
@@ -366,6 +360,7 @@ void EnetApp_rxTask(void *args)
         while (rxPktInfo != NULL)
         {
             rxFrame = (EthFrame *)rxPktInfo->sgList.list[0].bufPtr;
+
             EnetDma_checkPktState(&rxPktInfo->pktState,
                                     ENET_PKTSTATE_MODULE_APP,
                                     ENET_PKTSTATE_APP_WITH_DRIVER,
@@ -419,9 +414,8 @@ void EnetApp_rxTask(void *args)
             }
             else
             {
-                EnetAppUtils_print("%s: Drop due to TX pkt not available\r\n", perCtxt->name);
+                EnetAppUtils_print("Drop due to TX pkt not available\r\n");
             }
-
             EnetDma_checkPktState(&rxPktInfo->pktState,
                                     ENET_PKTSTATE_MODULE_APP,
                                     ENET_PKTSTATE_APP_WITH_READYQ,
@@ -436,9 +430,8 @@ void EnetApp_rxTask(void *args)
         status = EnetDma_submitTxPktQ(perCtxt->hTxCh, &txSubmitQ);
         if (status != ENET_SOK)
         {
-            EnetAppUtils_print("%s: Failed to submit TX pkt queue: %d\r\n", perCtxt->name, status);
+            EnetAppUtils_print("Failed to submit TX pkt queue: %d\r\n", status);
         }
-
         EnetAppUtils_validatePacketState(&rxFreeQ,
                                             ENET_PKTSTATE_APP_WITH_FREEQ,
                                             ENET_PKTSTATE_APP_WITH_DRIVER);
@@ -447,11 +440,11 @@ void EnetApp_rxTask(void *args)
         EnetDma_submitRxPktQ(perCtxt->hRxCh, &rxFreeQ);
         if (status != ENET_SOK)
         {
-            EnetAppUtils_print("%s: Failed to submit RX pkt queue: %d\r\n", perCtxt->name, status);
+            EnetAppUtils_print("Failed to submit RX pkt queue: %d\r\n", status);
         }
     }
 
-    EnetAppUtils_print("%s: Received %u packets\r\n", perCtxt->name, totalRxCnt);
+    EnetAppUtils_print("Received %u packets\r\n", totalRxCnt);
 
     SemaphoreP_post(&perCtxt->rxDoneSemObj);
     TaskP_exit();

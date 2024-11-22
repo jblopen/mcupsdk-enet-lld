@@ -59,13 +59,13 @@ void EnetApp_createClock(void);
 
 void EnetApp_deleteClock(void);
 
-void EnetApp_timerCallback(ClockP_Object *clkInst, void * arg);
+void EnetApp_timerCallback(ClockP_Object *clkInst, void *arg);
 
 void EnetApp_tickTask(void *args);
 
-int32_t EnetApp_openDma(EnetApp_PerCtxt *perCtxt, uint32_t perCtxtIndex);
+int32_t EnetApp_openDma(EnetApp_PerCtxt *perCtxt);
 
-void EnetApp_closeDma(EnetApp_PerCtxt *perCtxt, uint32_t perCtxtIndex);
+void EnetApp_closeDma(EnetApp_PerCtxt *perCtxt);
 
 void EnetApp_initTxFreePktQ(void);
 

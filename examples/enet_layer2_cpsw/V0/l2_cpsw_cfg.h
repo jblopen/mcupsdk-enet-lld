@@ -61,24 +61,19 @@ int32_t EnetApp_init(void);
 
 void EnetApp_deinit(void);
 
-int32_t EnetApp_open(EnetApp_PerCtxt *perCtxts,
-                           uint32_t numPerCtxts);
+int32_t EnetApp_open(EnetApp_PerCtxt *perCtxts);
 
-void EnetApp_close(EnetApp_PerCtxt *perCtxts,
-                         uint32_t numPerCtxts);
+void EnetApp_close(EnetApp_PerCtxt *perCtxts);
 
 int32_t EnetApp_openPort(EnetApp_PerCtxt *perCtxt);
 
 void EnetApp_closePort(EnetApp_PerCtxt *perCtxt);
 
-void EnetApp_printStats(EnetApp_PerCtxt *perCtxts,
-                              uint32_t numPerCtxts);
+void EnetApp_printStats(EnetApp_PerCtxt *perCtxts);
 
-void EnetApp_resetStats(EnetApp_PerCtxt *perCtxts,
-                              uint32_t numPerCtxts);
+void EnetApp_resetStats(EnetApp_PerCtxt *perCtxts);
 
-void EnetApp_showMacAddrs(EnetApp_PerCtxt *perCtxts,
-                                uint32_t numPerCtxts);
+void EnetApp_showMacAddrs(EnetApp_PerCtxt *perCtxts);
 
 int32_t EnetApp_waitForLinkUp(EnetApp_PerCtxt *perCtxt);
 
