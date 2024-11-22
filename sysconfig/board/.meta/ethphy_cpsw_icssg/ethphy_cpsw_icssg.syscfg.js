@@ -40,13 +40,13 @@ const ethphy_devices = [
         name: "DP83TG721",
     },
     {
+        name: "CUSTOM",
+        description: "Use this option to use a custom ETHPHY device with the name entered in the text box below"
+    },
+    {
         name: "NO-PHY",
         description: "Use this option to disable ETHPHY driver code generation and enable MAC-to-MAC mode"
     },
-    {
-        name: "CUSTOM",
-        description: "Use this option to use a custom ETHPHY device with the name entered in the text box below"
-    }
 ];
 
 function getNumValidInstances(module) {
@@ -90,6 +90,9 @@ function getUniqueLinkedEthphy(module) {
 };
 
 function peripheralSelectionOnChange (inst, ui) {
+    ui.phyAddr.hidden = false;
+    ui.customDeviceName.hidden = true;
+
     let peripheral = inst.peripheral;
     if(inst.boardType != "NONE") {
         peripheral = inst.boardType;
@@ -171,13 +174,16 @@ let ethphy_module = {
                     inst.phyAddr = (~0);
                     ui.phyAddr.hidden = true;
                 }
-                else if (inst.phySelect == "CUSTOM") {
-                    ui.phyAddr.readOnly = false;
-                    ui.customDeviceName.hidden = false;
-                }
                 else {
-                    ui.phyAddr.readOnly = false;
-                    ui.customDeviceName.hidden = true;
+                    let defaultAddr = 0;
+                    if (inst.peripheral != "NONE"){
+                        let peripheral = (inst.boardType == "NONE")? inst.peripheral:inst.boardType;
+                        defaultAddr = (inst.peripheral).includes("PORT_1")?ethphy.getPhyInfo(peripheral).defaultPhyAddr1:ethphy.getPhyInfo(peripheral).defaultPhyAddr2;
+                    }
+
+                    ui.customDeviceName.hidden = (inst.phySelect == "CUSTOM")? false:true;
+                    inst.phyAddr = defaultAddr;
+                    ui.phyAddr.hidden = false;
                 }
 
                 if(inst.skipExtendedConfig == false){
@@ -209,7 +215,7 @@ let ethphy_module = {
         },
         {
             name: "skipExtendedConfig",
-            displayName: "Skip Extended configuration",
+            displayName: "Skip Extended Configuration",
             description: "Set if extended configuation is needed for the PHY" ,
             default:false,
             onChange:function (inst, ui) {
@@ -224,7 +230,7 @@ let ethphy_module = {
         {
             name: "extendedConfig",
             longDescription: longDescriptionExtendedConfig,
-            displayName: "Extended configuration",
+            displayName: "Extended Configuration",
             multiline: true,
             default: "",
         },
