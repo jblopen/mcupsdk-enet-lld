@@ -47,20 +47,33 @@
  *
  * @{
  */
-
+/* ========================================================================== */
+/*                             Include Files                                  */
+/* ========================================================================== */
 #include "stddef.h"
 #include <stdint.h>
-#include "enet_base.h"
-#include "enet_queue.h"
-#include "include/dma/cpdma/enet_cpdma_types.h"
+#include <include/core/enet_queue.h>
+#include <include/dma/cpdma/enet_cpdma_types.h>
+
+#include <include/enet.h>
+#include <include/enet_cfg.h>
+#include <kernel/dpl/TaskP.h>
+#include <kernel/dpl/ClockP.h>
+#include <kernel/dpl/SemaphoreP.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* ========================================================================== */
+/*                                 Macros                                     */
+/* ========================================================================== */
 #define MAX_ETHERRING_INSTANCES 1
+#define MAX_RX_TIMESTAMPS_STORED                                    2020
 
-
+/* ========================================================================== */
+/*                         Structures and Enums                               */
+/* ========================================================================== */
 /*!
  * \brief Config structure for Ether Ring
  *
@@ -68,10 +81,12 @@ extern "C" {
  */
 typedef struct EtherRing_Cfg_s
 {
+    /*! Last Byte of Host Mac Address */
+    uint8_t hostMacAddLastByte;
+
     /*! Is ether-ring configured */
     bool isCfg;
 
-    // (todo) : Need to add further configuration which will be sent from application
 } EtherRing_Cfg;
 
 /**
@@ -102,12 +117,40 @@ typedef struct EtherRing_Obj_s
     bool isAllocated;
 
     /*! Sequence number of previous submitted packet */
-    uint16_t prevSequenceNumber;
+    uint8_t prevSequenceNumber;
 }
 EtherRing_Obj, *EtherRing_Handle;
 
-typedef EnetQ EtherRing_pktQ;
+typedef struct EtherRing_ClearLookupPollTaskInfo_s
+{
+    TaskP_Object      task;
+    uint8_t gEnetTaskStackPolling[10U * 1024U] __attribute__ ((aligned(32)));
+    SemaphoreP_Object sem;
 
+    /*
+     * Handle to counting shutdown semaphore, which all subtasks created in the
+     * open function must post before the close operation can complete.
+     */
+    SemaphoreP_Object shutDownSemObj;
+
+    /** Boolean to indicate shutDownFlag status of translation layer.*/
+    volatile bool shutDownFlag;
+
+    /*
+     * Clock handle for triggering the packet Rx notify
+     */
+    ClockP_Object pollLinkClkObj;
+} EtherRing_ClearLookupPollTaskInfo;
+
+typedef struct
+{
+    uint64_t etherRingTimeStampsRx[2][MAX_RX_TIMESTAMPS_STORED];
+    uint64_t etherRingCurrentTimeStamps[2][MAX_RX_TIMESTAMPS_STORED];
+    int16_t etherRingRxClassATsIndex;
+    int16_t etherRingRxClassDTsIndex;
+}EtherRingRxTs_obj;
+
+typedef EnetQ EtherRing_pktQ;
 /* ========================================================================== */
 /*                         Global Variables Declarations                      */
 /* ========================================================================== */
@@ -244,6 +287,15 @@ void EnetApp_addCBLikeHeader(EnetDma_Pkt *pktInfo,
  *  \return \ref void
  */
 void EnetApp_removeCBLikeHeader(EnetDma_Pkt *pktInfo);
+
+/*!
+ * \brief Creates a polling task to clear the lookup table.
+ *
+ * \param void
+ *
+ *  \return \ref Enet_ErrorCodes
+ */
+int32_t EtherRing_createClearLookupPollTask();
 
 #ifdef __cplusplus
 }
