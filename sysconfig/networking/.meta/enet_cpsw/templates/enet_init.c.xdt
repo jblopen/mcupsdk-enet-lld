@@ -48,6 +48,11 @@
 #include "ti_board_config.h"
 #include <utils/include/enet_appsoc.h>
 
+#if defined(SOC_AM275X)
+#include <drivers/pinmux.h>
+void EnetApp_fixPinmux();
+#endif
+
 #define ENETAPP_PHY_STATEHANDLER_TASK_PRIORITY        (7U)
 #define ENETAPP_PHY_STATEHANDLER_TASK_STACK     (3 * 1024)
 #define AppEventId_CPSW_PERIODIC_POLL    (1 << 3)
@@ -112,19 +117,19 @@ static void EnetApp_getMacPortInitConfig(CpswMacPort_Cfg *pMacPortCfg, const Ene
 void EnetApp_getMacPortLinkCfg(EnetMacPort_LinkCfg *pMacPortLinkCfg, const Enet_MacPort portIdx);
 
 static void EnetApp_openDmaChannels(EnetAppDmaSysCfg_Obj *dma,
-                                    Enet_Type enetType, 
+                                    Enet_Type enetType,
                                     uint32_t instId,
-                                    Enet_Handle hEnet, 
+                                    Enet_Handle hEnet,
                                     uint32_t coreKey,
                                     uint32_t coreId);
 
 static void EnetApp_openAllRxDmaChannels(EnetAppDmaSysCfg_Obj *dma,
-                                         Enet_Handle hEnet, 
+                                         Enet_Handle hEnet,
                                          uint32_t coreKey,
                                          uint32_t coreId);
 
 static void EnetApp_openAllTxDmaChannels(EnetAppDmaSysCfg_Obj *dma,
-                                         Enet_Handle hEnet, 
+                                         Enet_Handle hEnet,
                                          uint32_t coreKey,
                                          uint32_t coreId);
 
@@ -262,6 +267,9 @@ void EnetApp_driverInit()
 
     status = EnetMem_init();
     EnetAppUtils_assert(ENET_SOK == status);
+    #if defined(SOC_AM275X)
+    EnetApp_fixPinmux();
+    #endif
 }
 
 void EnetApp_driverDeInit()
@@ -328,7 +336,7 @@ int32_t EnetApp_driverOpen(Enet_Type enetType, uint32_t instId)
 
     gEnetAppSysCfgObj.hEnet = EnetApp_doCpswOpen(enetType, instId, &cpswCfg);
     EnetAppUtils_assert(NULL != gEnetAppSysCfgObj.hEnet);
-    
+
     EnetApp_enablePorts(gEnetAppSysCfgObj.hEnet, enetType, instId, selfCoreId, macPortList, numMacPorts);
 
 %if(device != 'am273x-evm' && device != 'awr294x-evm'){
@@ -355,19 +363,19 @@ int32_t EnetApp_driverOpen(Enet_Type enetType, uint32_t instId)
 % }
 % }
     /* Open all DMA channels */
-    EnetApp_acquireHandleInfo(enetType, 
+    EnetApp_acquireHandleInfo(enetType,
                               instId,
                               &handleInfo);
 
     (void)handleInfo; /* Handle info not used. Kill warning */
-    EnetApp_coreAttach(enetType, 
+    EnetApp_coreAttach(enetType,
                        instId,
                        selfCoreId,
                        &attachInfo);
     EnetApp_openDmaChannels(&gEnetAppSysCfgObj.dma,
-                            enetType, 
+                            enetType,
                             instId,
-                            gEnetAppSysCfgObj.hEnet, 
+                            gEnetAppSysCfgObj.hEnet,
                             attachInfo.coreKey,
                             selfCoreId);
     return status;
@@ -567,7 +575,7 @@ static int32_t EnetApp_enablePorts(Enet_Handle hEnet,
 
         linkArgs.macPort = macPortList[i];
         EnetApp_getMacPortInitConfig(linkArgs.macCfg, macPortList[i]);
-        
+
         /* in MAC loopback mode, we should not configure PHYs. It shall be treated as NO-PHY system */
         EnetApp_initLinkArgs(enetType, instId, macPortList[i], cpswMacCfg.loopbackEn, &linkArgs);
 
@@ -763,16 +771,16 @@ static uint32_t EnetApp_retrieveFreeTxPkts(EnetDma_TxChHandle hTxCh, EnetDma_Pkt
 static void EnetApp_openDmaChannels(EnetAppDmaSysCfg_Obj *dma,
                                     Enet_Type enetType,
                                     uint32_t instId,
-                                    Enet_Handle hEnet, 
+                                    Enet_Handle hEnet,
                                     uint32_t coreKey,
                                     uint32_t coreId)
 {
     EnetApp_openAllTxDmaChannels(dma,
-                                 hEnet, 
+                                 hEnet,
                                  coreKey,
                                  coreId);
     EnetApp_openAllRxDmaChannels(dma,
-                                 hEnet, 
+                                 hEnet,
                                  coreKey,
                                  coreId);
 }
@@ -859,14 +867,14 @@ int32_t EnetApp_enablePortTsEvent(Enet_Handle hEnet, uint32_t coreId, uint32_t m
     Enet_IoctlPrms prms;
     CpswMacPort_EnableTsEventInArgs enableTsEventInArgs;
     uint8_t i = 0U;
-    
+
     EnetApp_setPortTsEventPrms(&(enableTsEventInArgs.tsEventCfg));
-    for (i = 0U; i < numPorts; i++) 
+    for (i = 0U; i < numPorts; i++)
     {
         enableTsEventInArgs.macPort = (Enet_MacPort)macPort[i];
         ENET_IOCTL_SET_IN_ARGS(&prms, &enableTsEventInArgs);
         ENET_IOCTL(hEnet, coreId, CPSW_MACPORT_IOCTL_ENABLE_CPTS_EVENT, &prms, status);
-        if (status != ENET_SOK) 
+        if (status != ENET_SOK)
         {
             EnetAppUtils_print("Enet_ioctl ENABLE_CPTS_EVENT failed %d port %d\n", status, macPort[i]);
         }
@@ -943,3 +951,166 @@ void EnetApp_initPhyStateHandlerTask(EventP_Object *pEvent)
 %if(module.getDmaInterface(instance) == "ENET_SOC_HOSTPORT_DMA_TYPE_UDMA") {
 `system.getTemplate('./enet_init_udma.c.xdt')()`
 %}
+
+#if defined(SOC_AM275X) /* This is a workaround, will be removed. */
+void EnetApp_fixPinmux()
+{
+    Pinmux_PerCfg_t gPinMuxRGMII[] = {
+        /* MDIO0 pin config */
+        /* MDIO0_MDC -> MDIO0_MDC (V11) */
+        {
+            PIN_MDIO0_MDC,
+            ( PIN_MODE(0) | PIN_PULL_DISABLE )
+        },
+        /* MDIO0_MDIO -> MDIO0_MDIO (U11) */
+        {
+            PIN_MDIO0_MDIO,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII2 pin config */
+        /* RGMII2_RD0 -> RGMII2_RD0 (U15) */
+        {
+            PIN_RGMII2_RD0,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII2_RD1 -> RGMII2_RD1 (V15) */
+        {
+            PIN_RGMII2_RD1,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII2_RD2 -> RGMII2_RD2 (W14) */
+        {
+            PIN_RGMII2_RD2,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII2_RD3 -> RGMII2_RD3 (T15) */
+        {
+            PIN_RGMII2_RD3,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII2_RXC -> RGMII2_RXC (W15) */
+        {
+            PIN_RGMII2_RXC,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII2_RX_CTL -> RGMII2_RX_CTL (V14) */
+        {
+            PIN_RGMII2_RX_CTL,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII2_TD0 -> RGMII2_TD0 (V16) */
+        {
+            PIN_RGMII2_TD0,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII2_TD1 -> RGMII2_TD1 (W16) */
+        {
+            PIN_RGMII2_TD1,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII2_TD2 -> RGMII2_TD2 (V17) */
+        {
+            PIN_RGMII2_TD2,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII2_TD3 -> RGMII2_TD3 (W18) */
+        {
+            PIN_RGMII2_TD3,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII2_TXC -> RGMII2_TXC (W17) */
+        {
+            PIN_RGMII2_TXC,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII2_TX_CTL -> RGMII2_TX_CTL (U16) */
+        {
+            PIN_RGMII2_TX_CTL,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII1 pin config */
+        /* RGMII1_RD0 -> RGMII1_RD0 (W11) */
+        {
+            PIN_RGMII1_RD0,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII1_RD1 -> RGMII1_RD1 (T11) */
+        {
+            PIN_RGMII1_RD1,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII1_RD2 -> RGMII1_RD2 (T12) */
+        {
+            PIN_RGMII1_RD2,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII1_RD3 -> RGMII1_RD3 (U12) */
+        {
+            PIN_RGMII1_RD3,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII1_RXC -> RGMII1_RXC (W12) */
+        {
+            PIN_RGMII1_RXC,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII1_RX_CTL -> RGMII1_RX_CTL (V12) */
+        {
+            PIN_RGMII1_RX_CTL,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII1_TD0 -> RGMII1_TD0 (U13) */
+        {
+            PIN_RGMII1_TD0,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII1_TD1 -> RGMII1_TD1 (W13) */
+        {
+            PIN_RGMII1_TD1,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII1_TD2 -> RGMII1_TD2 (T14) */
+        {
+            PIN_RGMII1_TD2,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII1_TD3 -> RGMII1_TD3 (U14) */
+        {
+            PIN_RGMII1_TD3,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII1_TXC -> RGMII1_TXC (V13) */
+        {
+            PIN_RGMII1_TXC,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+        /* RGMII1_TX_CTL -> RGMII1_TX_CTL (T13) */
+        {
+            PIN_RGMII1_TX_CTL,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DISABLE )
+        },
+
+        {PINMUX_END, 0U}
+    };
+
+    Pinmux_PerCfg_t i2cPinmuxConfig[] =
+    {
+        /* I2C0 pin config */
+        /* I2C0_SCL -> I2C0_SCL (M3) */
+        {
+            PIN_I2C0_SCL,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DIRECTION  )
+        },
+                /* I2C0_SDA -> I2C0_SDA (N3) */
+        {
+            PIN_I2C0_SDA,
+            ( PIN_MODE(0) | PIN_INPUT_ENABLE | PIN_PULL_DIRECTION  )
+        },
+
+
+        {PINMUX_END, 0U}
+    };
+    Pinmux_config(gPinMuxRGMII, PINMUX_DOMAIN_ID_MAIN);
+    Pinmux_config(i2cPinmuxConfig, PINMUX_DOMAIN_ID_MAIN);
+}
+#endif
