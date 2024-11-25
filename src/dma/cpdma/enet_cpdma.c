@@ -80,11 +80,10 @@
  * Csum info is at end of packet and no cpdma desc is used */
 #define ENET_CPDMA_NUM_DESC_PER_RXPKT         (1U)
 
-#define ENET_RX_HOST_TIMESTAMP_SIZE           (8U)
-
 /* ========================================================================== */
 /*                         Structure Declarations                             */
 /* ========================================================================== */
+
 /* None */
 
 /* ========================================================================== */
@@ -1385,7 +1384,7 @@ bool EnetCpdma_dequeueRx(EnetCpdma_DescCh *pDescCh, EnetCpdma_cppiDesc *pDescCp)
     uint32_t numScatterSegments = 0U;
     uint32_t firstWordTs = 0;
     uint32_t secondWordTs = 0;
-    bool hasTimeStamp = false;
+    uint32_t hasTimeStamp = 0;
 
     key = EnetOsal_disableAllIntr();
     /*
@@ -1467,25 +1466,26 @@ bool EnetCpdma_dequeueRx(EnetCpdma_DescCh *pDescCh, EnetCpdma_cppiDesc *pDescCp)
 
                 if (numScatterSegments == 0)
                 {
-                    if (hasTimeStamp)
+                    if (hasTimeStamp != 0)
                     {
                         /* Storing the original buffer pointer given by descriptor for submitting it back in enqueueRx */
                         list->origBufPtr = pDesc->pBuffer;
                         list->segmentFilledLen = (pDesc->bufOffLen & ENET_CPDMA_DESC_PSINFO_RX_PACKET_LEN_MASK)
-                                                    - ENET_RX_HOST_TIMESTAMP_SIZE;
+                                                    - CPSW_CPDMA_RX_HOST_TIMESTAMP_SIZE;
 
                         /* Shifting the bufptr to point the packet header by incrementing the size of timeStamp */
-                        list->bufPtr = (uint8_t*)list->origBufPtr + ENET_RX_HOST_TIMESTAMP_SIZE;
+                        list->bufPtr = (uint8_t*)list->origBufPtr + CPSW_CPDMA_RX_HOST_TIMESTAMP_SIZE;
 
                         /* Storing the timeStamp(first 8 bytes prepended to the packet) and updating the total packet length  */
                         firstWordTs = *((uint32_t*)list->origBufPtr);
-                        secondWordTs = *((uint32_t*)(list->origBufPtr + (ENET_RX_HOST_TIMESTAMP_SIZE >> 1)));
+                        secondWordTs = *((uint32_t*)(list->origBufPtr + (CPSW_CPDMA_RX_HOST_TIMESTAMP_SIZE >> 1)));
                         pPkt->tsInfo.rxPktTs = (uint64_t)(secondWordTs | ((uint64_t)firstWordTs << 32));
 
-                        totalPktLen = totalPktLen - ENET_RX_HOST_TIMESTAMP_SIZE;
+                        totalPktLen = totalPktLen - CPSW_CPDMA_RX_HOST_TIMESTAMP_SIZE;
                     }
                     else
                     {
+                        /* Non-SOP descriptors in case of RX scatter segments handled here */
                         list->bufPtr = pDesc->pBuffer;
                         list->origBufPtr = pDesc->pBuffer;
                         list->segmentFilledLen = (pDesc->bufOffLen & ENET_CPDMA_DESC_PSINFO_RX_PACKET_LEN_MASK);

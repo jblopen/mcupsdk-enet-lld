@@ -50,16 +50,12 @@
 /* ========================================================================== */
 /*                             Include Files                                  */
 /* ========================================================================== */
-#include "stddef.h"
+#include <stddef.h>
 #include <stdint.h>
 #include <include/core/enet_queue.h>
-#include <include/dma/cpdma/enet_cpdma_types.h>
-
+#include <enet_dma.h>
 #include <include/enet.h>
 #include <include/enet_cfg.h>
-#include <kernel/dpl/TaskP.h>
-#include <kernel/dpl/ClockP.h>
-#include <kernel/dpl/SemaphoreP.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,9 +64,20 @@ extern "C" {
 /* ========================================================================== */
 /*                                 Macros                                     */
 /* ========================================================================== */
-#define MAX_ETHERRING_INSTANCES 1
-#define MAX_RX_TIMESTAMPS_STORED                                    2020
+/*! \brief Maximum Instances of EtherRing supported */
+#define ETHERRING_MAX_ETHERRING_INSTANCES                                     1U
 
+/*! \brief Value of Maximum Rx TimeStamps stored in the EtherRing stats */
+#define ETHERRING_MAX_RX_TIMESTAMPS_STORED                                    1020U
+
+/* \brief Size of Lookup table for Duplicate packet rejection */
+#define ETHERRING_LOOKUP_TABLE_SIZE                                 (256U*256U)
+
+/* \brief Count of Maximum ClassA streams Supported */
+#define ETHERRING_MAX_CLASSA_STREAMS                                3U
+
+/* \brief Count of Maximum ClassD streams Supported */
+#define ETHERRING_MAX_CLASSD_STREAMS                                3U
 /* ========================================================================== */
 /*                         Structures and Enums                               */
 /* ========================================================================== */
@@ -88,6 +95,29 @@ typedef struct EtherRing_Cfg_s
     bool isCfg;
 
 } EtherRing_Cfg;
+
+/*!
+ * \brief This structure stores the Ether Ring Stats
+ *
+ * The parameter structure for Ether Ring Stats
+ */
+typedef struct
+{
+    /*! EtherRing Lookup table for Duplicate packets */
+    int8_t etherRingSeqLookUp[ETHERRING_LOOKUP_TABLE_SIZE];
+
+    /*! Original packet count */
+    uint64_t etherRingNonDuplicatedPktCount;
+
+    /*! Duplicated packet count */
+    uint64_t etherRingDuplicatedRxPacketCount;
+
+    /*! Count of submitted packets via EtherRing */
+    uint64_t etherRingSubmittedPacketCount;
+
+    /*! Received packet count in RX per stream */
+    uint64_t etherRingClassRxCount[ETHERRING_MAX_CLASSA_STREAMS + ETHERRING_MAX_CLASSD_STREAMS];
+}EtherRingStats;
 
 /**
  * \brief
@@ -118,35 +148,31 @@ typedef struct EtherRing_Obj_s
 
     /*! Sequence number of previous submitted packet */
     uint8_t prevSequenceNumber;
+
+    /*! EtherRing Stats for duplicate packet rejection*/
+    EtherRingStats etherRingStats;
 }
 EtherRing_Obj, *EtherRing_Handle;
 
-typedef struct EtherRing_ClearLookupPollTaskInfo_s
-{
-    TaskP_Object      task;
-    uint8_t gEnetTaskStackPolling[10U * 1024U] __attribute__ ((aligned(32)));
-    SemaphoreP_Object sem;
-
-    /*
-     * Handle to counting shutdown semaphore, which all subtasks created in the
-     * open function must post before the close operation can complete.
-     */
-    SemaphoreP_Object shutDownSemObj;
-
-    /** Boolean to indicate shutDownFlag status of translation layer.*/
-    volatile bool shutDownFlag;
-
-    /*
-     * Clock handle for triggering the packet Rx notify
-     */
-    ClockP_Object pollLinkClkObj;
-} EtherRing_ClearLookupPollTaskInfo;
-
+/**
+ * \brief
+ *  Etherring RxTs, Current TimeStamp stats for class A and D streams
+ *
+ * \details
+ *  This structure stores the Rx timestamp and current timestamp stats.
+ */
 typedef struct
 {
-    uint64_t etherRingTimeStampsRx[2][MAX_RX_TIMESTAMPS_STORED];
-    uint64_t etherRingCurrentTimeStamps[2][MAX_RX_TIMESTAMPS_STORED];
+    /*! Rx Timestamp Array for Class A and D streams */
+    uint64_t etherRingTimeStampsRx[2][ETHERRING_MAX_RX_TIMESTAMPS_STORED];
+
+    /*! Current Timestamp Array for Class A and D streams */
+    uint64_t etherRingCurrentTimeStamps[2][ETHERRING_MAX_RX_TIMESTAMPS_STORED];
+
+    /*! Array Index for ClassA stream*/
     int16_t etherRingRxClassATsIndex;
+
+    /*! Array Index for ClassD stream*/
     int16_t etherRingRxClassDTsIndex;
 }EtherRingRxTs_obj;
 
@@ -182,9 +208,9 @@ EtherRing_Handle EtherRing_open(Enet_Handle hEnet,
  *
  * \param hEtherRing     [IN] Void pointer to the EtherRing handle
  *
- * \return \ref Enet_ErrorCodes
+ * \return \ref void
  */
-int32_t EtherRing_close(void *hEtherRing);
+void EtherRing_close(void *hEtherRing);
 
 /*!
  * \brief Submit a queue of ready (full) packets to TX channel.
@@ -249,7 +275,7 @@ int32_t EtherRing_retrieveRxPktQ(void *hEtherRing,
  *
  *  \return \ref void
  */
-void EtherRing_TxDmaHdle_Attach(void *hEtherRing,
+void EtherRing_attachTxDmaHandle(void *hEtherRing,
                                 EnetDma_TxChHandle hTxCh,
                                 int32_t txChNum);
 
@@ -264,7 +290,7 @@ void EtherRing_TxDmaHdle_Attach(void *hEtherRing,
  *
  *  \return \ref void
  */
-void EtherRing_RxDmaHdle_Attach(void *hEtherRing,
+void EtherRing_attachRxDmaHandle(void *hEtherRing,
                                 EnetDma_RxChHandle hRxCh,
                                 int32_t rxChNum);
 
@@ -276,7 +302,7 @@ void EtherRing_RxDmaHdle_Attach(void *hEtherRing,
  *
  *  \return \ref void
  */
-void EnetApp_addCBLikeHeader(EnetDma_Pkt *pktInfo,
+void EtherRing_addCBLikeHeader(EnetDma_Pkt *pktInfo,
                              uint16_t seqNumber);
 
 /*!
@@ -286,16 +312,16 @@ void EnetApp_addCBLikeHeader(EnetDma_Pkt *pktInfo,
  *
  *  \return \ref void
  */
-void EnetApp_removeCBLikeHeader(EnetDma_Pkt *pktInfo);
+void EtherRing_removeCBLikeHeader(EnetDma_Pkt *pktInfo);
 
 /*!
- * \brief Creates a polling task to clear the lookup table.
+ * \brief Periodic function that needs to be called from application.
  *
- * \param void
+ * \param hEtherRing  [IN] Void pointer to the Ether-ring handle
  *
- *  \return \ref Enet_ErrorCodes
+ *  \return \ref void
  */
-int32_t EtherRing_createClearLookupPollTask();
+void EtherRing_periodicTick(void *hEtherRing);
 
 #ifdef __cplusplus
 }
