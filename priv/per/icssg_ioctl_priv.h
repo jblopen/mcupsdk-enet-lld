@@ -291,11 +291,11 @@ int32_t Icssg_ioctl_handler_ENET_PER_IOCTL_HANDLE_EXTPHY_LINKDOWN_EVENT(EnetPer_
                                                             uint32_t cmd,
                                                             Enet_IoctlPrms *prms);
 
-int32_t Icssg_ioctl_handler_ICSSG_HSR_IOCTL_ENABLE_TAG_REM_AND_HOST_DD(EnetPer_Handle hPer,
+int32_t Icssg_ioctl_handler_ICSSG_ENABLE_PROTOCOL_SPECIFIC_TAG_IOCTL(EnetPer_Handle hPer,
                                                             uint32_t cmd,
                                                             Enet_IoctlPrms *prms);
 
-int32_t Icssg_ioctl_handler_ICSSG_HSR_IOCTL_DISABLE_TAG_REM_AND_HOST_DD(EnetPer_Handle hPer,
+int32_t Icssg_ioctl_handler_ICSSG_DISABLE_PROTOCOL_SPECIFIC_TAG_IOCTL(EnetPer_Handle hPer,
                                                             uint32_t cmd,
                                                             Enet_IoctlPrms *prms);
 

@@ -548,11 +548,11 @@ static Enet_IoctlValidate gIcssg_ioctlValidate[] =
                           sizeof(Enet_IoctlRegisterHandlerInArgs),
                           0U),
 
-    ENET_IOCTL_VALID_PRMS(ICSSG_HSR_IOCTL_ENABLE_TAG_REM_AND_HOST_DD,
+    ENET_IOCTL_VALID_PRMS(ICSSG_ENABLE_PROTOCOL_SPECIFIC_TAG_IOCTL,
                           0U,
                           0U),
 
-    ENET_IOCTL_VALID_PRMS(ICSSG_HSR_IOCTL_DISABLE_TAG_REM_AND_HOST_DD,
+    ENET_IOCTL_VALID_PRMS(ICSSG_DISABLE_PROTOCOL_SPECIFIC_TAG_IOCTL,
                           0U,
                           0U),
 };
@@ -601,8 +601,8 @@ static IcssgInternalIoctlHandlerTableEntry_t IcssgInternalIoctlHandlerTable[] =
     ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_MACPORT_IOCTL_CONFIG_SPL_FRAME_PRIO),
     ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ENET_PER_IOCTL_HANDLE_EXTPHY_LINKUP_EVENT),
     ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ENET_PER_IOCTL_HANDLE_EXTPHY_LINKDOWN_EVENT),
-    ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_HSR_IOCTL_ENABLE_TAG_REM_AND_HOST_DD),
-    ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_HSR_IOCTL_DISABLE_TAG_REM_AND_HOST_DD),
+    ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_ENABLE_PROTOCOL_SPECIFIC_TAG_IOCTL),
+    ICSSG_IOCTL_HANDLER_ENTRY_INIT_DEFAULT(ICSSG_DISABLE_PROTOCOL_SPECIFIC_TAG_IOCTL),
     ICSSG_IOCTL_HANDLER_ENTRY_INIT(ENET_PER_IOCTL_REGISTER_IOCTL_HANDLER),
 };
 
@@ -4990,14 +4990,14 @@ int32_t Icssg_ioctl_handler_ENET_PER_IOCTL_HANDLE_EXTPHY_LINKDOWN_EVENT(EnetPer_
     return status;
 }
 
-int32_t Icssg_ioctl_handler_ICSSG_HSR_IOCTL_ENABLE_TAG_REM_AND_HOST_DD(EnetPer_Handle hPer,
+int32_t Icssg_ioctl_handler_ICSSG_ENABLE_PROTOCOL_SPECIFIC_TAG_IOCTL(EnetPer_Handle hPer,
                                                             uint32_t cmd,
                                                             Enet_IoctlPrms *prms)
 {
     Icssg_Handle hIcssg = (Icssg_Handle)hPer;
     int32_t status = ENET_SOK;
 
-    Enet_assert(cmd == ICSSG_HSR_IOCTL_ENABLE_TAG_REM_AND_HOST_DD);
+    Enet_assert(cmd == ICSSG_ENABLE_PROTOCOL_SPECIFIC_TAG_IOCTL);
 
     status = Icssg_ioctlEnableHsrTagRemovalOffload(hIcssg, ENET_MAC_PORT_1);
     if (status == ENET_SOK)
@@ -5010,14 +5010,14 @@ int32_t Icssg_ioctl_handler_ICSSG_HSR_IOCTL_ENABLE_TAG_REM_AND_HOST_DD(EnetPer_H
     return status;
 }
 
-int32_t Icssg_ioctl_handler_ICSSG_HSR_IOCTL_DISABLE_TAG_REM_AND_HOST_DD(EnetPer_Handle hPer,
+int32_t Icssg_ioctl_handler_ICSSG_DISABLE_PROTOCOL_SPECIFIC_TAG_IOCTL(EnetPer_Handle hPer,
                                                             uint32_t cmd,
                                                             Enet_IoctlPrms *prms)
 {
     Icssg_Handle hIcssg = (Icssg_Handle)hPer;
     int32_t status = ENET_SOK;
 
-    Enet_assert(cmd == ICSSG_HSR_IOCTL_DISABLE_TAG_REM_AND_HOST_DD);
+    Enet_assert(cmd == ICSSG_DISABLE_PROTOCOL_SPECIFIC_TAG_IOCTL);
 
     status = Icssg_ioctlDisableHsrTagRemovalOffload(hIcssg, ENET_MAC_PORT_1);
     if (status == ENET_SOK)

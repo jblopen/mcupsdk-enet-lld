@@ -499,9 +499,9 @@ int32_t EnetUdma_submitPkts(EnetPer_Handle hPer,
                     {
                         ENETUDMA_CPPIPSI_SET_TSEN(*dmaExtendedPktInfo, 0U);
                     }
-                    if (dmaPkt->icssgDmaFlags)
+                    if (dmaPkt->perDmaFlags)
                     {
-                        *dmaExtendedPktInfo |= ((dmaPkt->icssgDmaFlags) & (~(1<<31)));
+                        *dmaExtendedPktInfo |= ((dmaPkt->perDmaFlags) & (~(1<<31)));
                     }
                 }
                 else    /* CPSW specific: */
@@ -960,9 +960,9 @@ int32_t EnetUdma_submitSingleTxPkt(EnetPer_Handle hPer,
                 {
                     ENETUDMA_CPPIPSI_SET_TSEN(*dmaExtendedPktInfo, 0U);
                 }
-                if (pPkt->icssgDmaFlags)
+                if (pPkt->perDmaFlags)
                 {
-                    *dmaExtendedPktInfo |= ((pPkt->icssgDmaFlags) & (~(1<<31)));
+                    *dmaExtendedPktInfo |= ((pPkt->perDmaFlags) & (~(1<<31)));
                 }
             }
             else    /* CPSW specific: */

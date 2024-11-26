@@ -661,7 +661,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Asynchronous.
      */
-    ICSSG_HSR_IOCTL_ENABLE_TAG_REM_AND_HOST_DD = ICSSG_PUBLIC_IOCTL(29U),
+    ICSSG_ENABLE_PROTOCOL_SPECIFIC_TAG_IOCTL = ICSSG_PUBLIC_IOCTL(29U),
 
     /*!
      * \brief Disable HSR Tag Removal Offload
@@ -672,7 +672,7 @@ typedef enum Icssg_Ioctl_e
      *
      * Type: Asynchronous.
      */
-    ICSSG_HSR_IOCTL_DISABLE_TAG_REM_AND_HOST_DD = ICSSG_PUBLIC_IOCTL(30U),
+    ICSSG_DISABLE_PROTOCOL_SPECIFIC_TAG_IOCTL = ICSSG_PUBLIC_IOCTL(30U),
 
     /*!
      * \brief Register Handler for the IOCTL CMD
