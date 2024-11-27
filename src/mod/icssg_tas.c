@@ -446,19 +446,15 @@ int32_t IcssgTas_setTriggerForListChange(IcssgTas_Handle hTas,
 
     cycleTime = hTas->adminList.cycleTime - 4U; /* Subtracting 4ns to compensate for IEP wrap around time */
     baseTime = hTas->adminList.baseTime;
-
+    /* Update the cycle count at which the change needs to be applied*/
     if (cycleTime > 0U)
     {
-        temp = ((baseTime / cycleTime) - tsCycleCounter);
+        temp = baseTime / cycleTime;
     }
 
-    if (temp <= 0) /* Time at which user wants to load has already past, so we will load at start of next cycle */
+    if (temp <= 0) /* Time at which user wants to load has already past, so upate with the current cycle */
     {
-        cycleCount = 1U;
-    }
-    else if ((baseTime % cycleTime) != 0U) /* Implementing ceiling function */
-    {
-        cycleCount = (uint32_t)(temp + 1);
+        cycleCount = tsCycleCounter;
     }
     else
     {
