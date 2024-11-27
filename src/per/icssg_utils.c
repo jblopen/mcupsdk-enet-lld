@@ -1108,7 +1108,7 @@ void IcssgUtils_fwConfig(Icssg_Handle hIcssg,
         /* Host buffer pool memory */
         IcssgUtils_BufPoolCfg.poolLen  = fwPoolMem->hostBufferPoolSize;
         IcssgUtils_BufPoolCfg.poolBase = (uint32_t)fwPoolMem->hostBufferPoolMem;
-        for (i = ICSSG_SWITCH_PORT_BUFFER_POOL_NUM; i < (fwPoolMem->hostBufferPoolNum + ICSSG_SWITCH_PORT_BUFFER_POOL_NUM); i++)
+        for (i = ICSSG_SWITCH_PORT_BUFFER_POOL_NUM_MAX; i < (fwPoolMem->hostBufferPoolNum + ICSSG_SWITCH_PORT_BUFFER_POOL_NUM_MAX); i++)
         {
             IcssgUtils_WriteMem(dram + BUFFER_POOL_0_ADDR_OFFSET + (i * 8),
                                 &IcssgUtils_BufPoolCfg,
@@ -1187,7 +1187,7 @@ void IcssgUtils_fwConfig(Icssg_Handle hIcssg,
         /* Host buffer pool memory */
         IcssgUtils_BufPoolCfg.poolLen  = fwPoolMem->hostBufferPoolSize;
         IcssgUtils_BufPoolCfg.poolBase = (uint32_t)fwPoolMem->hostBufferPoolMem;
-        for (i = ICSSG_SWITCH_PORT_BUFFER_POOL_NUM; i < (fwPoolMem->hostBufferPoolNum + ICSSG_SWITCH_PORT_BUFFER_POOL_NUM); i++)
+        for (i = ICSSG_SWITCH_PORT_BUFFER_POOL_NUM_MAX; i < (fwPoolMem->hostBufferPoolNum + ICSSG_SWITCH_PORT_BUFFER_POOL_NUM_MAX); i++)
         {
             IcssgUtils_WriteMem(dram + BUFFER_POOL_0_ADDR_OFFSET + (i * 8),
                                 &IcssgUtils_BufPoolCfg,
@@ -1521,7 +1521,7 @@ void IcssgUtils_configSwtFw(Icssg_Handle hIcssg,
     /* Host buffer pool memory */
     IcssgUtils_BufPoolCfg.poolLen  = fwPoolMem0->hostBufferPoolSize;
     IcssgUtils_BufPoolCfg.poolBase = (uint32_t)fwPoolMem0->hostBufferPoolMem;
-    for (i = ICSSG_SWITCH_PORT_BUFFER_POOL_NUM; i < (fwPoolMem0->hostBufferPoolNum + ICSSG_SWITCH_PORT_BUFFER_POOL_NUM); i++)
+    for (i = ICSSG_SWITCH_PORT_BUFFER_POOL_NUM_MAX; i < (fwPoolMem0->hostBufferPoolNum + ICSSG_SWITCH_PORT_BUFFER_POOL_NUM_MAX); i++)
     {
         IcssgUtils_WriteMem(dram + BUFFER_POOL_0_ADDR_OFFSET + (i * 8),
                             &IcssgUtils_BufPoolCfg,
@@ -1623,7 +1623,7 @@ void IcssgUtils_configSwtFw(Icssg_Handle hIcssg,
     /* Host buffer pool memory */
     IcssgUtils_BufPoolCfg.poolLen  = fwPoolMem1->hostBufferPoolSize;
     IcssgUtils_BufPoolCfg.poolBase = (uint32_t)fwPoolMem1->hostBufferPoolMem;
-    for (i = ICSSG_SWITCH_PORT_BUFFER_POOL_NUM; i < (fwPoolMem1->hostBufferPoolNum + ICSSG_SWITCH_PORT_BUFFER_POOL_NUM); i++)
+    for (i = ICSSG_SWITCH_PORT_BUFFER_POOL_NUM_MAX; i < (fwPoolMem1->hostBufferPoolNum + ICSSG_SWITCH_PORT_BUFFER_POOL_NUM_MAX); i++)
     {
         IcssgUtils_WriteMem(dram + BUFFER_POOL_0_ADDR_OFFSET + (i * 8),
                             &IcssgUtils_BufPoolCfg,

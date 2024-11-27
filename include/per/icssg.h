@@ -117,8 +117,13 @@ extern "C" {
 /*! \brief Number of host egress queues required for Dual-MAC. */
 #define ICSSG_DUALMAC_HOST_EGRESS_QUEUE_NUM (2U)
 
-/*! \brief Number of port buffer pools required for Dual-MAC. */
+/*! \brief Number of port buffer pools required for Dual-MAC. 
+ *         This value can be modified if required from 1 to 8*/
 #define ICSSG_SWITCH_PORT_BUFFER_POOL_NUM   (8U)
+
+/*! \brief Maximum number of port buffer pools. 
+ *         This offset used for Host pool init config */
+#define ICSSG_SWITCH_PORT_BUFFER_POOL_NUM_MAX   (8U)
 
 /*! \brief Number of host egress queues required for Dual-MAC. */
 #define ICSSG_SWITCH_HOST_EGRESS_QUEUE_NUM  (2U)
