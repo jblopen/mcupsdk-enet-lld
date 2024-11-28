@@ -650,7 +650,7 @@ typedef struct EnetPhy_Obj_s
     uint32_t reqLinkCaps;
 
     /*! PHY driver */
-    EthPhyDrv_If hDrvIf;
+    Phy_DrvObj_t hDrvIf;
 
     /*! Magic number indicating that this object is in use */
     EnetPhy_Magic magic;

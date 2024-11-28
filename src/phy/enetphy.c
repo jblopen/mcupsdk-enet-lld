@@ -272,6 +272,8 @@ EnetPhy_Handle EnetPhy_open(const EnetPhy_Cfg *phyCfg,
                             EnetPhy_MdioHandle hMdio,
                             void *mdioArgs)
 {
+    Enet_devAssert(ETHPHYDRV_MAX_OBJ_SIZE >= sizeof(Phy_Obj_t));    
+    
     EnetPhy_Handle hPhy = EnetPhy_getHandle();
     bool manualMode = false;
     bool alive;
@@ -285,7 +287,7 @@ EnetPhy_Handle EnetPhy_open(const EnetPhy_Cfg *phyCfg,
 
     if (status == ENET_SOK)
     {
-        hPhy->hDrvIf    = NULL;
+        // hPhy->hDrvIf    = NULL;
         hPhy->hMdio   = hMdio;
         hPhy->mdioArgs = mdioArgs;
         hPhy->macCaps = macPortCaps;
@@ -706,10 +708,10 @@ int32_t EnetPhy_readExtReg(void* pArgs,
 	EnetPhy_Handle hPhy = (EnetPhy_Handle)pArgs;
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) &&
-        (hPhy->hDrvIf->fxn.readExtReg != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) &&
+        (hPhy->hDrvIf.fxn.readExtReg != NULL))
     {
-        status = hPhy->hDrvIf->fxn.readExtReg(hPhy->hDrvIf->hDrv, reg, val);
+        status = hPhy->hDrvIf.fxn.readExtReg(hPhy->hDrvIf.hDrv, reg, val);
     }
 
     return status;
@@ -722,10 +724,10 @@ int32_t EnetPhy_writeExtReg(void *pArgs,
     EnetPhy_Handle hPhy = (EnetPhy_Handle)pArgs;
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) &&
-        (hPhy->hDrvIf->fxn.writeExtReg != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) &&
+        (hPhy->hDrvIf.fxn.writeExtReg != NULL))
     {
-        status = hPhy->hDrvIf->fxn.writeExtReg(hPhy->hDrvIf->hDrv, reg, val);
+        status = hPhy->hDrvIf.fxn.writeExtReg(hPhy->hDrvIf.hDrv, reg, val);
     }
 
     return status;
@@ -739,17 +741,17 @@ int32_t EnetPhy_rmwExtReg(EnetPhy_Handle hPhy,
     int32_t status = ENETPHY_ENOTSUPPORTED;
     uint16_t data = 0U;
 
-    if ((hPhy->hDrvIf != NULL) &&
-        (hPhy->hDrvIf->fxn.readExtReg != NULL) &&
-        (hPhy->hDrvIf->fxn.writeExtReg != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) &&
+        (hPhy->hDrvIf.fxn.readExtReg != NULL) &&
+        (hPhy->hDrvIf.fxn.writeExtReg != NULL))
     {
-        status = hPhy->hDrvIf->fxn.readExtReg(hPhy->hDrvIf->hDrv, reg, &data);
+        status = hPhy->hDrvIf.fxn.readExtReg(hPhy->hDrvIf.hDrv, reg, &data);
 
         if (status == ENETPHY_SOK)
         {
             data = (data & ~mask) | (val & mask);
 
-            status = hPhy->hDrvIf->fxn.writeExtReg(hPhy->hDrvIf->hDrv, reg, data);
+            status = hPhy->hDrvIf.fxn.writeExtReg(hPhy->hDrvIf.hDrv, reg, data);
         }
     }
 
@@ -828,10 +830,10 @@ int32_t EnetPhy_rmwC45Reg(EnetPhy_Handle hPhy,
 
 void EnetPhy_printRegs(EnetPhy_Handle hPhy)
 {
-    if ((hPhy->hDrvIf != NULL) &&
-        (hPhy->hDrvIf->fxn.printRegs != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) &&
+        (hPhy->hDrvIf.fxn.printRegs != NULL))
     {
-        hPhy->hDrvIf->fxn.printRegs(hPhy->hDrvIf->hDrv);
+        hPhy->hDrvIf.fxn.printRegs(hPhy->hDrvIf.hDrv);
     }
 }
 
@@ -1058,13 +1060,13 @@ static void EnetPhy_resetWaitState(EnetPhy_Handle hPhy)
     EnetPhy_State *state = &hPhy->state;
     bool complete;
 
-    Enet_devAssert(hPhy->hDrvIf->fxn.isResetComplete != NULL,
+    Enet_devAssert(hPhy->hDrvIf.fxn.isResetComplete != NULL,
                    "PHY %u: isResetComplete callback not implemented\r\n", hPhy->addr);
     Enet_devAssert(!hPhy->phyCfg.isStrapped,
                    "PHY %u: unexpected state for strapped PHY\r\n", hPhy->addr);
 
     /* Wait for PHY reset to complete */
-    complete = hPhy->hDrvIf->fxn.isResetComplete(hPhy->hDrvIf->hDrv);
+    complete = hPhy->hDrvIf.fxn.isResetComplete(hPhy->hDrvIf.hDrv);
     if (complete)
     {
         if (state->residenceTime != 0U)
@@ -1105,20 +1107,20 @@ static void EnetPhy_enableState(EnetPhy_Handle hPhy)
         EnetPhy_rmwReg(hPhy, PHY_BMCR, BMCR_ISOLATE | BMCR_PWRDOWN, 0U);
 
         /* PHY-specific 'extended' configuration */
-        if ((hPhy->hDrvIf->fxn.config != NULL) &&
+        if ((hPhy->hDrvIf.fxn.config != NULL) &&
             !hPhy->phyCfg.skipExtendedCfg)
         {
-            hPhy->hDrvIf->fxn.config(hPhy->hDrvIf->hDrv,  &hPhy->phyCfg.extendedCfg, hPhy->phyCfg.extendedCfgSize, (Phy_Mii)hPhy->mii, hPhy->phyCfg.loopbackEn);
+            hPhy->hDrvIf.fxn.config(hPhy->hDrvIf.hDrv,  &hPhy->phyCfg.extendedCfg, hPhy->phyCfg.extendedCfgSize, (Phy_Mii)hPhy->mii, hPhy->phyCfg.loopbackEn);
 
             /* TODO: Should be handled in EnetPhy_linkWaitState */
             /* Set Parameters for Automotive PHYs - Fixed Speed */
-            if (strcmp(hPhy->hDrvIf->fxn.name, "Dp83tc812") == 0 ||
-                strcmp(hPhy->hDrvIf->fxn.name, "Dp83tc811") == 0)
+            if (strcmp(hPhy->hDrvIf.fxn.name, "Dp83tc812") == 0 ||
+                strcmp(hPhy->hDrvIf.fxn.name, "Dp83tc811") == 0)
             {
                 hPhy->state.phyLinkCaps = PHY_LINK_CAP_FD100; // 100Mbit/s - Full Duplex
             }
-            else if(strcmp(hPhy->hDrvIf->fxn.name, "Dp83tg720") == 0 ||
-                    strcmp(hPhy->hDrvIf->fxn.name, "Dp83tg721") == 0)
+            else if(strcmp(hPhy->hDrvIf.fxn.name, "Dp83tg720") == 0 ||
+                    strcmp(hPhy->hDrvIf.fxn.name, "Dp83tg721") == 0)
             {
                 hPhy->state.phyLinkCaps = PHY_LINK_CAP_FD1000; // 1000Mbit/s - Full Duplex
             }
@@ -1804,45 +1806,43 @@ static bool EnetPhy_isPhyLinked(EnetPhy_Handle hPhy)
 
 static int32_t EnetPhy_bindDriver(EnetPhy_Handle hPhy)
 {
-    EthPhyDrv_If hDrvIf;
+    Phy_DrvObj_t hDrvIf;
     EnetPhy_Version version;
     bool match;
     bool macSupported;
     uint32_t i;
     int32_t status;
 
-    hPhy->hDrvIf = NULL;
-
     status = EnetPhy_getId(hPhy, &version);
     if (status == ENETPHY_SOK)
     {
         for (i = 0U; i < gEnetPhyDrvTbl.numHandles; i++)
         {
-            hDrvIf = gEnetPhyDrvTbl.hPhyDrvList[i];
+            hDrvIf = *(gEnetPhyDrvTbl.hPhyDrvList[i]);
 
-            Enet_devAssert(hDrvIf != NULL,
+            Enet_devAssert(hDrvIf.fxn.name != NULL,
                            "PHY %u: No PHY driver handle at index %u\r\n",
                            hPhy->addr, i);
-            Enet_devAssert(hDrvIf->fxn.isPhyDevSupported != NULL,
+            Enet_devAssert(hDrvIf.fxn.isPhyDevSupported != NULL,
                            "PHY %u: PHY driver '%s' doesn't provide isPhyDevSupported callback\r\n",
-                           hPhy->addr, hDrvIf->fxn.name);
+                           hPhy->addr, hDrvIf.fxn.name);
 
             ENETTRACE_DBG("PHY %u: OUI:%06x Model:%02x Ver:%02x <-> '%s'\r\n",
                           hPhy->addr,
                           version.oui, version.model, version.revision,
-                          hDrvIf->fxn.name);
+                          hDrvIf.fxn.name);
 
             /* Check if driver supports detected PHY device */
-            match = hDrvIf->fxn.isPhyDevSupported(NULL, &version);
+            match = hDrvIf.fxn.isPhyDevSupported(NULL, &version);
 
             /* Check if driver supports the MAC mode */
             if (match)
             {
-                macSupported = hDrvIf->fxn.isMacModeSupported(NULL, (Phy_Mii)hPhy->mii);
+                macSupported = hDrvIf.fxn.isMacModeSupported(NULL, (Phy_Mii)hPhy->mii);
                 if (!macSupported)
                 {
                     ENETTRACE_WARN("PHY %u: '%s' doesn't support MAC mode %d\r\n",
-                                   hPhy->addr, hDrvIf->fxn.name, hPhy->mii);
+                                   hPhy->addr, hDrvIf.fxn.name, hPhy->mii);
                 }
             }
 
@@ -1859,35 +1859,35 @@ static int32_t EnetPhy_bindDriver(EnetPhy_Handle hPhy)
                         .pArgs = (void *) hPhy,
                 };
 
-                hPhy->hDrvIf = hDrvIf;
-                hDrvIf->fxn.bind(&hDrvIf->hDrv, hPhy->addr, &regAccess);
+                hPhy->hDrvIf.fxn = hDrvIf.fxn;
+                hDrvIf.fxn.bind(&hPhy->hDrvIf.hDrv, hPhy->addr, &regAccess);
                 (void)regAccess;
                 break;
             }
         }
 
-        ENETTRACE_INFO_IF(hPhy->hDrvIf != NULL,
+        ENETTRACE_INFO_IF(hPhy->hDrvIf.fxn.name != NULL,
                           "PHY %u: OUI:%06x Model:%02x Ver:%02x <-> '%s' : OK\r\n",
                           hPhy->addr,
                           version.oui, version.model, version.revision,
-                          hPhy->hDrvIf->fxn.name);
+                          hPhy->hDrvIf.fxn.name);
     }
 
-    return (hPhy->hDrvIf != NULL) ? ENETPHY_SOK : ENETPHY_EFAIL;
+    return (hPhy->hDrvIf.fxn.name != NULL) ? ENETPHY_SOK : ENETPHY_EFAIL;
 }
 
 static void EnetPhy_resetPhy(EnetPhy_Handle hPhy)
 {
     EnetPhy_State *state = &hPhy->state;
 
-    ENETTRACE_WARN_IF(hPhy->hDrvIf == NULL,
+    ENETTRACE_WARN_IF(hPhy->hDrvIf.fxn.name == NULL,
                       "PHY %u: not bound to a driver, can't be reset\r\n", hPhy->addr);
 
     /* PHY specific reset */
-    if ((hPhy->hDrvIf != NULL) &&
-        (hPhy->hDrvIf->fxn.reset != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) &&
+        (hPhy->hDrvIf.fxn.reset != NULL))
     {
-        hPhy->hDrvIf->fxn.reset(hPhy->hDrvIf->hDrv);
+        hPhy->hDrvIf.fxn.reset(hPhy->hDrvIf.hDrv);
 
         if (hPhy->phyCfg.isStrapped)
         {
@@ -2051,9 +2051,9 @@ int32_t EnetPhy_adjPtpFreq(EnetPhy_Handle hPhy, int64_t ppb)
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.adjPtpFreq != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.adjPtpFreq != NULL))
     {
-        status = hPhy->hDrvIf->fxn.adjPtpFreq(hPhy->hDrvIf->hDrv, ppb);
+        status = hPhy->hDrvIf.fxn.adjPtpFreq(hPhy->hDrvIf.hDrv, ppb);
     }
 
     return status;
@@ -2063,9 +2063,9 @@ int32_t EnetPhy_adjPtpPhase(EnetPhy_Handle hPhy, int64_t offset)
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.adjPtpPhase != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.adjPtpPhase != NULL))
     {
-        status = hPhy->hDrvIf->fxn.adjPtpPhase(hPhy->hDrvIf->hDrv, offset);
+        status = hPhy->hDrvIf.fxn.adjPtpPhase(hPhy->hDrvIf.hDrv, offset);
     }
 
     return status;
@@ -2075,9 +2075,9 @@ int32_t EnetPhy_getPtpTime(EnetPhy_Handle hPhy, uint64_t *ts64)
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.getPtpTime != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.getPtpTime != NULL))
     {
-        status = hPhy->hDrvIf->fxn.getPtpTime(hPhy->hDrvIf->hDrv, ts64);
+        status = hPhy->hDrvIf.fxn.getPtpTime(hPhy->hDrvIf.hDrv, ts64);
     }
 
     return status;
@@ -2087,9 +2087,9 @@ int32_t EnetPhy_setPtpTime(EnetPhy_Handle hPhy, uint64_t ts64)
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.setPtpTime != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.setPtpTime != NULL))
     {
-        status = hPhy->hDrvIf->fxn.setPtpTime(hPhy->hDrvIf->hDrv, ts64);
+        status = hPhy->hDrvIf.fxn.setPtpTime(hPhy->hDrvIf.hDrv, ts64);
     }
 
     return status;
@@ -2100,9 +2100,9 @@ int32_t EnetPhy_getPtpTxTime(EnetPhy_Handle hPhy, uint32_t domain,
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.getPtpTxTime != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.getPtpTxTime != NULL))
     {
-        status = hPhy->hDrvIf->fxn.getPtpTxTime(hPhy->hDrvIf->hDrv, domain, msgType, seqId, ts64);
+        status = hPhy->hDrvIf.fxn.getPtpTxTime(hPhy->hDrvIf.hDrv, domain, msgType, seqId, ts64);
     }
 
     return status;
@@ -2113,9 +2113,9 @@ int32_t EnetPhy_getPtpRxTime(EnetPhy_Handle hPhy, uint32_t domain,
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.getPtpRxTime != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.getPtpRxTime != NULL))
     {
-        status = hPhy->hDrvIf->fxn.getPtpRxTime(hPhy->hDrvIf->hDrv, domain, msgType, seqId, ts64);
+        status = hPhy->hDrvIf.fxn.getPtpRxTime(hPhy->hDrvIf.hDrv, domain, msgType, seqId, ts64);
     }
 
     return status;
@@ -2126,9 +2126,9 @@ int32_t EnetPhy_waitPtpTxTime(EnetPhy_Handle hPhy, uint32_t domain,
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.waitPtpTxTime != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.waitPtpTxTime != NULL))
     {
-        status = hPhy->hDrvIf->fxn.waitPtpTxTime( hPhy->hDrvIf->hDrv, domain, msgType, seqId);
+        status = hPhy->hDrvIf.fxn.waitPtpTxTime( hPhy->hDrvIf.hDrv, domain, msgType, seqId);
     }
 
     return status;
@@ -2139,9 +2139,9 @@ int32_t EnetPhy_procStatusFrame(EnetPhy_Handle hPhy, uint8_t *frame,
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.procStatusFrame != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.procStatusFrame != NULL))
     {
-        status = hPhy->hDrvIf->fxn.procStatusFrame(hPhy->hDrvIf->hDrv, frame, size, types);
+        status = hPhy->hDrvIf.fxn.procStatusFrame(hPhy->hDrvIf.hDrv, frame, size, types);
     }
 
     return status;
@@ -2152,9 +2152,9 @@ int32_t EnetPhy_getStatusFrameEthHeader(EnetPhy_Handle hPhy,
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.getStatusFrameEthHeader != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.getStatusFrameEthHeader != NULL))
     {
-        status = hPhy->hDrvIf->fxn.getStatusFrameEthHeader(hPhy->hDrvIf->hDrv, ethhdr, size);
+        status = hPhy->hDrvIf.fxn.getStatusFrameEthHeader(hPhy->hDrvIf.hDrv, ethhdr, size);
     }
 
     return status;
@@ -2165,9 +2165,9 @@ int32_t EnetPhy_enablePtp(EnetPhy_Handle hPhy, bool on,
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.enablePtp != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.enablePtp != NULL))
     {
-        status = hPhy->hDrvIf->fxn.enablePtp(hPhy->hDrvIf->hDrv, on, srcMacStatusFrameType);
+        status = hPhy->hDrvIf.fxn.enablePtp(hPhy->hDrvIf.hDrv, on, srcMacStatusFrameType);
     }
 
     return status;
@@ -2177,9 +2177,9 @@ int32_t EnetPhy_tickDriver(EnetPhy_Handle hPhy)
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.tickDriver != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.tickDriver != NULL))
     {
-        status = hPhy->hDrvIf->fxn.tickDriver( hPhy->hDrvIf->hDrv);
+        status = hPhy->hDrvIf.fxn.tickDriver( hPhy->hDrvIf.hDrv);
     }
 
     return status;
@@ -2190,9 +2190,9 @@ int32_t EnetPhy_enableEventCapture(EnetPhy_Handle hPhy, uint32_t eventIdx,
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.enableEventCapture != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.enableEventCapture != NULL))
     {
-        status = hPhy->hDrvIf->fxn.enableEventCapture(hPhy->hDrvIf->hDrv, eventIdx, falling, on);
+        status = hPhy->hDrvIf.fxn.enableEventCapture(hPhy->hDrvIf.hDrv, eventIdx, falling, on);
     }
 
     return status;
@@ -2203,9 +2203,9 @@ int32_t EnetPhy_enableTriggerOutput(EnetPhy_Handle hPhy, uint32_t triggerIdx,
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.enableTriggerOutput != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.enableTriggerOutput != NULL))
     {
-        status = hPhy->hDrvIf->fxn.enableTriggerOutput(hPhy->hDrvIf->hDrv, triggerIdx,
+        status = hPhy->hDrvIf.fxn.enableTriggerOutput(hPhy->hDrvIf.hDrv, triggerIdx,
                                 start, period, repeat);
     }
 
@@ -2217,9 +2217,9 @@ int32_t EnetPhy_getEventTs(EnetPhy_Handle hPhy, uint32_t *eventIdx,
 {
     int32_t status = ENETPHY_ENOTSUPPORTED;
 
-    if ((hPhy->hDrvIf != NULL) && (hPhy->hDrvIf->fxn.getEventTs != NULL))
+    if ((hPhy->hDrvIf.fxn.name != NULL) && (hPhy->hDrvIf.fxn.getEventTs != NULL))
     {
-        status = hPhy->hDrvIf->fxn.getEventTs(hPhy->hDrvIf->hDrv, eventIdx, seqId, ts64);
+        status = hPhy->hDrvIf.fxn.getEventTs(hPhy->hDrvIf.hDrv, eventIdx, seqId, ts64);
     }
 
     return status;
