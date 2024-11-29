@@ -51,8 +51,8 @@ int EnetApp_lldCfgUpdateCb(cb_socket_lldcfg_update_t *update_cfg)
          * The rxDefaultDataCb is called inside gptp task when the packet
          * does not match any filters on this RX DMA channel.
          */
-        update_cfg->dmaRxShared = true;
-        update_cfg->dmaRxOwner = true;
+        update_cfg->dmaRxShared = BTRUE;
+        update_cfg->dmaRxOwner = BTRUE;
         update_cfg->rxDefaultDataCb = rxDefaultDataCb;
         update_cfg->rxDefaultCbArg = NULL;
     }
@@ -64,14 +64,14 @@ int EnetApp_lldCfgUpdateCb(cb_socket_lldcfg_update_t *update_cfg)
         update_cfg->pktSize = ENET_MEM_LARGE_POOL_PKT_SIZE;
 
         update_cfg->dmaRxChId[0] = ENET_DMA_RX_CH1;
-        update_cfg->dmaRxOwner = true; /* avtp now has it own dmaRx */
+        update_cfg->dmaRxOwner = BTRUE; /* avtp now has it own dmaRx */
     }
     else if (update_cfg->proto == ETH_P_IPV4)
     {
         update_cfg->numRxChannels = 1;
         /* share the RX Dma channel with PTP */
         update_cfg->dmaRxChId[0] = ENET_DMA_RX_CH0;
-        update_cfg->dmaRxOwner = false; /* gptp is RX dma owner */
+        update_cfg->dmaRxOwner = BFALSE; /* gptp is RX dma owner */
     }
     return 0;
 }

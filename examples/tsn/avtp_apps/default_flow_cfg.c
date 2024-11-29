@@ -56,6 +56,7 @@ int EnetApp_lldCfgUpdateCb(cb_socket_lldcfg_update_t *update_cfg)
         update_cfg->nTxPkts = ENET_DMA_TX_CH_AVTP_NUM_PKTS;
         update_cfg->nRxPkts[0] = ENET_DMA_RX_CH_AVTP_NUM_PKTS;
         update_cfg->pktSize = ENET_MEM_LARGE_POOL_PKT_SIZE;
+        update_cfg->dmaTxShared = BTRUE;
     }
     return 0;
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) Texas Instruments Incorporated 2022-23
+ *  Copyright (C) Texas Instruments Incorporated 2024
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -49,12 +49,21 @@
 /* ========================================================================== */
 /*                           Function Declarations                            */
 /* ========================================================================== */
+#ifdef GPTP_QUICKSYNC
+#ifdef GPTP_SLAVE
+extern int EnetApp_adjustTimeInterval();
+#endif
+#endif
 
 void EnetApp_mainTask(void *args)
 {
     EnetPer_AttachCoreOutArgs attachCoreOutArgs;
     EnetApp_HandleInfo handleInfo;
-
+#ifdef GPTP_QUICKSYNC
+#ifdef GPTP_SLAVE
+    bool adjustedTimeInterval = false;
+#endif
+#endif
     DebugP_log("==========================\r\n");
     DebugP_log("       TSN CPSW App       \r\n");
     DebugP_log("==========================\r\n");
@@ -71,8 +80,20 @@ void EnetApp_mainTask(void *args)
     {
         while (true)
         {
-            // Print CPU load
+            /* Print CPU load */
             ClockP_usleep(1000);
+#ifdef GPTP_QUICKSYNC
+#ifdef GPTP_SLAVE
+            if (!adjustedTimeInterval)
+            {
+                if (EnetApp_adjustTimeInterval() == 0)
+                {
+                    /* no need to adjust again */
+                    adjustedTimeInterval = true;
+                }
+            }
+#endif
+#endif
             EnetApp_printCpuLoad();
             TaskP_yield();
         }

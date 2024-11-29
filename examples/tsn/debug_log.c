@@ -101,11 +101,11 @@ int Logger_logToBuffer(bool flush, const char *str)
 
 #ifdef USE_CRLF
     char *lf = strrchr(str, '\n');
-    bool replace = false;
+    bool replace = BFALSE;
     if (lf)
     {
         *lf = 0;
-        replace = true;
+        replace = BTRUE;
     }
     if (remainBufsize > (logLen+2))
     {
@@ -164,7 +164,7 @@ int Logger_directLog(bool flush, const char *str)
     if (lf)
     {
         *lf = 0;
-        flush = true;
+        flush = BTRUE;
     }
 #endif
     sDrvConsoleOut((char*)str);

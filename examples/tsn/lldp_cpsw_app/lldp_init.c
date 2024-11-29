@@ -182,8 +182,8 @@ extern EnetApp_Ctx_t gAppCtx;
 int EnetApp_addLldpModCtx(EnetApp_ModuleCtx_t *modCtxTbl)
 {
     EnetApp_ModuleCtx_t lldpModCtx = {
-        .enable = true,
-        .stopFlag = true,
+        .enable = BTRUE,
+        .stopFlag = BTRUE,
         .taskPriority = LLDP_TASK_PRIORITY,
         .taskName = LLDP_TASK_NAME,
         .stackBuffer = gLldpStackBuf,
