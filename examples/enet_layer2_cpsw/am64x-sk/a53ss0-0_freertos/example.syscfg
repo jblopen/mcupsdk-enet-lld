@@ -27,7 +27,8 @@ const enet_cpsw1 = enet_cpsw.addInstance();
 /**
  * Write custom configuration values to the imported modules.
  */
-eeprom1.$name = "CONFIG_EEPROM0";
+eeprom1.$name      = "CONFIG_EEPROM0";
+eeprom1.i2cAddress = 0x51;
 
 i2c1.$name               = "CONFIG_I2C0";
 eeprom1.peripheralDriver = i2c1;
@@ -67,15 +68,16 @@ mmu_armv83.pAddr     = 0x80000000;
 mmu_armv83.size      = 0x80000000;
 mmu_armv83.attribute = "MAIR7";
 
-enet_cpsw1.$name                 = "CONFIG_ENET_CPSW0";
-enet_cpsw1.DisableMacPort2       = true;
-enet_cpsw1.mdioMode              = "MDIO_MODE_MANUAL";
-enet_cpsw1.MDIO.$assign          = "MDIO0";
-enet_cpsw1.MDIO.MDC.$assign      = "PRG0_PRU1_GPO19";
-enet_cpsw1.MDIO.MDIO.$assign     = "PRG0_PRU1_GPO18";
-enet_cpsw1.RGMII.$assign         = "CPSW";
-enet_cpsw1.txDmaChannel[0].$name = "ENET_DMA_TX_CH0";
-enet_cpsw1.rxDmaChannel[0].$name = "ENET_DMA_RX_CH0";
+enet_cpsw1.$name                    = "CONFIG_ENET_CPSW0";
+enet_cpsw1.DisableMacPort2          = true;
+enet_cpsw1.mdioMode                 = "MDIO_MODE_MANUAL";
+enet_cpsw1.MDIO.$assign             = "MDIO0";
+enet_cpsw1.MDIO.MDC.$assign         = "PRG0_PRU1_GPO19";
+enet_cpsw1.MDIO.MDIO.$assign        = "PRG0_PRU1_GPO18";
+enet_cpsw1.RGMII.$assign            = "CPSW";
+enet_cpsw1.RGMII.RGMII1_RD0.$assign = "PRG1_PRU1_GPO5";
+enet_cpsw1.txDmaChannel[0].$name    = "ENET_DMA_TX_CH0";
+enet_cpsw1.rxDmaChannel[0].$name    = "ENET_DMA_RX_CH0";
 
 const ethphy_cpsw_icssg  = scripting.addModule("/board/ethphy_cpsw_icssg/ethphy_cpsw_icssg", {}, false);
 const ethphy_cpsw_icssg1 = ethphy_cpsw_icssg.addInstance({}, false);
@@ -93,12 +95,11 @@ enet_cpsw1.udmaDrv = udma1;
  */
 debug_log.uartLog.UART.RXD.$suggestSolution     = "UART0_RXD";
 debug_log.uartLog.UART.TXD.$suggestSolution     = "UART0_TXD";
-enet_cpsw1.RGMII.RGMII1_RD0.$suggestSolution    = "PRG0_PRU1_GPO7";
-enet_cpsw1.RGMII.RGMII1_RD1.$suggestSolution    = "PRG0_PRU1_GPO9";
-enet_cpsw1.RGMII.RGMII1_RD2.$suggestSolution    = "PRG0_PRU1_GPO10";
-enet_cpsw1.RGMII.RGMII1_RD3.$suggestSolution    = "PRG0_PRU1_GPO17";
-enet_cpsw1.RGMII.RGMII1_RX_CTL.$suggestSolution = "PRG0_PRU0_GPO9";
-enet_cpsw1.RGMII.RGMII1_RXC.$suggestSolution    = "PRG0_PRU0_GPO10";
+enet_cpsw1.RGMII.RGMII1_RD1.$suggestSolution    = "PRG1_PRU1_GPO8";
+enet_cpsw1.RGMII.RGMII1_RD2.$suggestSolution    = "PRG1_PRU1_GPO18";
+enet_cpsw1.RGMII.RGMII1_RD3.$suggestSolution    = "PRG1_PRU1_GPO19";
+enet_cpsw1.RGMII.RGMII1_RX_CTL.$suggestSolution = "PRG1_PRU0_GPO5";
+enet_cpsw1.RGMII.RGMII1_RXC.$suggestSolution    = "PRG1_PRU0_GPO8";
 enet_cpsw1.RGMII.RGMII1_TD0.$suggestSolution    = "PRG1_PRU1_GPO7";
 enet_cpsw1.RGMII.RGMII1_TD1.$suggestSolution    = "PRG1_PRU1_GPO9";
 enet_cpsw1.RGMII.RGMII1_TD2.$suggestSolution    = "PRG1_PRU1_GPO10";

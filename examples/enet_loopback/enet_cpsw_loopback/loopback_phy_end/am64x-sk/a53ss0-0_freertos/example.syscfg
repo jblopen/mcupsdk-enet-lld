@@ -27,7 +27,8 @@ const enet_cpsw1 = enet_cpsw.addInstance();
 /**
  * Write custom configuration values to the imported modules.
  */
-eeprom1.$name = "CONFIG_EEPROM0";
+eeprom1.$name      = "CONFIG_EEPROM0";
+eeprom1.i2cAddress = 0x51;
 
 i2c1.$name               = "CONFIG_I2C0";
 eeprom1.peripheralDriver = i2c1;
