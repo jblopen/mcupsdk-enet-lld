@@ -4012,6 +4012,18 @@ static int32_t Icssg_handleExternalPhyLinkUp(Icssg_Handle hIcssg,
                    ENET_PER_NAME(hIcssg), portId,
                    Icssg_gSpeedNames[phyLinkCfg->speed],
                    Icssg_gDuplexNames[phyLinkCfg->duplexity]);
+
+    /*Set port state to ICSSG_PORT_STATE_FORWARD on link up*/
+    IcssgUtils_ioctlR30Cmd cmd = ICSSG_UTILS_R30_CMD_FORWARD;
+
+    status = Icssg_R30SendSyncIoctl(hIcssg,
+                                    macPort,
+                                    cmd);
+
+    ENETTRACE_ERR_IF((status != ENET_SOK),
+                        "%s: port %u: failed to set port state: %d\r\n",
+                        ENET_PER_NAME(hIcssg), ENET_MACPORT_ID(macPort), status);
+
     return status;
 }
 
