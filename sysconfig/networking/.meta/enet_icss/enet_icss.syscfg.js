@@ -1148,7 +1148,7 @@ let enet_icss_module = {
         {
             name: "phyToMacInterfaceMode",
             displayName: "MII/RGMII",
-            default: "RGMII",
+            default: "MII",
             onChange: function(inst, ui) {
                 if (inst.phyToMacInterfaceMode == "RGMII")
                 {
