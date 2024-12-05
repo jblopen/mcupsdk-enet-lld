@@ -61,6 +61,9 @@ mmu_armv84.pAddr     = 0x82060000;
 
 enet_cpsw1.$name                 = "CONFIG_ENET_CPSW0";
 enet_cpsw1.DisableMacPort2       = true;
+enet_cpsw1.macport1LoopbackMode  = "LOOPBACK_MODE_PHY";
+enet_cpsw1.macport1LinkSpeed     = "ENET_SPEED_100MBIT";
+enet_cpsw1.macport1LinkDuplexity = "ENET_DUPLEX_FULL";
 enet_cpsw1.MDIO.$assign          = "MDIO0";
 enet_cpsw1.MDIO.MDC.$assign      = "MDIO0_MDC";
 enet_cpsw1.MDIO.MDIO.$assign     = "MDIO0_MDIO";

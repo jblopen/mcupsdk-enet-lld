@@ -119,8 +119,8 @@ mpu_armv76.allowExecute = false;
 enet_cpsw1.$name                 = "CONFIG_ENET_CPSW0";
 enet_cpsw1.macport1LoopbackMode  = "LOOPBACK_MODE_MAC";
 enet_cpsw1.DisableMacPort2       = true;
-enet_cpsw1.macport1LinkSpeed     = "ENET_SPEED_100MBIT";
 enet_cpsw1.macport1LinkDuplexity = "ENET_DUPLEX_FULL";
+enet_cpsw1.macport1LinkSpeed     = "ENET_SPEED_1GBIT";
 enet_cpsw1.txDmaChannel[0].$name = "ENET_DMA_TX_CH0";
 enet_cpsw1.rxDmaChannel[0].$name = "ENET_DMA_RX_CH0";
 
