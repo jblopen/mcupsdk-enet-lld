@@ -180,7 +180,7 @@ LFLAGS_common = \
 	-Wl,--use_memset=fast \
 	-Wl,--use_memcpy=fast \
 
-LNKOPTFLAGS_release = \
+LNKOPTFLAGS_common = \
 		   -mcpu=cortex-r5 \
 		   -mfloat-abi=hard \
 		   -mfpu=vfpv3-d16 \
@@ -282,7 +282,7 @@ $(COREOUTNAME):  $(SYSTEM_COMMAND)
 	@echo  .
 	@echo  Relinking Linking: am243x:r5fss0-0:freertos:ti-arm-clang $@ with OptiShare SSO..
 	$(LNK) $(LNKOPTFLAGS) $(LFLAGS) $(LIBS_PATH) -Wl,-m=$(basename $@).map -o $@ $(addprefix $(OBJDIR), $(OBJS)) $(LIBS) $(LNK_FILES) -Wl,--xml_link_info=$(basename $@).lnkxml -Wl,--import_sso=$(SSO_PATH)
-	@echo  Relinking with optishare: am263px:r5fss0-0:freertos:ti-arm-clang $@ Done !!!
+	@echo  Relinking with optishare: am243x:r5fss0-0:freertos:ti-arm-clang $@ Done !!!
 	@echo  .
 
 clean:

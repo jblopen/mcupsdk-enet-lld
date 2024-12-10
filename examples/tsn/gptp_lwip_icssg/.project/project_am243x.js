@@ -76,19 +76,19 @@ const includes_freertos_r5f = {
 
 const libs_freertos_r5f = {
     common: [
-        "freertos.am243x.r5f.ti-arm-clang.release.lib",
-        "drivers.am243x.r5f.ti-arm-clang.release.lib",
-        "enet-icssg.am243x.r5f.ti-arm-clang.release.lib",
-        "board.am243x.r5f.ti-arm-clang.release.lib",
+        "freertos.am243x.r5f.ti-arm-clang.${ConfigName}.lib",
+        "drivers.am243x.r5f.ti-arm-clang.${ConfigName}.lib",
+        "enet-icssg.am243x.r5f.ti-arm-clang.${ConfigName}.lib",
+        "board.am243x.r5f.ti-arm-clang.${ConfigName}.lib",
         "libc.a",
         "libsysbm.a",
-        "tsn_icssg_combase-freertos.am243x.r5f.ti-arm-clang.release.lib",
-        "tsn_unibase-freertos.am243x.r5f.ti-arm-clang.release.lib",
-        "tsn_gptp-freertos.am243x.r5f.ti-arm-clang.release.lib",
-        "tsn_uniconf-freertos.am243x.r5f.ti-arm-clang.release.lib",
-        "lwipif-icssg-freertos.am243x.r5f.ti-arm-clang.release.lib",
-        "lwip-freertos.am243x.r5f.ti-arm-clang.release.lib",
-        "lwip-contrib-freertos.am243x.r5f.ti-arm-clang.release.lib",
+        "tsn_icssg_combase-freertos.am243x.r5f.ti-arm-clang.${ConfigName}.lib",
+        "tsn_unibase-freertos.am243x.r5f.ti-arm-clang.${ConfigName}.lib",
+        "tsn_gptp-freertos.am243x.r5f.ti-arm-clang.${ConfigName}.lib",
+        "tsn_uniconf-freertos.am243x.r5f.ti-arm-clang.${ConfigName}.lib",
+        "lwipif-icssg-freertos.am243x.r5f.ti-arm-clang.${ConfigName}.lib",
+        "lwip-freertos.am243x.r5f.ti-arm-clang.${ConfigName}.lib",
+        "lwip-contrib-freertos.am243x.r5f.ti-arm-clang.${ConfigName}.lib",
     ],
 };
 
@@ -166,7 +166,6 @@ const templates_freertos_r5f =
 
 const buildOptionCombos = [
     { device: device, cpu: "r5fss0-0", cgt: "ti-arm-clang", board: "am243x-evm", os: "freertos"},
-    { device: device, cpu: "r5fss0-0", cgt: "ti-arm-clang", board: "am243x-lp", os: "freertos"},
 ];
 
 function getComponentProperty() {
