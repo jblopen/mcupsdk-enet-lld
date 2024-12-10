@@ -186,7 +186,7 @@ const lnkpreprocessor_gcc = {
 
 const syscfgfile = "../example.syscfg";
 
-const readmeDoxygenPageTag = "EXAMPLES_ENET_CLI";
+const readmeDoxygenPageTag = "EXAMPLES_ENET_CLI_APP";
 
 const templates_freertos_r5f =
 [
