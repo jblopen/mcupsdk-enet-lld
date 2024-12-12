@@ -6,6 +6,16 @@ exports = common.getSelfSysCfgCoreName().includes('pru') ? {} : {
     displayName: "TI Networking",
     templates: [
         {
+            name: "/networking/common/enet_netxduo.c.xdt",
+            outputPath: "ti_enet_netxduo.c",
+            alwaysRun: true,
+        },
+        {
+            name: "/networking/common/enet_netxduo.h.xdt",
+            outputPath: "ti_enet_netxduo.h",
+            alwaysRun: true,
+        },
+        {
             name: "/networking/common/enet_config.c.xdt",
             outputPath: "ti_enet_config.c",
             alwaysRun: true,
