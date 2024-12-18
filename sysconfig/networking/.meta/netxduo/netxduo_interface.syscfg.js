@@ -231,7 +231,7 @@ function getIfMacPorts()
             let ifCfg = netxduo_module.getIfConfig(netx_instance,Idx);
             let txCh = ifCfg.txDmaChNum
             let enet_instance = null;
-         
+
             let enet_module = null;
             if (getIfEnetType(ifCfg.enet_instance_name) === 'CPSW') {
                 if (netxduo_interface_module.$instances.length == 2) {
@@ -243,7 +243,7 @@ function getIfMacPorts()
             if (getIfEnetType(ifCfg.enet_instance_name) === 'ICSSG') {
                 enet_module = system.modules["/networking/enet_icss/enet_icss"];
                 enet_instance = enet_module.$instances.find(obj => { return obj.$name === ifCfg.enet_instance_name});
-                if (enet_instance.dualMacPortSelected) {
+                if (enet_instance.mode === "DUAL MAC") {
                     ret += enet_instance.dualMacPortSelected; // Dual mac.
                 } else {
                     ret += 'ENET_MAC_PORT_INV'; // Switch
