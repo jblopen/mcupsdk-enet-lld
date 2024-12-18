@@ -128,8 +128,6 @@ int netxduo_cpsw_main(ULONG arg)
     bool isLinked;
     int32_t status = ENET_SOK;
 
-    Drivers_open();
-    Board_driversOpen();
 
     DebugP_log("=============================\r\n");
     DebugP_log("   CPSW NETXDUO TCP CLIENT   \r\n");
