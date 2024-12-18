@@ -126,7 +126,7 @@ int netxduo_cpsw_main(ULONG arg)
     Board_driversOpen();
 
     DebugP_log("==============================\r\n");
-    DebugP_log("   NETXDUO CPSW SWITCH MODE   \r\n");
+    DebugP_log("   NETXDUO CPSW MAC MODE   \r\n");
     DebugP_log("==============================\r\n");
 
     EnetApp_driverInit();

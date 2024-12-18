@@ -204,7 +204,7 @@ int netxduo_icssg_main(ULONG arg)
         ifTxChs[k] = txChs[chIds[k]];
     }
     NetxEnetApp_getEnetTypeAndIdFromIfIdx(0u, 0u, &enetType, &instId);
-    macPort = NetxEnetApp_getMacPort(enetType, instId);
+    macPort = NetxEnetApp_getMacPort(0, 0);
 
     status = EnetApp_setMacAddress(enetType, instId, &outArgs.macAddr[0][0]);
     DebugP_assert(status == ENET_SOK);

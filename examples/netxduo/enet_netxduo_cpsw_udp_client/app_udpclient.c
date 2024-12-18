@@ -304,7 +304,7 @@ int netxduo_cpsw_main(ULONG arg)
 
             /* Append data to the packet. */
             memset(&gTransmitBuf, 0, sizeof(gTransmitBuf));
-            bufLength = snprintf(gTransmitBuf, sizeof(gTransmitBuf), "Hello over TCP %d", packetIx+1);
+            bufLength = snprintf(gTransmitBuf, sizeof(gTransmitBuf), "Hello over UDP %d", packetIx+1);
             nx_packet_data_append(pPacket, gTransmitBuf, bufLength, &gPacketPool, TX_WAIT_FOREVER);
 
             status =  nx_packet_length_get(pPacket, &packetLength);

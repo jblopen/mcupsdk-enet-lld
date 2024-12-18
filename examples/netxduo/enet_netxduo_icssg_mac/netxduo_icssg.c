@@ -141,7 +141,7 @@ int netxduo_icssg_main(ULONG arg)
     Board_driversOpen();
 
     DebugP_log("==========================\r\n");
-    DebugP_log("      ENET LWIP App       \r\n");
+    DebugP_log("    NETXDUO ICSSG MAC     \r\n");
     DebugP_log("==========================\r\n");
 
     EnetApp_driverInit();
